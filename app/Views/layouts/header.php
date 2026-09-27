@@ -9,6 +9,14 @@
 </head>
 <body>
 <?php if ($me): ?>
+<?php
+$nameParts = preg_split('/\s+/', trim((string)$me['name'])) ?: [];
+$avatarInitials = '';
+foreach (array_slice($nameParts, 0, 2) as $part) {
+    if ($part !== '') $avatarInitials .= strtoupper(substr($part, 0, 1));
+}
+if ($avatarInitials === '') $avatarInitials = 'U';
+?>
 <div class="app-shell">
     <aside class="sidebar">
         <div class="brand-block">
@@ -30,20 +38,27 @@
                 <a class="nav-link" href="<?= e(url('/logs')) ?>">System Logs</a>
             <?php endif; ?>
         </nav>
-        <form class="logout" method="post" action="<?= e(url('/logout')) ?>">
-            <?= csrf_field() ?>
-            <button type="submit" class="link-button">Sign out</button>
-        </form>
+        <div class="sidebar-account-zone">
+            <div class="sidebar-user-meta" title="<?= e($me['name']) ?>">
+                <div class="sidebar-user-avatar">
+                    <?php if (!empty($me['avatar_path'])): ?>
+                        <img src="<?= e(url($me['avatar_path'])) ?>" alt="<?= e($me['name']) ?> profile picture">
+                    <?php else: ?>
+                        <span><?= e($avatarInitials) ?></span>
+                    <?php endif; ?>
+                </div>
+                <div class="sidebar-user-date">
+                    <small>Today</small>
+                    <strong><?= e(date('d M Y')) ?></strong>
+                </div>
+            </div>
+            <form class="logout" method="post" action="<?= e(url('/logout')) ?>">
+                <?= csrf_field() ?>
+                <button type="submit" class="link-button">Sign out</button>
+            </form>
+        </div>
     </aside>
     <main class="main <?= (($title ?? '') === 'Dashboard') ? 'dashboard-main' : '' ?>">
-        <?php
-        $nameParts = preg_split('/\s+/', trim((string)$me['name'])) ?: [];
-        $avatarInitials = '';
-        foreach (array_slice($nameParts, 0, 2) as $part) {
-            if ($part !== '') $avatarInitials .= strtoupper(substr($part, 0, 1));
-        }
-        if ($avatarInitials === '') $avatarInitials = 'U';
-        ?>
         <?php if (($title ?? '') === 'Dashboard'): ?>
             <div class="dashboard-hero">
                 <img src="<?= e(url('/assets/img/dashboard-header-banner.png')) ?>" alt="Dashboard header banner">
@@ -62,16 +77,6 @@
                     <?php endif; ?>
                 </div>
                 <p><?= e($me['name']) ?> · <?= e(ucwords(str_replace('_',' ', $me['role']))) ?></p>
-            </div>
-            <div class="topbar-right">
-                <div class="dashboard-user" title="<?= e($me['name']) ?>">
-                    <?php if (!empty($me['avatar_path'])): ?>
-                        <img src="<?= e(url($me['avatar_path'])) ?>" alt="<?= e($me['name']) ?> profile picture">
-                    <?php else: ?>
-                        <span><?= e($avatarInitials) ?></span>
-                    <?php endif; ?>
-                </div>
-                <div class="today"><?= e(date('d M Y')) ?></div>
             </div>
         </header>
         <?php if ($m = flash('success')): ?><div class="flash success"><?= e($m) ?></div><?php endif; ?>

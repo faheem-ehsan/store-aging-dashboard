@@ -10,6 +10,7 @@ use App\Controllers\DivisionController;
 use App\Controllers\LogController;
 use App\Controllers\GradeCriteriaController;
 use App\Controllers\MarketReturnController;
+use App\Controllers\MarketReturnMappingController;
 
 $router = new Router();
 
@@ -39,6 +40,9 @@ $router->get('/market-return/import', [MarketReturnController::class, 'importFor
 $router->post('/market-return/import', [MarketReturnController::class, 'importFile']);
 $router->get('/market-return/import-template', [MarketReturnController::class, 'importTemplate']);
 $router->get('/market-return/csv-template', [MarketReturnController::class, 'csvTemplate']);
+$router->get('/market-return/mapping', [MarketReturnMappingController::class, 'index']);
+$router->post('/market-return/mapping/store', [MarketReturnMappingController::class, 'store']);
+$router->post('/market-return/mapping/delete', [MarketReturnMappingController::class, 'delete']);
 
 $router->get('/users', [UserController::class, 'index']);
 $router->get('/users/edit', [UserController::class, 'edit']);

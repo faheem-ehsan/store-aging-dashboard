@@ -47,13 +47,14 @@ class MarketReturnImporter
         ];
     }
 
-    public function parseCsv(string $filePath, string $defaultCategory): array
+    public function parseCsv(string $filePath, string $originalFileName = ''): array
     {
-        if (!isset(self::CATEGORIES[$defaultCategory])) {
-            throw new \RuntimeException('Choose a category for CSV import.');
-        }
         $handle = fopen($filePath, 'rb');
         if (!$handle) throw new \RuntimeException('Unable to read the CSV file.');
+
+        $fileCategory = $this->categoryFromFileName($originalFileName);
+        $warnings = [];
+
         try {
             $first = fgets($handle);
             if ($first === false) throw new \RuntimeException('CSV file is empty.');
@@ -66,6 +67,14 @@ class MarketReturnImporter
                 throw new \RuntimeException('CSV requires Product Name/Description and Quantity columns.');
             }
 
+            $hasCategoryColumn = in_array('category_code', $canonical, true);
+            $hasSourceSheetColumn = in_array('source_sheet', $canonical, true);
+            if (!$hasCategoryColumn && !$hasSourceSheetColumn && !$fileCategory) {
+                throw new \RuntimeException(
+                    'CSV category could not be detected automatically. Include a Category column (recommended), a Source Sheet column, or use a recognized category name in the CSV filename such as "Utilizable Stock.csv".'
+                );
+            }
+
             $items = [];
             $categories = [];
             $rowNo = 1;
@@ -76,11 +85,23 @@ class MarketReturnImporter
                 foreach ($canonical as $i => $key) {
                     if ($key !== '') $row[$key] = trim((string)($values[$i] ?? ''));
                 }
-                $category = $row['category_code'] ?? $defaultCategory;
-                $category = $this->normalizeCategoryCode($category) ?: $defaultCategory;
-                if (!isset(self::CATEGORIES[$category])) {
-                    throw new \RuntimeException('Row ' . $rowNo . ': unknown category.');
+
+                $category = null;
+                $categoryRaw = trim((string)($row['category_code'] ?? ''));
+                if ($categoryRaw !== '') $category = $this->normalizeCategoryCode($categoryRaw);
+
+                if (!$category) {
+                    $sourceRaw = trim((string)($row['source_sheet'] ?? ''));
+                    if ($sourceRaw !== '') $category = $this->normalizeCategoryCode($sourceRaw) ?: $this->categoryForSheet($sourceRaw);
                 }
+
+                if (!$category) $category = $fileCategory;
+                if (!$category || !isset(self::CATEGORIES[$category])) {
+                    throw new \RuntimeException(
+                        'Row ' . $rowNo . ': category could not be detected automatically. Put a recognized value in the Category column, for example Fresh Saleable Stock, Utilizable Stock, Cabinets, RawalKot Stock, Export Stock, Promotion Items, Tablet / Loose Items, or Expired Stock.'
+                    );
+                }
+
                 $product = trim((string)($row['product_name'] ?? ''));
                 if ($product === '') throw new \RuntimeException('Row ' . $rowNo . ': product name is missing.');
                 $qty = $this->numberOrNull($row['quantity'] ?? '');
@@ -90,11 +111,13 @@ class MarketReturnImporter
                 $amount = $this->numberOrNull($row['total_amount'] ?? '');
                 $amountText = $amount === null ? trim((string)($row['total_amount'] ?? '')) : '';
                 $reportDate = $this->normalizeDate($row['report_date'] ?? '');
+                $sourceSheet = trim((string)($row['source_sheet'] ?? ''));
+                if ($sourceSheet === '') $sourceSheet = self::CATEGORIES[$category]['sheet'];
 
                 $items[] = [
                     'division_hint' => trim((string)($row['division_hint'] ?? '')),
                     'category_code' => $category,
-                    'source_sheet' => 'CSV Import',
+                    'source_sheet' => $sourceSheet,
                     'section_name' => trim((string)($row['section_name'] ?? '')),
                     'serial_no' => trim((string)($row['serial_no'] ?? '')),
                     'product_name' => $product,
@@ -115,8 +138,12 @@ class MarketReturnImporter
         } finally {
             fclose($handle);
         }
+
         if (!$items) throw new \RuntimeException('No item rows were found in the CSV file.');
-        return ['items' => $items, 'categories' => array_keys($categories), 'warnings' => []];
+        if ($fileCategory && !$hasCategoryColumn) {
+            $warnings[] = 'CSV category was detected automatically from the filename: ' . self::CATEGORIES[$fileCategory]['label'] . '.';
+        }
+        return ['items' => $items, 'categories' => array_keys($categories), 'warnings' => $warnings];
     }
 
     private function parseSheet(string $sheetName, array $rows, string $categoryCode): array
@@ -198,6 +225,26 @@ class MarketReturnImporter
         return null;
     }
 
+    private function categoryFromFileName(string $fileName): ?string
+    {
+        $base = pathinfo(trim($fileName), PATHINFO_FILENAME);
+        if ($base === '') return null;
+        $normalized = $this->normalizeText($base);
+        foreach (self::CATEGORIES as $code => $meta) {
+            $candidates = [
+                $this->normalizeText($code),
+                $this->normalizeText((string)$meta['label']),
+                $this->normalizeText((string)$meta['sheet']),
+            ];
+            foreach ($candidates as $candidate) {
+                if ($candidate !== '' && (str_contains($normalized, $candidate) || str_contains($candidate, $normalized))) {
+                    return $code;
+                }
+            }
+        }
+        return null;
+    }
+
     private function normalizeCategoryCode(string $value): ?string
     {
         $normalized = $this->normalizeText($value);
@@ -234,7 +281,8 @@ class MarketReturnImporter
             'cartons' => 'aux_value', 'carton' => 'aux_value', 'bags' => 'aux_value', 'bag' => 'aux_value',
             'section' => 'section_name', 'sectionname' => 'section_name',
             'division' => 'division_hint', 'divisioncode' => 'division_hint', 'divisionname' => 'division_hint', 'businessdivision' => 'division_hint',
-            'category' => 'category_code', 'stockcategory' => 'category_code',
+            'category' => 'category_code', 'stockcategory' => 'category_code', 'categorycode' => 'category_code',
+            'sourcesheet' => 'source_sheet', 'sheet' => 'source_sheet', 'sheetname' => 'source_sheet', 'sourcecategory' => 'source_sheet',
             'reportdate' => 'report_date', 'date' => 'report_date',
             'auxlabel' => 'aux_label', 'auxvalue' => 'aux_value',
         ];
@@ -299,17 +347,13 @@ class MarketReturnImporter
         if ($value === '') return null;
         if (is_numeric($value) && (float)$value > 20000 && (float)$value < 100000) return $this->excelSerialToDate((float)$value);
 
-        $formats = ['Y-m-d','d-m-Y','d.m.Y','d/m/Y','m/d/Y','d-M-Y','d M Y','M d Y'];
-        foreach ($formats as $format) {
-            $dt = \DateTimeImmutable::createFromFormat('!' . $format, $value);
-            $errors = \DateTimeImmutable::getLastErrors();
-            if ($dt && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) return $dt->format('Y-m-d');
-        }
-
+        // IMPORTANT: Market Return files frequently use month/year only (for example
+        // "Apr 2029" or "Sept.26"). Parse those BEFORE the permissive full-date
+        // formats below. PHP can otherwise interpret "Apr 2029" as 20-Apr-0029.
         if ($monthYearAllowed) {
-            $clean = str_replace(['.', ','], ' ', $value);
-            $clean = preg_replace('/\s+/', ' ', trim($clean));
-            if (preg_match('/^([A-Za-z]+)\s*(\d{2,4})$/', $clean, $m)) {
+            $clean = preg_replace('/[.,\-\/]+/', ' ', $value);
+            $clean = preg_replace('/\s+/', ' ', trim((string)$clean));
+            if (preg_match('/^([A-Za-z]+)\s+(\d{2,4})$/', $clean, $m)) {
                 $monthNames = [
                     'jan'=>1,'january'=>1,'feb'=>2,'february'=>2,'mar'=>3,'march'=>3,'apr'=>4,'april'=>4,'may'=>5,'jun'=>6,'june'=>6,
                     'jul'=>7,'july'=>7,'aug'=>8,'august'=>8,'sep'=>9,'sept'=>9,'september'=>9,'oct'=>10,'october'=>10,'nov'=>11,'november'=>11,'dec'=>12,'december'=>12,
@@ -322,8 +366,26 @@ class MarketReturnImporter
                     return $first->modify('last day of this month')->format('Y-m-d');
                 }
             }
+        }
+
+        $formats = ['Y-m-d','d-m-Y','d.m.Y','d/m/Y','m/d/Y','d-M-Y','d M Y','M d Y'];
+        foreach ($formats as $format) {
+            $dt = \DateTimeImmutable::createFromFormat('!' . $format, $value);
+            $errors = \DateTimeImmutable::getLastErrors();
+            if ($dt && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
+                // Guard against impossible ancient years caused by ambiguous parsing.
+                if ((int)$dt->format('Y') < 2000 && preg_match('/\b20\d{2}\b/', $value)) continue;
+                return $dt->format('Y-m-d');
+            }
+        }
+
+        if ($monthYearAllowed) {
             $timestamp = strtotime($value);
-            if ($timestamp !== false) return date('Y-m-d', $timestamp);
+            if ($timestamp !== false) {
+                $parsed = new \DateTimeImmutable('@' . $timestamp);
+                $parsed = $parsed->setTimezone(new \DateTimeZone(date_default_timezone_get()));
+                if ((int)$parsed->format('Y') >= 2000) return $parsed->format('Y-m-d');
+            }
         }
         return null;
     }

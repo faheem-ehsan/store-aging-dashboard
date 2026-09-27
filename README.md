@@ -239,6 +239,22 @@ Use **Market Return Store > Import Market Return File**. The importer accepts `.
 - Utilizable Stock
 - Expired
 
-Division assignment is automatic. For Super Admin imports, the importer uses a `Division` column when one is present; otherwise it reuses prior Market Return product assignments and then matches product names against the existing Stock Aging material master. A mixed workbook can therefore be split across multiple divisions in one upload. Division Admin imports are automatically locked to the division assigned to the login. Rows that cannot be matched to one unique division are not guessed; they are listed as unmatched in the import result. If unmatched rows exist, **Replace existing records** is automatically disabled for that import to protect existing data.
+Division assignment is automatic but fully independent from the Stock Aging material master. For Super Admin imports, the importer uses a `Division` column when present, then the dedicated **Market Return Division Mapping** rules, then prior Market Return history. Division Admin imports are automatically locked to the division assigned to the login, and exact product mappings are learned for future imports. Rows that cannot be matched to one unique division are never guessed; they are listed as unmatched. If unmatched rows exist, **Replace existing records** is automatically disabled for that import to protect existing data. Existing installations should also import `database/migrations/008_add_market_return_division_mapping.sql`.
 
 The XLSX reader uses PHP `ZipArchive` when available and falls back to `PharData`, so it does not require Composer or PhpSpreadsheet.
+
+## Market Return Store expiry cards
+
+The Market Return Store dashboard groups imported rows by Expiry Date using these dashboard colors:
+- A+ (dark blue): 365+ days remaining
+- A (green): 181-364 days remaining
+- B (yellow): 91-180 days remaining
+- C (red): 0-90 days remaining
+- Expired (black): expiry date has passed, or expiry is explicitly marked Expired
+- No Expiry (gray): blank, N.A, Not Found or otherwise unavailable expiry
+
+The original workbook sheet/category remains available as a separate Source Category filter. No database migration is required for these expiry groups because they are calculated at runtime from the existing expiry fields.
+
+
+## Market Return expiry grouping
+Market Return Store uses only four expiry cards: B (365+ days remaining), C (1-364 days remaining), Expired (on the Expiry Date and after), and Other / No Expiry (blank, N.A, Not Found, or invalid expiry). Source workbook categories remain separate filters.

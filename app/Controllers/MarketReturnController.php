@@ -5,6 +5,7 @@ use App\Core\Auth;
 use App\Core\View;
 use App\Models\Division;
 use App\Models\MarketReturnItem;
+use App\Models\MarketReturnDivisionMapping;
 use App\Services\AuditLogger;
 use App\Services\MarketReturnImporter;
 use App\Services\MarketReturnDivisionResolver;
@@ -16,6 +17,88 @@ class MarketReturnController
         return in_array($user['role'] ?? '', ['super_admin', 'division_admin'], true);
     }
 
+    private function expiryBuckets(): array
+    {
+        return [
+            'b' => [
+                'label' => 'B · 1+ Year',
+                'short' => 'B',
+                'class' => 'grade-b',
+                'range' => '365+ days remaining to Expiry Date',
+            ],
+            'c' => [
+                'label' => 'C · Less Than 1 Year',
+                'short' => 'C',
+                'class' => 'grade-c',
+                'range' => '1–364 days remaining to Expiry Date',
+            ],
+            'expired' => [
+                'label' => 'Expired',
+                'short' => 'Expired',
+                'class' => 'grade-ex',
+                'range' => 'Expiry Date and after',
+            ],
+            'no_expiry' => [
+                'label' => 'Other / No Expiry',
+                'short' => 'Other',
+                'class' => 'grade-no-expiry',
+                'range' => 'Blank, N.A, Not Found or no valid Expiry Date',
+            ],
+        ];
+    }
+
+    private function expiryBucket(array $row): string
+    {
+        $raw = strtolower(trim((string)($row['expiry_raw'] ?? '')));
+        if ($raw !== '' && preg_match('/^expired$/i', $raw)) return 'expired';
+
+        $expiry = $this->effectiveExpiryDate($row);
+        if (!$expiry) return 'no_expiry';
+
+        $today = new \DateTimeImmutable('today');
+        $days = (int)$today->diff($expiry)->format('%r%a');
+        if ($days <= 0) return 'expired';
+        if ($days >= 365) return 'b';
+        return 'c';
+    }
+
+    /**
+     * Resolve the real expiry date safely. Older imports could contain a PHP
+     * month/year parsing error where "Apr 2029" was stored as 0029-04-20.
+     * Prefer a correctly parsed month/year from expiry_raw when available.
+     */
+    private function effectiveExpiryDate(array $row): ?\DateTimeImmutable
+    {
+        $raw = trim((string)($row['expiry_raw'] ?? ''));
+        if ($raw !== '' && !preg_match('/^(expired|n\.?a\.?|not found)$/i', $raw)) {
+            $clean = preg_replace('/[.,\-\/]+/', ' ', $raw);
+            $clean = preg_replace('/\s+/', ' ', trim((string)$clean));
+            if (preg_match('/^([A-Za-z]+)\s+(\d{2,4})$/', $clean, $m)) {
+                $monthNames = [
+                    'jan'=>1,'january'=>1,'feb'=>2,'february'=>2,'mar'=>3,'march'=>3,'apr'=>4,'april'=>4,'may'=>5,'jun'=>6,'june'=>6,
+                    'jul'=>7,'july'=>7,'aug'=>8,'august'=>8,'sep'=>9,'sept'=>9,'september'=>9,'oct'=>10,'october'=>10,'nov'=>11,'november'=>11,'dec'=>12,'december'=>12,
+                ];
+                $month = $monthNames[strtolower($m[1])] ?? null;
+                if ($month) {
+                    $year = (int)$m[2];
+                    if ($year < 100) $year += 2000;
+                    return (new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month)))->modify('last day of this month');
+                }
+            }
+        }
+
+        $expiryDate = trim((string)($row['expiry_date'] ?? ''));
+        if ($expiryDate === '') return null;
+        try {
+            $expiry = new \DateTimeImmutable($expiryDate);
+            // Do not trust corrupted ancient dates from earlier month/year imports.
+            if ((int)$expiry->format('Y') < 2000) return null;
+            return $expiry;
+        } catch (\Throwable $e) {
+            return null;
+        }
+    }
+
     public function index(): void
     {
         $user = Auth::requireLogin();
@@ -24,42 +107,76 @@ class MarketReturnController
             'division_id' => isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null,
             'category' => trim((string)($_GET['category'] ?? '')),
             'value_status' => trim((string)($_GET['value_status'] ?? '')),
+            'expiry_bucket' => trim((string)($_GET['expiry_bucket'] ?? '')),
         ];
         if ($user['role'] !== 'super_admin') $filters['division_id'] = (int)$user['division_id'];
 
         $divisions = (new Division())->all(true);
         $categories = MarketReturnImporter::CATEGORIES;
+        $expiryBuckets = $this->expiryBuckets();
+        if ($filters['expiry_bucket'] !== '' && !isset($expiryBuckets[$filters['expiry_bucket']])) {
+            $filters['expiry_bucket'] = '';
+        }
+
+        $baseRows = [];
         $rows = [];
         $databaseReady = true;
         $databaseError = null;
         try {
-            $rows = (new MarketReturnItem())->allAccessible($user, $filters);
+            // Expiry grouping is calculated at runtime so existing Market Return data needs no migration.
+            $dbFilters = $filters;
+            unset($dbFilters['expiry_bucket']);
+            $baseRows = (new MarketReturnItem())->allAccessible($user, $dbFilters);
+
+            foreach ($baseRows as &$row) {
+                $row['expiry_bucket'] = $this->expiryBucket($row);
+            }
+            unset($row);
+
+            $rows = $filters['expiry_bucket'] === ''
+                ? $baseRows
+                : array_values(array_filter($baseRows, fn(array $row): bool => ($row['expiry_bucket'] ?? '') === $filters['expiry_bucket']));
+
+            usort($rows, function (array $a, array $b): int {
+                $aExpiry = $this->effectiveExpiryDate($a);
+                $bExpiry = $this->effectiveExpiryDate($b);
+                $aDate = $aExpiry?->format('Y-m-d');
+                $bDate = $bExpiry?->format('Y-m-d');
+                if ($aDate && $bDate && $aDate !== $bDate) return strcmp($aDate, $bDate);
+                if ($aDate && !$bDate) return -1;
+                if (!$aDate && $bDate) return 1;
+                return strcasecmp((string)($a['product_name'] ?? ''), (string)($b['product_name'] ?? ''));
+            });
         } catch (\Throwable $e) {
             $databaseReady = false;
             $databaseError = 'Market Return Store tables are not installed. Import database/migrations/007_add_market_return_store_module.sql once in phpMyAdmin.';
         }
 
+        $expiryMetrics = [];
+        foreach ($expiryBuckets as $code => $meta) {
+            $expiryMetrics[$code] = ['lines' => 0, 'qty' => 0.0, 'value' => 0.0, 'unvalued' => 0];
+        }
+        foreach ($baseRows as $row) {
+            $code = $row['expiry_bucket'] ?? 'no_expiry';
+            if (!isset($expiryMetrics[$code])) $code = 'no_expiry';
+            $qty = (float)$row['quantity'];
+            $expiryMetrics[$code]['lines']++;
+            $expiryMetrics[$code]['qty'] += $qty;
+            if ($row['total_amount'] !== null) $expiryMetrics[$code]['value'] += (float)$row['total_amount'];
+            else $expiryMetrics[$code]['unvalued']++;
+        }
+
+        // Overall summary follows the visible table, while expiry cards remain navigation totals.
         $metrics = [
             'lines' => count($rows),
             'qty' => 0.0,
             'value' => 0.0,
             'unvalued' => 0,
-            'categories' => [],
         ];
-        foreach ($categories as $code => $meta) {
-            $metrics['categories'][$code] = ['lines' => 0, 'qty' => 0.0, 'value' => 0.0, 'unvalued' => 0];
-        }
         foreach ($rows as $row) {
-            $qty = (float)$row['quantity'];
-            $metrics['qty'] += $qty;
+            $metrics['qty'] += (float)$row['quantity'];
             if ($row['total_amount'] !== null) $metrics['value'] += (float)$row['total_amount'];
             else $metrics['unvalued']++;
-            $code = $row['category_code'];
-            if (!isset($metrics['categories'][$code])) continue;
-            $metrics['categories'][$code]['lines']++;
-            $metrics['categories'][$code]['qty'] += $qty;
-            if ($row['total_amount'] !== null) $metrics['categories'][$code]['value'] += (float)$row['total_amount'];
-            else $metrics['categories'][$code]['unvalued']++;
         }
 
         $selectedDivisionLabel = $user['role'] === 'super_admin' ? 'All Divisions' : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
@@ -80,6 +197,8 @@ class MarketReturnController
             'divisions' => $divisions,
             'categories' => $categories,
             'metrics' => $metrics,
+            'expiryBuckets' => $expiryBuckets,
+            'expiryMetrics' => $expiryMetrics,
             'canManage' => $this->canManage($user),
             'selectedDivisionLabel' => trim($selectedDivisionLabel, ' —'),
             'databaseReady' => $databaseReady,
@@ -228,8 +347,7 @@ class MarketReturnController
             if ($ext === 'xlsx') {
                 $parsed = $importer->parseXlsx($file['tmp_name']);
             } else {
-                $category = trim((string)($_POST['csv_category'] ?? ''));
-                $parsed = $importer->parseCsv($file['tmp_name'], $category);
+                $parsed = $importer->parseCsv($file['tmp_name'], $fileName);
             }
 
             $resolver = new MarketReturnDivisionResolver();
@@ -239,8 +357,20 @@ class MarketReturnController
             $result['categories'] = $parsed['categories'];
             $result['warnings'] = $parsed['warnings'] ?? [];
 
+            // Learn exact Market Return mappings only from authoritative assignments:
+            // a Division value in the file or a Division Admin's locked login division.
+            // This never reads from or writes to the Stock Aging material master.
+            try {
+                $learnedMappings = (new MarketReturnDivisionMapping())->learnFromResolvedItems($resolved['items'], $user);
+                if ($learnedMappings > 0) {
+                    $result['warnings'][] = $learnedMappings . ' exact Market Return product/division mapping(s) were learned for future imports.';
+                }
+            } catch (\Throwable $mappingError) {
+                $result['warnings'][] = 'Independent Market Return mapping table is not installed yet. Import database/migrations/008_add_market_return_division_mapping.sql to enable automatic learning.';
+            }
+
             if (!$resolved['items']) {
-                throw new \RuntimeException('No rows could be assigned to a division. Add a Division column to the file or make sure the product names exist in the Stock Aging material master.');
+                throw new \RuntimeException('No rows could be assigned to a division. Add a Division column to the file or configure the independent Market Return Division Mapping.');
             }
 
             $replaceRequested = isset($_POST['replace_existing']) && $_POST['replace_existing'] === '1';
@@ -360,11 +490,12 @@ class MarketReturnController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="market_return_store_single_category_template.csv"');
+        header('Content-Disposition: attachment; filename="market_return_store_auto_import_template.csv"');
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'wb');
         fputcsv($out, ['Division','Category','Section','S. No.','Product Name','Quantity','Unit','Expiry','Retail Price','Total Amount','Remarks','Aux Label','Aux Value','Report Date']);
         fputcsv($out, ['JSD','Utilizable Stock','Utilizable Stock - Market Return Store','1','Jam-e-Shirin 500ml','10','Bottles','Aug 2027','750','7500','','','','2026-09-24']);
+        fputcsv($out, ['SNW','Fresh Saleable Stock','Fresh Saleable Stock','2','Springley 500ml','24','Bottles','Apr 2029','100','2400','','','','2026-09-24']);
         fclose($out);
         exit;
     }

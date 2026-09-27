@@ -6,6 +6,7 @@
                 <p>This importer is completely separate from the Stock Aging CSV importer.</p>
             </div>
             <div class="market-return-template-actions">
+                <?php if ($user['role'] === 'super_admin'): ?><a class="btn ghost" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a><?php endif; ?>
                 <a class="btn ghost" href="<?= e(url('/market-return/import-template')) ?>">Download XLSX Workbook Template</a>
                 <a class="btn ghost" href="<?= e(url('/market-return/csv-template')) ?>">Download CSV Template</a>
             </div>
@@ -14,34 +15,34 @@
         <div class="market-return-import-explainer">
             <strong>Workbook mode</strong>
             <p>Upload the same multi-sheet format you supplied. Recognized sheets are Cabinets, Export Stock, Promotion Items, RawalKot stock, Tablet Strips, Fresh Saleable Stock final, Utilizable Stock and Expired.</p>
-            <strong>Automatic division assignment</strong>
+            <strong>Automatic division and category assignment</strong>
             <?php if ($user['role'] === 'super_admin'): ?>
-                <p>No Target Division selection is required. The importer assigns every row automatically. It first uses a Division column when present, then prior Market Return assignments, then the existing Stock Aging product/material master. A mixed workbook can therefore be split across JSD, SNW, RTD, FPD, NMD and other active divisions in one import.</p>
+                <p>No Target Division selection is required. The importer assigns every row automatically. It first uses a Division column when present, then the independent Market Return Division Mapping, then prior Market Return assignments. The Stock Aging product/material master is not used by this module.</p>
             <?php else: ?>
                 <p>Your login is locked to <b><?= e(($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? '')) ?></b>. All imported rows are automatically assigned to this division.</p>
             <?php endif; ?>
             <strong>Safety</strong>
             <p>If Super Admin uploads a row that cannot be matched to one unique division, that row is not guessed. It is shown in the import result as an unmatched item so it cannot be stored under the wrong division.</p>
+            <p><b>No category selection is required.</b> XLSX categories come from the workbook sheet names. CSV files can carry the Category column from the supplied template; if it is omitted, the importer can also detect a recognized category from a Source Sheet column or the CSV filename.</p>
         </div>
 
         <form method="post" action="<?= e(url('/market-return/import')) ?>" enctype="multipart/form-data" class="market-return-import-form">
             <?= csrf_field() ?>
-            <div class="market-return-import-grid auto-division-grid">
+            <div class="auto-import-assignment-grid">
                 <div class="auto-division-status">
                     <span class="auto-division-icon">AUTO</span>
                     <span>
                         <b>Division Assignment</b>
-                        <small><?= $user['role'] === 'super_admin' ? 'Automatic from file / product master' : e(($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? '')) ?></small>
+                        <small><?= $user['role'] === 'super_admin' ? 'Detected from file / Market Return mapping' : e(($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? '')) ?></small>
                     </span>
                 </div>
-                <label>CSV Category <small>Used only when uploading a CSV</small>
-                    <select name="csv_category">
-                        <option value="">Choose category for CSV</option>
-                        <?php foreach ($categories as $code => $meta): ?>
-                            <option value="<?= e($code) ?>" <?= ($_POST['csv_category'] ?? '') === $code ? 'selected' : '' ?>><?= e($meta['label']) ?></option>
-                        <?php endforeach; ?>
-                    </select>
-                </label>
+                <div class="auto-category-status">
+                    <span class="auto-category-icon">AUTO</span>
+                    <span>
+                        <b>Category Assignment</b>
+                        <small>XLSX: detected from sheet name · CSV: detected from Category/Source Sheet column or filename</small>
+                    </span>
+                </div>
             </div>
 
             <label class="market-return-dropzone">
@@ -92,7 +93,8 @@
                                     $label = match ($method) {
                                         'file_division' => 'File Division',
                                         'previous_market_return' => 'Previous Mapping',
-                                        'stock_aging_material' => 'Stock Aging Master',
+                                        'market_return_mapping' => 'Market Return Exact Mapping',
+                                        'market_return_keyword' => 'Market Return Keyword Rule',
                                         'login_division' => 'Login Division',
                                         default => ucwords(str_replace('_', ' ', $method)),
                                     };
@@ -122,7 +124,7 @@
             <?php if (!empty($result['unmatched'])): ?>
                 <div class="auto-division-unmatched">
                     <h3>Rows Not Imported — Division Could Not Be Identified</h3>
-                    <p>These rows were left out rather than being assigned to the wrong division. Add a Division column to the source file or add the product to the appropriate Stock Aging material master, then import again.</p>
+                    <p>These rows were left out rather than being assigned to the wrong division. Add a Division column to the source file or configure the product/keyword under Market Return Division Mapping, then import again.</p>
                     <div class="table-wrap">
                         <table>
                             <thead><tr><th>Source Sheet</th><th>Product</th><th>Division in File</th><th>Reason</th></tr></thead>

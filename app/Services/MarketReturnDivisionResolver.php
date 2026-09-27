@@ -2,12 +2,14 @@
 namespace App\Services;
 
 use App\Core\Database;
+use App\Models\MarketReturnDivisionMapping;
 
 class MarketReturnDivisionResolver
 {
     private array $divisions = [];
     private array $divisionAliases = [];
-    private array $materials = [];
+    private array $exactMappings = [];
+    private array $containsMappings = [];
     private array $history = [];
 
     public function __construct()
@@ -22,30 +24,34 @@ class MarketReturnDivisionResolver
             $this->divisionAliases[$this->normalizeDivision((string)$division['name'])] = $id;
         }
 
+        // Dedicated Market Return mapping. This module intentionally does not use
+        // the Stock Aging material master because the Market Return product universe differs.
         try {
-            $sql = 'SELECT m.description,d.id division_id,d.code division_code,d.name division_name
-                    FROM materials m
+            $sql = 'SELECT m.match_type,m.match_text,m.match_key,m.division_id,d.code division_code,d.name division_name
+                    FROM market_return_division_mappings m
                     JOIN divisions d ON d.id=m.division_id
-                    WHERE m.is_active=1 AND d.is_active=1';
+                    WHERE m.is_active=1 AND d.is_active=1
+                    ORDER BY CHAR_LENGTH(m.match_key) DESC, m.id';
             foreach ($pdo->query($sql)->fetchAll() as $row) {
-                $full = $this->normalizeProduct((string)$row['description'], false);
-                $family = $this->normalizeProduct((string)$row['description'], true);
-                if ($full === '' && $family === '') continue;
-                $this->materials[] = [
+                $entry = [
                     'division_id' => (int)$row['division_id'],
                     'division_code' => (string)$row['division_code'],
                     'division_name' => (string)$row['division_name'],
-                    'description' => (string)$row['description'],
-                    'full' => $full,
-                    'family' => $family,
+                    'match_text' => (string)$row['match_text'],
+                    'match_key' => (string)$row['match_key'],
                 ];
+                if ($row['match_type'] === 'contains') {
+                    $this->containsMappings[] = $entry;
+                } else {
+                    $this->exactMappings[(string)$row['match_key']][(int)$row['division_id']] = $entry;
+                }
             }
         } catch (\Throwable $e) {
-            // Stock Aging material master may be empty on a new installation.
+            // Migration 008 may not be installed yet. Prior Market Return history can still resolve known products.
         }
 
-        // Reuse prior, confirmed Market Return division assignments. If a product has
-        // appeared under more than one division, leave it ambiguous rather than guessing.
+        // Reuse prior Market Return assignments only when a product historically belongs
+        // to one unique division. This remains fully independent from Stock Aging data.
         try {
             $sql = 'SELECT mri.product_name,mri.division_id,d.code division_code,d.name division_name,COUNT(*) cnt
                     FROM market_return_items mri
@@ -54,7 +60,7 @@ class MarketReturnDivisionResolver
                     GROUP BY mri.product_name,mri.division_id,d.code,d.name';
             $byProduct = [];
             foreach ($pdo->query($sql)->fetchAll() as $row) {
-                $key = $this->normalizeProduct((string)$row['product_name'], false);
+                $key = MarketReturnDivisionMapping::normalize((string)$row['product_name']);
                 if ($key === '') continue;
                 $byProduct[$key][(int)$row['division_id']] = [
                     'division_id' => (int)$row['division_id'],
@@ -104,7 +110,7 @@ class MarketReturnDivisionResolver
                 $unmatched[] = $this->unmatchedRow(
                     $item,
                     $index,
-                    'No unique division match was found in the Division column, prior Market Return data, or Stock Aging material master.'
+                    'No division could be identified from the file, Market Return Division Mapping, or prior Market Return history.'
                 );
                 continue;
             }
@@ -159,12 +165,52 @@ class MarketReturnDivisionResolver
         }
 
         $product = trim((string)($item['product_name'] ?? ''));
-        $full = $this->normalizeProduct($product, false);
-        $family = $this->normalizeProduct($product, true);
-        if ($full === '') return null;
+        $key = MarketReturnDivisionMapping::normalize($product);
+        if ($key === '') return null;
 
-        if (isset($this->history[$full])) {
-            $match = $this->history[$full];
+        if (!empty($this->exactMappings[$key])) {
+            $choices = $this->exactMappings[$key];
+            if (count($choices) === 1) {
+                $match = array_values($choices)[0];
+                return [
+                    'division_id' => (int)$match['division_id'],
+                    'division_code' => (string)$match['division_code'],
+                    'division_name' => (string)$match['division_name'],
+                    'method' => 'market_return_mapping',
+                    'confidence' => 100,
+                ];
+            }
+            return null;
+        }
+
+        // Keyword/contains rules are useful for Market Return families that never exist
+        // in the Stock Aging material master. The longest unique matching rule wins.
+        $containsMatches = [];
+        foreach ($this->containsMappings as $mapping) {
+            $pattern = (string)$mapping['match_key'];
+            if ($pattern === '' || !str_contains($key, $pattern)) continue;
+            $containsMatches[] = $mapping + ['length' => strlen($pattern)];
+        }
+        if ($containsMatches) {
+            usort($containsMatches, static fn(array $a, array $b): int => $b['length'] <=> $a['length']);
+            $bestLength = (int)$containsMatches[0]['length'];
+            $best = array_values(array_filter($containsMatches, static fn(array $m): bool => (int)$m['length'] === $bestLength));
+            $divisionIds = array_values(array_unique(array_map(static fn(array $m): int => (int)$m['division_id'], $best)));
+            if (count($divisionIds) === 1) {
+                $match = $best[0];
+                return [
+                    'division_id' => (int)$match['division_id'],
+                    'division_code' => (string)$match['division_code'],
+                    'division_name' => (string)$match['division_name'],
+                    'method' => 'market_return_keyword',
+                    'confidence' => 95,
+                ];
+            }
+            return null;
+        }
+
+        if (isset($this->history[$key])) {
+            $match = $this->history[$key];
             return [
                 'division_id' => (int)$match['division_id'],
                 'division_code' => (string)$match['division_code'],
@@ -174,94 +220,7 @@ class MarketReturnDivisionResolver
             ];
         }
 
-        $scores = [];
-        $examples = [];
-        foreach ($this->materials as $material) {
-            $score = $this->scoreProduct($full, $family, $material['full'], $material['family']);
-            if ($score <= 0) continue;
-            $id = (int)$material['division_id'];
-            if (!isset($scores[$id]) || $score > $scores[$id]) {
-                $scores[$id] = $score;
-                $examples[$id] = $material;
-            }
-        }
-
-        if (!$scores) return null;
-        arsort($scores);
-        $ids = array_keys($scores);
-        $bestId = (int)$ids[0];
-        $bestScore = (float)$scores[$bestId];
-        $secondScore = isset($ids[1]) ? (float)$scores[(int)$ids[1]] : 0.0;
-
-        // Require a strong, clearly better match. This intentionally avoids assigning
-        // a division when two divisions carry similar product descriptions.
-        if ($bestScore < 82.0) return null;
-        if ($secondScore >= 82.0 && ($bestScore - $secondScore) < 7.0) return null;
-
-        $division = $this->divisions[$bestId] ?? null;
-        if (!$division) return null;
-
-        return [
-            'division_id' => $bestId,
-            'division_code' => $division['code'],
-            'division_name' => $division['name'],
-            'method' => 'stock_aging_material',
-            'confidence' => (int)round($bestScore),
-            'matched_material' => $examples[$bestId]['description'] ?? null,
-        ];
-    }
-
-    private function scoreProduct(string $leftFull, string $leftFamily, string $rightFull, string $rightFamily): float
-    {
-        if ($leftFull === '' || $rightFull === '') return 0.0;
-        if ($leftFull === $rightFull) return 100.0;
-        if ($leftFamily !== '' && $leftFamily === $rightFamily) return 96.0;
-
-        $minFull = min(strlen($leftFull), strlen($rightFull));
-        if ($minFull >= 6 && (str_contains($leftFull, $rightFull) || str_contains($rightFull, $leftFull))) return 92.0;
-
-        if ($leftFamily !== '' && $rightFamily !== '') {
-            $minFamily = min(strlen($leftFamily), strlen($rightFamily));
-            if ($minFamily >= 5 && (str_contains($leftFamily, $rightFamily) || str_contains($rightFamily, $leftFamily))) return 90.0;
-        }
-
-        $similar = 0.0;
-        similar_text($leftFamily !== '' ? $leftFamily : $leftFull, $rightFamily !== '' ? $rightFamily : $rightFull, $similar);
-        $jaccard = $this->tokenJaccard($leftFamily !== '' ? $leftFamily : $leftFull, $rightFamily !== '' ? $rightFamily : $rightFull) * 100.0;
-
-        return max($similar, $jaccard);
-    }
-
-    private function tokenJaccard(string $left, string $right): float
-    {
-        $a = array_values(array_unique(array_filter(explode(' ', $left), static fn(string $v): bool => strlen($v) > 1)));
-        $b = array_values(array_unique(array_filter(explode(' ', $right), static fn(string $v): bool => strlen($v) > 1)));
-        if (!$a || !$b) return 0.0;
-        $intersection = count(array_intersect($a, $b));
-        $union = count(array_unique(array_merge($a, $b)));
-        return $union > 0 ? $intersection / $union : 0.0;
-    }
-
-    private function normalizeProduct(string $text, bool $family): string
-    {
-        $text = strtolower(trim($text));
-        $text = str_replace(['&', '+'], [' and ', ' '], $text);
-        $text = preg_replace('/[^a-z0-9]+/u', ' ', $text) ?? $text;
-        $text = preg_replace('/\bqarshi\b/u', ' ', $text) ?? $text;
-        $text = preg_replace('/\bexport\b/u', ' ', $text) ?? $text;
-        $text = preg_replace('/\bregular\b/u', ' ', $text) ?? $text;
-        $text = preg_replace('/\bsugar\s*free\b/u', ' sugarfree ', $text) ?? $text;
-        $text = preg_replace('/\bchoc(?:olate)?\b/u', ' chocolate ', $text) ?? $text;
-        $text = preg_replace('/\bzink\b/u', ' zinc ', $text) ?? $text;
-        $text = preg_replace('/\b(safoof|sharbat|arq|majoon|habb)\s+e\b/u', ' $1 ', $text) ?? $text;
-
-        if ($family) {
-            $text = preg_replace('/\b\d+(?:\.\d+)?\s*(?:ml|ltr|liter|litre|gm|g|kg|mg|nos|pcs|box|boxes|bottle|bottles|jar|jars|dabbi|strip|strips|sachet|sachets)\b/u', ' ', $text) ?? $text;
-            $text = preg_replace('/\b\d+(?:\.\d+)?\b/u', ' ', $text) ?? $text;
-        }
-
-        $tokens = array_values(array_filter(preg_split('/\s+/', trim($text)) ?: [], static fn(string $v): bool => $v !== ''));
-        return implode(' ', $tokens);
+        return null;
     }
 
     private function normalizeDivision(string $value): string
