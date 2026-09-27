@@ -205,3 +205,56 @@ database/migrations/006_change_grading_criteria_to_days.sql
 ```
 
 It adds **A+ Days, A Days, B Days, and C Days** for each division and converts the existing month settings to initial day values. Super Admin can then edit the exact day thresholds from **Grading Criteria**. Grade colors are unchanged.
+
+## Market Return Store module
+
+A separate Market Return Store module is available at `/market-return`. It does not change the existing Home/Dashboard calculations or Stock Aging data tables.
+
+### Permissions
+
+- **Super Admin:** can view all divisions, add/edit/delete items, and import Market Return files with automatic division assignment.
+- **Division Admin:** can view and manage only the division assigned to the login.
+- **User:** can view only the assigned division and cannot import or change records.
+
+The module reuses the existing `divisions` and `users` tables, so no separate Market Return users or division masters are required.
+
+### Install on an existing database
+
+Import this file once in phpMyAdmin:
+
+`database/migrations/007_add_market_return_store_module.sql`
+
+Do not re-import the full `database/schema.sql` into an existing database.
+
+### Multi-sheet import
+
+Use **Market Return Store > Import Market Return File**. The importer accepts `.xlsx` and `.csv` files. The supplied XLSX template is the original multi-sheet Market Return workbook and recognizes these sheets:
+
+- Cabinets
+- Export Stock
+- Promotion Items
+- RawalKot stock
+- Tablet Strips / loose items
+- Fresh Saleable Stock final
+- Utilizable Stock
+- Expired
+
+Division assignment is automatic but fully independent from the Stock Aging material master. For Super Admin imports, the importer uses a `Division` column when present, then the dedicated **Market Return Division Mapping** rules, then prior Market Return history. Division Admin imports are automatically locked to the division assigned to the login, and exact product mappings are learned for future imports. Rows that cannot be matched to one unique division are never guessed; they are listed as unmatched. If unmatched rows exist, **Replace existing records** is automatically disabled for that import to protect existing data. Existing installations should also import `database/migrations/008_add_market_return_division_mapping.sql`.
+
+The XLSX reader uses PHP `ZipArchive` when available and falls back to `PharData`, so it does not require Composer or PhpSpreadsheet.
+
+## Market Return Store expiry cards
+
+The Market Return Store dashboard groups imported rows by Expiry Date using these dashboard colors:
+- A+ (dark blue): 365+ days remaining
+- A (green): 181-364 days remaining
+- B (yellow): 91-180 days remaining
+- C (red): 0-90 days remaining
+- Expired (black): expiry date has passed, or expiry is explicitly marked Expired
+- No Expiry (gray): blank, N.A, Not Found or otherwise unavailable expiry
+
+The original workbook sheet/category remains available as a separate Source Category filter. No database migration is required for these expiry groups because they are calculated at runtime from the existing expiry fields.
+
+
+## Market Return expiry grouping
+Market Return Store uses only four expiry cards: B (365+ days remaining), C (1-364 days remaining), Expired (on the Expiry Date and after), and Other / No Expiry (blank, N.A, Not Found, or invalid expiry). Source workbook categories remain separate filters.
