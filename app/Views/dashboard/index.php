@@ -49,6 +49,29 @@ if (!empty($selectedCriteria)) {
         <small>all selected grades</small>
     </div>
     <div class="metric grade-aplus grade-click-card" role="button" tabindex="0" data-grade="A+" data-grade-label="A+" aria-label="Open A+ grade stock details">
+        <span class="grade-card-title">A+</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['A+']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['A+']['value'], 2) ?></span></div>
+    </div>
+    <div class="metric grade-a grade-click-card" role="button" tabindex="0" data-grade="A" data-grade-label="A" aria-label="Open A grade stock details">
+        <span class="grade-card-title">A</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['A']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['A']['value'], 2) ?></span></div>
+    </div>
+    <div class="metric grade-b grade-click-card" role="button" tabindex="0" data-grade="B" data-grade-label="B" aria-label="Open B grade stock details">
+        <span class="grade-card-title">B</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['B']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['B']['value'], 2) ?></span></div>
+    </div>
+    <div class="metric grade-c grade-click-card" role="button" tabindex="0" data-grade="C" data-grade-label="C" aria-label="Open C grade stock details">
+        <span class="grade-card-title">C</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['C']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['C']['value'], 2) ?></span></div>
+    </div>
+    <div class="metric grade-ex grade-click-card" role="button" tabindex="0" data-grade="EX" data-grade-label="Expired" aria-label="Open expired stock details">
+        <span class="grade-card-title">Expired</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['EX']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['EX']['value'], 2) ?></span></div>
     </div>
 </div>
 
@@ -159,6 +182,7 @@ ksort($modalLocations);
         <div class="grade-modal-summary">
             <div><span>No. of Batches</span><strong id="gradeModalBatchCount">0</strong></div>
             <div><span>Current Stock Qty.</span><strong id="gradeModalQty">0.000</strong></div>
+            <div><span>Stock Value</span><strong id="gradeModalValue">Rs/ 0.00</strong></div>
         </div>
 
         <div class="grade-modal-filters">
@@ -208,7 +232,7 @@ ksort($modalLocations);
                         <td><?= e($r['material_description']) ?></td>
                         <td class="num"><?= number_format((float)$r['current_qty'], 3) ?></td>
                         <td><?= e($r['uom'] ?? '') ?></td>
-
+                        <td class="num">Rs/ <?= number_format((float)($r['stock_value'] ?? 0), 2) ?></td>
                         <td><?= e($r['batch_no']) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
@@ -275,6 +299,7 @@ ksort($modalLocations);
         empty.hidden = count !== 0;
         countEl.textContent = count.toLocaleString();
         qtyEl.textContent = number(qty, 3);
+        valueEl.textContent = 'Rs/ ' + number(value, 2);
         resultText.textContent = 'Showing ' + count.toLocaleString() + ' batch' + (count === 1 ? '' : 'es');
     }
 
