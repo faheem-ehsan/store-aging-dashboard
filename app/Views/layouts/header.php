@@ -22,6 +22,7 @@
         <nav>
             <a class="nav-link" href="<?= e(url('/')) ?>">Dashboard</a>
             <a class="nav-link" href="<?= e(url('/stocks')) ?>">Stock Aging Dashboard</a>
+            <a class="nav-link" href="<?= e(url('/market-return')) ?>">Market Return Store</a>
             <?php if ($me['role'] === 'super_admin'): ?>
                 <a class="nav-link" href="<?= e(url('/users')) ?>">Users</a>
                 <a class="nav-link" href="<?= e(url('/divisions')) ?>">Divisions</a>

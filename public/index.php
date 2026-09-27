@@ -9,6 +9,7 @@ use App\Controllers\UserController;
 use App\Controllers\DivisionController;
 use App\Controllers\LogController;
 use App\Controllers\GradeCriteriaController;
+use App\Controllers\MarketReturnController;
 
 $router = new Router();
 
@@ -26,6 +27,18 @@ $router->post('/stocks/delete', [StockController::class, 'delete']);
 $router->get('/stocks/import', [StockController::class, 'importForm']);
 $router->post('/stocks/import', [StockController::class, 'importCsv']);
 $router->get('/stocks/import-template', [StockController::class, 'importTemplate']);
+
+
+$router->get('/market-return', [MarketReturnController::class, 'index']);
+$router->get('/market-return/create', [MarketReturnController::class, 'create']);
+$router->post('/market-return/store', [MarketReturnController::class, 'store']);
+$router->get('/market-return/edit', [MarketReturnController::class, 'edit']);
+$router->post('/market-return/update', [MarketReturnController::class, 'update']);
+$router->post('/market-return/delete', [MarketReturnController::class, 'delete']);
+$router->get('/market-return/import', [MarketReturnController::class, 'importForm']);
+$router->post('/market-return/import', [MarketReturnController::class, 'importFile']);
+$router->get('/market-return/import-template', [MarketReturnController::class, 'importTemplate']);
+$router->get('/market-return/csv-template', [MarketReturnController::class, 'csvTemplate']);
 
 $router->get('/users', [UserController::class, 'index']);
 $router->get('/users/edit', [UserController::class, 'edit']);

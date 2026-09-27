@@ -63,7 +63,7 @@ $gradeOptions = [
             <div class="stock-summary-icon" aria-hidden="true">VAL</div>
             <div>
                 <span>Current Stock Value</span>
-                <strong><?= number_format((float)($summary['stock_value'] ?? 0), 2) ?></strong>
+                <strong>Rs/ <?= number_format((float)($summary['stock_value'] ?? 0), 2) ?></strong>
                 <small>For the selected division and grade filter</small>
             </div>
         </article>
@@ -98,7 +98,7 @@ $gradeOptions = [
     <td><?= e($r['material_description']) ?></td>
     <td class="num"><?= number_format((float)$r['current_qty'], 3) ?></td>
     <td><?= e($r['uom'] ?? '') ?></td>
-    <td class="num"><?= number_format((float)($r['stock_value'] ?? 0), 2) ?></td>
+    <td class="num">Rs/ <?= number_format((float)($r['stock_value'] ?? 0), 2) ?></td>
     <td><?= e($r['batch_no']) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>

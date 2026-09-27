@@ -205,3 +205,40 @@ database/migrations/006_change_grading_criteria_to_days.sql
 ```
 
 It adds **A+ Days, A Days, B Days, and C Days** for each division and converts the existing month settings to initial day values. Super Admin can then edit the exact day thresholds from **Grading Criteria**. Grade colors are unchanged.
+
+## Market Return Store module
+
+A separate Market Return Store module is available at `/market-return`. It does not change the existing Home/Dashboard calculations or Stock Aging data tables.
+
+### Permissions
+
+- **Super Admin:** can view all divisions, add/edit/delete items, and import Market Return files with automatic division assignment.
+- **Division Admin:** can view and manage only the division assigned to the login.
+- **User:** can view only the assigned division and cannot import or change records.
+
+The module reuses the existing `divisions` and `users` tables, so no separate Market Return users or division masters are required.
+
+### Install on an existing database
+
+Import this file once in phpMyAdmin:
+
+`database/migrations/007_add_market_return_store_module.sql`
+
+Do not re-import the full `database/schema.sql` into an existing database.
+
+### Multi-sheet import
+
+Use **Market Return Store > Import Market Return File**. The importer accepts `.xlsx` and `.csv` files. The supplied XLSX template is the original multi-sheet Market Return workbook and recognizes these sheets:
+
+- Cabinets
+- Export Stock
+- Promotion Items
+- RawalKot stock
+- Tablet Strips / loose items
+- Fresh Saleable Stock final
+- Utilizable Stock
+- Expired
+
+Division assignment is automatic. For Super Admin imports, the importer uses a `Division` column when one is present; otherwise it reuses prior Market Return product assignments and then matches product names against the existing Stock Aging material master. A mixed workbook can therefore be split across multiple divisions in one upload. Division Admin imports are automatically locked to the division assigned to the login. Rows that cannot be matched to one unique division are not guessed; they are listed as unmatched in the import result. If unmatched rows exist, **Replace existing records** is automatically disabled for that import to protect existing data.
+
+The XLSX reader uses PHP `ZipArchive` when available and falls back to `PharData`, so it does not require Composer or PhpSpreadsheet.

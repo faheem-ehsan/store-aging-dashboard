@@ -3,6 +3,8 @@ USE store_aging;
 
 SET FOREIGN_KEY_CHECKS=0;
 DROP TABLE IF EXISTS audit_logs;
+DROP TABLE IF EXISTS market_return_items;
+DROP TABLE IF EXISTS market_return_imports;
 DROP TABLE IF EXISTS stock_movements;
 DROP TABLE IF EXISTS stock_batches;
 DROP TABLE IF EXISTS materials;
@@ -33,6 +35,57 @@ CREATE TABLE users (
     CONSTRAINT fk_users_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON UPDATE CASCADE ON DELETE RESTRICT,
     INDEX idx_users_division (division_id),
     INDEX idx_users_role (role)
+) ENGINE=InnoDB;
+
+CREATE TABLE market_return_imports (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    division_id INT UNSIGNED NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    file_type VARCHAR(20) NOT NULL,
+    imported_by INT UNSIGNED NULL,
+    row_count INT UNSIGNED NOT NULL DEFAULT 0,
+    category_count INT UNSIGNED NOT NULL DEFAULT 0,
+    replace_existing TINYINT(1) NOT NULL DEFAULT 1,
+    status ENUM('processing','completed','failed') NOT NULL DEFAULT 'processing',
+    summary_json JSON NULL,
+    imported_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_market_return_import_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_market_return_import_user FOREIGN KEY (imported_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_market_return_import_division (division_id, imported_at),
+    INDEX idx_market_return_import_user (imported_by, imported_at)
+) ENGINE=InnoDB;
+
+CREATE TABLE market_return_items (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    division_id INT UNSIGNED NOT NULL,
+    category_code VARCHAR(40) NOT NULL,
+    source_sheet VARCHAR(120) NOT NULL,
+    section_name VARCHAR(255) NULL,
+    serial_no VARCHAR(40) NULL,
+    product_name VARCHAR(255) NOT NULL,
+    quantity DECIMAL(18,3) NOT NULL DEFAULT 0,
+    unit VARCHAR(80) NOT NULL DEFAULT 'Nos',
+    expiry_raw VARCHAR(120) NULL,
+    expiry_date DATE NULL,
+    retail_price DECIMAL(18,2) NULL,
+    total_amount DECIMAL(18,2) NULL,
+    amount_text VARCHAR(120) NULL,
+    remarks TEXT NULL,
+    aux_label VARCHAR(80) NULL,
+    aux_value VARCHAR(120) NULL,
+    report_date DATE NULL,
+    import_id BIGINT UNSIGNED NULL,
+    created_by INT UNSIGNED NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_market_return_item_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE RESTRICT,
+    CONSTRAINT fk_market_return_item_import FOREIGN KEY (import_id) REFERENCES market_return_imports(id) ON DELETE SET NULL,
+    CONSTRAINT fk_market_return_item_user FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL,
+    INDEX idx_market_return_division_category (division_id, category_code),
+    INDEX idx_market_return_product (product_name),
+    INDEX idx_market_return_expiry (expiry_date),
+    INDEX idx_market_return_report_date (report_date),
+    INDEX idx_market_return_import (import_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE audit_logs (
