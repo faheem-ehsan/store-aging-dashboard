@@ -88,3 +88,83 @@
 .dashboard-stock-card .card-head{padding-bottom:4px}.dashboard-stock-table{min-width:1450px}
 
 .dashboard-main{padding-top:22px}.dashboard-hero{position:relative;width:100%;margin:0 0 18px;border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 10px 28px rgba(16,24,40,.10);border:1px solid #eed4d7}.dashboard-hero img{display:block;width:100%;height:300px;object-fit:cover;object-position:center}.dashboard-main .topbar{margin-bottom:18px}.dashboard-main .topbar h1{font-size:24px}@media(max-width:900px){.dashboard-hero img{height:240px}}@media(max-width:640px){.dashboard-main{padding-top:14px}.dashboard-hero{border-radius:18px;margin-bottom:14px}.dashboard-hero img{height:180px}.dashboard-main .topbar{margin-bottom:14px}}
+
+/* Dashboard neutral summary cards */
+.dashboard-grade-metrics .metric.metric-neutral{
+    background:linear-gradient(180deg,#eef1f4 0%,#e4e8ed 100%);
+    border-color:#d3d9e1;
+    border-top:3px solid #98a2b3;
+    box-shadow:0 8px 22px rgba(16,24,40,.07);
+}
+.dashboard-grade-metrics .metric.metric-neutral span,
+.dashboard-grade-metrics .metric.metric-neutral small{color:#5f6b7a}
+.dashboard-grade-metrics .metric.metric-neutral strong{color:#172033}
+
+/* Clickable grade cards */
+.dashboard-grade-metrics .grade-click-card{
+    position:relative;
+    cursor:pointer;
+    transition:transform .16s ease,box-shadow .16s ease,filter .16s ease;
+    outline:none;
+}
+.dashboard-grade-metrics .grade-click-card:hover,
+.dashboard-grade-metrics .grade-click-card:focus-visible{
+    transform:translateY(-3px);
+    box-shadow:0 14px 28px rgba(16,24,40,.18);
+    filter:saturate(1.05);
+}
+.dashboard-grade-metrics .grade-click-card:focus-visible{box-shadow:0 0 0 3px rgba(239,28,37,.18),0 14px 28px rgba(16,24,40,.18)}
+.dashboard-grade-metrics .grade-click-card em{
+    display:inline-block;
+    margin-top:8px;
+    font-style:normal;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.02em;
+    opacity:.78;
+}
+.dashboard-grade-metrics .grade-aplus em,
+.dashboard-grade-metrics .grade-c em,
+.dashboard-grade-metrics .grade-ex em{color:#fff}
+.dashboard-grade-metrics .grade-a em,
+.dashboard-grade-metrics .grade-b em{color:#111}
+
+/* Grade drill-down modal */
+body.modal-open{overflow:hidden}
+.grade-modal{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:24px}
+.grade-modal.is-open{display:flex}
+.grade-modal-backdrop{position:absolute;inset:0;background:rgba(16,24,40,.67);backdrop-filter:blur(3px)}
+.grade-modal-dialog{position:relative;z-index:1;width:min(1500px,97vw);max-height:92vh;display:flex;flex-direction:column;background:#fff;border:1px solid #ead8da;border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.28);overflow:hidden}
+.grade-modal-head{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;padding:20px 22px 15px;border-bottom:1px solid #f0e1e3;background:linear-gradient(180deg,#fff8f8 0%,#fff 100%)}
+.grade-modal-head h2{margin:3px 0 5px;font-size:24px;color:#7a0f15}
+.grade-modal-head p{margin:0;color:#667085;font-size:12px}
+.grade-modal-kicker{display:block;font-size:10px;font-weight:900;text-transform:uppercase;letter-spacing:.1em;color:#d11a23}
+.grade-modal-close{width:38px;height:38px;border:1px solid #efc9cd;border-radius:50%;background:#fff;color:#9b1118;font-size:25px;line-height:1;cursor:pointer;display:grid;place-items:center;flex:0 0 auto}
+.grade-modal-close:hover{background:#fff1f2}
+.grade-modal-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:14px 22px;background:#fafbfc;border-bottom:1px solid #e8eaee}
+.grade-modal-summary>div{padding:13px 15px;border-radius:11px;border:1px solid #dfe3e8;background:#fff;box-shadow:0 4px 12px rgba(16,24,40,.04)}
+.grade-modal-summary span{display:block;color:#667085;font-size:11px;margin-bottom:5px}
+.grade-modal-summary strong{display:block;color:#172033;font-size:21px}
+.grade-modal-filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:10px;align-items:end;padding:14px 22px;border-bottom:1px solid #e8eaee;background:#fff}
+.grade-modal-filters label{display:grid;gap:5px;color:#475467;font-size:11px;font-weight:800}
+.grade-modal-filters input,.grade-modal-filters select{height:38px;border:1px solid #d0d5dd;border-radius:8px;padding:8px 10px;background:#fff;color:#172033;outline:none}
+.grade-modal-filters input:focus,.grade-modal-filters select:focus{border-color:#ef1c25;box-shadow:0 0 0 3px rgba(239,28,37,.08)}
+.grade-modal-table-wrap{overflow:auto;flex:1;min-height:220px}
+.grade-modal-table{min-width:1450px}
+.grade-modal-table th{position:sticky;top:0;z-index:2;background:#fff1f2!important}
+.grade-modal-table tr[hidden]{display:none!important}
+.grade-modal-foot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 22px;border-top:1px solid #e8eaee;background:#fafbfc;color:#667085;font-size:12px}
+@media(max-width:850px){
+    .grade-modal{padding:10px}
+    .grade-modal-dialog{width:100%;max-height:96vh;border-radius:14px}
+    .grade-modal-summary{grid-template-columns:1fr 1fr 1fr;padding:10px 12px}
+    .grade-modal-filters{grid-template-columns:1fr 1fr;padding:10px 12px}
+    .grade-modal-filters label:first-child{grid-column:1/-1}
+    .grade-modal-head{padding:16px 14px 12px}
+    .grade-modal-foot{padding:10px 12px}
+}
+@media(max-width:560px){
+    .grade-modal-summary{grid-template-columns:1fr}
+    .grade-modal-filters{grid-template-columns:1fr}
+    .grade-modal-filters label:first-child{grid-column:auto}
+}
