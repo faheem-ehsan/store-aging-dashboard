@@ -202,3 +202,102 @@ body.modal-open{overflow:hidden}
 
 /* Sidebar active menu state */
 .sidebar .nav-link{position:relative;transition:background .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease}.sidebar .nav-link.active{background:#fff;color:#b8121a;font-weight:800;box-shadow:0 7px 18px rgba(91,7,12,.18);transform:translateX(3px)}.sidebar .nav-link.active::before{content:"";position:absolute;left:-7px;top:50%;width:4px;height:22px;border-radius:999px;background:#fff;transform:translateY(-50%)}.sidebar .nav-link.active:hover{background:#fff;color:#b8121a}.sidebar .nav-link:focus-visible{outline:2px solid #fff;outline-offset:2px}@media(max-width:800px){.sidebar .nav-link.active{transform:none}.sidebar .nav-link.active::before{left:5px;width:3px;height:18px;background:#ef1c25}}
+
+/* Grade card data typography: quantity first, stock value second */
+.dashboard-grade-metrics .grade-click-card>span{font-size:13px;font-weight:700;letter-spacing:.02em}
+.dashboard-grade-metrics .grade-click-card .grade-qty{display:block;font-size:28px;font-weight:900;line-height:1.08;margin:12px 0 7px;white-space:nowrap}
+.dashboard-grade-metrics .grade-click-card .grade-stock-value{display:block;font-size:19px;font-weight:500;line-height:1.15;margin:0;color:inherit;white-space:nowrap}
+@media(max-width:1200px){.dashboard-grade-metrics .grade-click-card .grade-qty{font-size:25px}.dashboard-grade-metrics .grade-click-card .grade-stock-value{font-size:17px}}
+\n/* Professional grade card typography */
+.dashboard-grade-metrics .grade-click-card{
+    min-height:124px;
+    padding:15px 16px 14px;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    gap:0;
+}
+.dashboard-grade-metrics .grade-click-card .grade-card-title{
+    display:block;
+    font-size:12px;
+    font-weight:800;
+    letter-spacing:.035em;
+    line-height:1.1;
+    margin:0 0 15px;
+    opacity:.94;
+}
+.dashboard-grade-metrics .grade-click-card .grade-qty-line{
+    display:flex;
+    align-items:baseline;
+    gap:7px;
+    min-width:0;
+    margin:0 0 8px;
+}
+.dashboard-grade-metrics .grade-click-card .grade-metric-label{
+    display:inline-block;
+    font-size:10px;
+    line-height:1;
+    font-weight:800;
+    letter-spacing:.075em;
+    opacity:.76;
+    flex:0 0 auto;
+}
+.dashboard-grade-metrics .grade-click-card .grade-qty-value{
+    display:block;
+    min-width:0;
+    margin:0;
+    font-size:22px;
+    line-height:1.05;
+    font-weight:800;
+    letter-spacing:-.02em;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.dashboard-grade-metrics .grade-click-card .grade-value-line{
+    display:flex;
+    align-items:baseline;
+    gap:5px;
+    min-width:0;
+    padding-top:8px;
+    border-top:1px solid rgba(255,255,255,.24);
+}
+.dashboard-grade-metrics .grade-a .grade-value-line,
+.dashboard-grade-metrics .grade-b .grade-value-line{
+    border-top-color:rgba(0,0,0,.15);
+}
+.dashboard-grade-metrics .grade-click-card .grade-currency-label{
+    display:inline-block;
+    font-size:11px;
+    font-weight:700;
+    line-height:1;
+    opacity:.72;
+    flex:0 0 auto;
+}
+.dashboard-grade-metrics .grade-click-card .grade-stock-value{
+    display:block;
+    min-width:0;
+    margin:0;
+    font-size:16px;
+    line-height:1.1;
+    font-weight:500;
+    letter-spacing:-.01em;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    color:inherit;
+}
+.dashboard-grade-metrics .grade-click-card:hover{transform:translateY(-2px)}
+@media(max-width:1400px){
+    .dashboard-grade-metrics .grade-click-card .grade-qty-value{font-size:20px}
+    .dashboard-grade-metrics .grade-click-card .grade-stock-value{font-size:15px}
+}
+@media(max-width:800px){
+    .dashboard-grade-metrics .grade-click-card{min-height:116px}
+    .dashboard-grade-metrics .grade-click-card .grade-card-title{margin-bottom:12px}
+}
+
+/* Login page background image */
+.guest-shell{position:relative;min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,rgba(255,248,248,.72),rgba(255,244,245,.82)),url("../img/login-background.jpg") center center/cover no-repeat fixed;overflow:hidden}.guest-shell::before{content:"";position:fixed;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),rgba(239,28,37,.08));pointer-events:none}.guest-shell .login-card,.guest-shell .guest-footer{position:relative;z-index:1}.login-card.branded-login{background:rgba(255,255,255,.93);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border:1px solid rgba(243,197,201,.88);box-shadow:0 28px 60px rgba(95,17,23,.16)}.guest-footer{background:rgba(255,255,255,.82);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}@media(max-width:800px){.guest-shell{background-attachment:scroll}}

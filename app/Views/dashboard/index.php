@@ -49,34 +49,29 @@ if (!empty($selectedCriteria)) {
         <small>all selected grades</small>
     </div>
     <div class="metric grade-aplus grade-click-card" role="button" tabindex="0" data-grade="A+" data-grade-label="A+" aria-label="Open A+ grade stock details">
-        <span>A+ Stock Qty.</span>
-        <strong><?= number_format($metrics['grades']['A+']['qty'], 3) ?></strong>
-        <small>Stock Value: Rs/ <?= number_format($metrics['grades']['A+']['value'], 2) ?> · <?= number_format($metrics['grades']['A+']['batches']) ?> batch(es)</small>
-        <em>Click to view details</em>
+        <span class="grade-card-title">A+</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['A+']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['A+']['value'], 2) ?></span></div>
     </div>
     <div class="metric grade-a grade-click-card" role="button" tabindex="0" data-grade="A" data-grade-label="A" aria-label="Open A grade stock details">
-        <span>A Stock Qty.</span>
-        <strong><?= number_format($metrics['grades']['A']['qty'], 3) ?></strong>
-        <small>Stock Value: Rs/ <?= number_format($metrics['grades']['A']['value'], 2) ?> · <?= number_format($metrics['grades']['A']['batches']) ?> batch(es)</small>
-        <em>Click to view details</em>
+        <span class="grade-card-title">A</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['A']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['A']['value'], 2) ?></span></div>
     </div>
     <div class="metric grade-b grade-click-card" role="button" tabindex="0" data-grade="B" data-grade-label="B" aria-label="Open B grade stock details">
-        <span>B Stock Qty.</span>
-        <strong><?= number_format($metrics['grades']['B']['qty'], 3) ?></strong>
-        <small>Stock Value: Rs/ <?= number_format($metrics['grades']['B']['value'], 2) ?> · <?= number_format($metrics['grades']['B']['batches']) ?> batch(es)</small>
-        <em>Click to view details</em>
+        <span class="grade-card-title">B</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['B']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['B']['value'], 2) ?></span></div>
     </div>
     <div class="metric grade-c grade-click-card" role="button" tabindex="0" data-grade="C" data-grade-label="C" aria-label="Open C grade stock details">
-        <span>C Stock Qty.</span>
-        <strong><?= number_format($metrics['grades']['C']['qty'], 3) ?></strong>
-        <small>Stock Value: Rs/ <?= number_format($metrics['grades']['C']['value'], 2) ?> · <?= number_format($metrics['grades']['C']['batches']) ?> batch(es)</small>
-        <em>Click to view details</em>
+        <span class="grade-card-title">C</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['C']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['C']['value'], 2) ?></span></div>
     </div>
     <div class="metric grade-ex grade-click-card" role="button" tabindex="0" data-grade="EX" data-grade-label="Expired" aria-label="Open expired stock details">
-        <span>Expired Stock Qty.</span>
-        <strong><?= number_format($metrics['grades']['EX']['qty'], 3) ?></strong>
-        <small>Stock Value: Rs/ <?= number_format($metrics['grades']['EX']['value'], 2) ?> · <?= number_format($metrics['grades']['EX']['batches']) ?> batch(es)</small>
-        <em>Click to view details</em>
+        <span class="grade-card-title">Expired</span>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['EX']['qty'], 3) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['EX']['value'], 2) ?></span></div>
     </div>
 </div>
 
