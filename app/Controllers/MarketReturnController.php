@@ -20,11 +20,17 @@ class MarketReturnController
     private function expiryBuckets(): array
     {
         return [
+            'a' => [
+                'label' => 'A · 2+ Years',
+                'short' => 'A',
+                'class' => 'grade-a',
+                'range' => '730+ days remaining to Expiry Date',
+            ],
             'b' => [
-                'label' => 'B · 1+ Year',
+                'label' => 'B · 1–2 Years',
                 'short' => 'B',
                 'class' => 'grade-b',
-                'range' => '365+ days remaining to Expiry Date',
+                'range' => '365–729 days remaining to Expiry Date',
             ],
             'c' => [
                 'label' => 'C · Less Than 1 Year',
@@ -58,6 +64,7 @@ class MarketReturnController
         $today = new \DateTimeImmutable('today');
         $days = (int)$today->diff($expiry)->format('%r%a');
         if ($days <= 0) return 'expired';
+        if ($days >= 730) return 'a';
         if ($days >= 365) return 'b';
         return 'c';
     }
@@ -193,6 +200,7 @@ class MarketReturnController
             'title' => 'Market Return Store',
             'user' => $user,
             'rows' => $rows,
+            'baseRows' => $baseRows,
             'filters' => $filters,
             'divisions' => $divisions,
             'categories' => $categories,

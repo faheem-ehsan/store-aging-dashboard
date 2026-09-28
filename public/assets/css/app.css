@@ -441,3 +441,72 @@ body.modal-open{overflow:hidden}
 @media(max-width:1100px){.dashboard-uom-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.dashboard-grade-metrics-refreshed{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:760px){.dashboard-uom-head{flex-direction:column}.dashboard-uom-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dashboard-grade-metrics-refreshed{grid-template-columns:1fr}}
 @media(max-width:480px){.dashboard-uom-grid{grid-template-columns:1fr}}
+
+/* Market Return dashboard refresh */
+.market-return-clean-head{align-items:flex-start}
+.market-return-head-side{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap;justify-content:flex-end;flex:1}
+.market-return-head-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.market-return-toolbar-card{margin-bottom:18px}
+.market-return-filters-clean{display:grid;grid-template-columns:1.35fr 1fr 1fr 1fr auto auto;gap:10px;align-items:center}
+.market-return-filters-clean input,.market-return-filters-clean select{width:100%;height:42px;border:1px solid #d0d5dd;border-radius:12px;padding:10px 12px;background:#fff;color:#172033;outline:none}
+.market-return-filters-clean input:focus,.market-return-filters-clean select:focus{border-color:#ef1c25;box-shadow:0 0 0 3px rgba(239,28,37,.08)}
+.market-return-filter-context.clean{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:12px}
+.market-return-filter-context.clean span{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;background:#fff;border:1px solid #e4e7ec;color:#667085;font-size:12px}
+.market-return-summary-cards{margin-bottom:18px}
+.market-return-analytics-grid{margin-bottom:16px}
+.market-return-grade-head{margin-bottom:10px}
+.market-return-grade-cards{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:12px}
+.market-return-click-card{cursor:pointer}
+.market-return-click-card em{display:block;margin-top:8px;font-style:normal;font-size:11px;font-weight:700;opacity:.9}
+.market-return-click-card .grade-uom-list.compact{max-height:none;overflow:visible}
+.market-return-click-card .grade-uom-row.single-row{padding:7px 0;background:transparent;border-radius:0;border-bottom:1px solid rgba(255,255,255,.18)}
+.market-return-click-card.grade-a .grade-uom-row.single-row,.market-return-click-card.grade-b .grade-uom-row.single-row,.market-return-click-card.grade-no-expiry .grade-uom-row.single-row{border-bottom-color:rgba(16,24,40,.10)}
+.market-return-click-card.grade-no-expiry .grade-uom-count{background:rgba(71,84,103,.10);color:#475467}
+.market-return-click-card.grade-no-expiry .grade-uom-row.single-row{color:#172033}
+.market-return-click-card.grade-no-expiry .grade-value-line{color:#172033}
+.market-return-click-card.grade-no-expiry em{color:#475467}
+.market-return-legend{margin-bottom:18px}
+.market-return-modal-table{min-width:1400px}
+.market-return-modal-filters{grid-template-columns:2fr 1fr 1fr 1fr auto}
+.market-return-table-card .card-head{align-items:center}
+@media(max-width:1280px){.market-return-filters-clean{grid-template-columns:1fr 1fr 1fr 1fr auto auto}.market-return-grade-cards{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:980px){.market-return-head-side{width:100%;justify-content:stretch}.market-return-head-actions{width:100%;justify-content:flex-start}.market-return-filters-clean{grid-template-columns:1fr 1fr}.market-return-filters-clean input{grid-column:1/-1}.market-return-modal-filters{grid-template-columns:1fr 1fr}.market-return-grade-cards{grid-template-columns:1fr}}
+@media(max-width:640px){.market-return-filters-clean{grid-template-columns:1fr}.market-return-modal-filters{grid-template-columns:1fr}}
+
+/* Market Return 2+ year green grade + compact value format */
+.market-return-grade-cards{
+    grid-template-columns:repeat(5,minmax(0,1fr));
+}
+.market-return-click-card .grade-value-line{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:10px;
+}
+.market-return-click-card .grade-value-line .grade-currency-label{
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+    white-space:nowrap;
+}
+.market-return-click-card .grade-value-line .grade-stock-value{
+    font-size:15px;
+    font-weight:700;
+    text-align:right;
+    white-space:nowrap;
+}
+.market-return-click-card.grade-a .grade-value-line,
+.market-return-click-card.grade-b .grade-value-line,
+.market-return-click-card.grade-no-expiry .grade-value-line{
+    border-top-color:rgba(16,24,40,.12);
+}
+@media(max-width:1500px){
+    .market-return-grade-cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:1050px){
+    .market-return-grade-cards{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:650px){
+    .market-return-grade-cards{grid-template-columns:1fr}
+}

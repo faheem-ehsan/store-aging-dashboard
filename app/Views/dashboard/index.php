@@ -112,7 +112,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         <div>
             <small>Total Items</small>
             <strong><?= $dashboardPlainNumber($metrics['batches']) ?></strong>
-            <p>Total visible lines</p>
+            <p>Total batches</p>
         </div>
     </div>
     <div class="dashboard-summary-card">
@@ -157,7 +157,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
             <div class="dashboard-uom-card">
                 <div class="uom-card-top">
                     <span class="uom-code"><?= e($uomCode) ?></span>
-                    <span class="uom-lines"><?= number_format((int)$uomMetric['batches']) ?> line<?= (int)$uomMetric['batches'] === 1 ? '' : 's' ?></span>
+                    <span class="uom-lines"><?= number_format((int)$uomMetric['batches']) ?> batch<?= (int)$uomMetric['batches'] === 1 ? '' : 'es' ?></span>
                 </div>
                 <strong><?= $dashboardNumber($uomMetric['qty']) ?></strong>
                 <small>Quantity</small>
@@ -171,9 +171,9 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     <div class="card dashboard-analytics-card">
         <div class="card-head analytics-head">
             <div>
-                <h2>Stock Lines by Aging Group</h2>
+                <h2>Batches by Aging Group</h2>
             </div>
-            <span class="analytics-badge">Lines</span>
+            <span class="analytics-badge">Batches</span>
         </div>
         <div class="aging-bars-panel">
             <?php foreach ($gradeSeries as $gs):
@@ -193,14 +193,14 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     <div class="card dashboard-analytics-card">
         <div class="card-head analytics-head">
             <div>
-                <h2>Aging Group Line Distribution</h2>
+                <h2>Aging Group Distribution</h2>
             </div>
         </div>
         <div class="distribution-panel">
             <div class="distribution-donut" style="background: <?= e($donutGradient) ?>;">
                 <div class="distribution-donut-hole">
                     <strong><?= number_format($totalBatches) ?></strong>
-                    <span>Total Lines</span>
+                    <span>Total Batches</span>
                 </div>
             </div>
             <div class="distribution-list">
@@ -209,7 +209,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
                         <span class="distribution-swatch <?= e($stop['class']) ?>"></span>
                         <div class="distribution-copy">
                             <strong><?= e($stop['label']) ?></strong>
-                            <small><?= number_format($stop['batches']) ?> line<?= $stop['batches'] === 1 ? '' : 's' ?></small>
+                            <small><?= number_format($stop['batches']) ?> batch<?= $stop['batches'] === 1 ? '' : 'es' ?></small>
                         </div>
                         <b><?= number_format($stop['pct'], 0) ?>%</b>
                     </div>
