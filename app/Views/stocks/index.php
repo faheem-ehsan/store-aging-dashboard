@@ -9,6 +9,28 @@ $stockValueNumber = static function ($value): string {
     }
     return 'Rs/ ' . number_format((int)round($number));
 };
+$agingPeriod = static function ($value): string {
+    $days = (int)round((float)$value);
+    $sign = $days < 0 ? '-' : '';
+    $absDays = abs($days);
+
+    if ($absDays < 30) {
+        return $sign . number_format($absDays) . ' Day' . ($absDays === 1 ? '' : 's');
+    }
+
+    $months = (int)floor($absDays / 30);
+    if ($months <= 12) {
+        return $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
+    }
+
+    $years = (int)floor($months / 12);
+    $remainingMonths = $months % 12;
+    $label = $sign . number_format($years) . ' Year' . ($years === 1 ? '' : 's');
+    if ($remainingMonths > 0) {
+        $label .= ' ' . number_format($remainingMonths) . ' Month' . ($remainingMonths === 1 ? '' : 's');
+    }
+    return $label;
+};
 $gradeOptions = [
     'A+' => 'A+ · Dark Blue',
     'A' => 'A · Green',
@@ -107,8 +129,8 @@ $gradeOptions = [
     <th>Batch No</th>
     <th>Manufacturing Date</th>
     <th>Expiry Date</th>
-    <th>Aging (Days)</th>
-    <th>Aging Remaining (Days)</th>
+    <th>Aging</th>
+    <th>Aging Remaining</th>
     <th>Stock Location</th>
     <th>Grade</th>
     <?php if ($canManage): ?><th>Action</th><?php endif; ?>
@@ -126,8 +148,8 @@ $gradeOptions = [
     <td><?= e($r['batch_no']) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
-    <td class="num"><?= number_format($r['aging_days']) ?></td>
-    <td class="num <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= number_format($r['remaining_days']) ?></td>
+    <td class="num aging-period"><?= e($agingPeriod($r['aging_days'])) ?></td>
+    <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($agingPeriod($r['remaining_days'])) ?></td>
     <td><?= e($r['receiving_store'] ?? '') ?></td>
     <td>
         <span class="grade-bar-wrap" title="<?= e($r['grade']['grade_code']) ?> · <?= e($r['grade']['criteria_text']) ?>">

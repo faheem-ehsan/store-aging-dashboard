@@ -32,6 +32,28 @@ $dashboardNumber = static function ($value): string {
 $dashboardPlainNumber = static function ($value): string {
     return number_format((int)round((float)$value));
 };
+$dashboardAgingPeriod = static function ($value): string {
+    $days = (int)round((float)$value);
+    $sign = $days < 0 ? '-' : '';
+    $absDays = abs($days);
+
+    if ($absDays < 30) {
+        return $sign . number_format($absDays) . ' Day' . ($absDays === 1 ? '' : 's');
+    }
+
+    $months = (int)floor($absDays / 30);
+    if ($months <= 12) {
+        return $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
+    }
+
+    $years = (int)floor($months / 12);
+    $remainingMonths = $months % 12;
+    $label = $sign . number_format($years) . ' Year' . ($years === 1 ? '' : 's');
+    if ($remainingMonths > 0) {
+        $label .= ' ' . number_format($remainingMonths) . ' Month' . ($remainingMonths === 1 ? '' : 's');
+    }
+    return $label;
+};
 $uomTotals = $metrics['uoms'] ?? [];
 $gradeSeries = [
     ['key' => 'A+', 'label' => 'A+', 'class' => 'grade-aplus', 'legend_class' => 'blue', 'color' => '#0b2f6b', 'qty' => (float)($metrics['grades']['A+']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A+']['value'] ?? 0), 'batches' => (int)($metrics['grades']['A+']['batches'] ?? 0), 'uoms' => $metrics['grades']['A+']['uoms'] ?? []],
@@ -320,7 +342,7 @@ ksort($modalLocations);
         <div class="grade-modal-table-wrap">
             <table class="aging-table grade-modal-table">
                 <thead><tr>
-                    <th>Division</th><th>Product Code</th><th>Product Name</th><th>Current Stock</th><th>UoM</th><th>Retail Stock Value</th><th>Batch No</th><th>Manufacturing Date</th><th>Expiry Date</th><th>Aging (Days)</th><th>Aging Remaining (Days)</th><th>Stock Location</th><th>Grade</th>
+                    <th>Division</th><th>Product Code</th><th>Product Name</th><th>Current Stock</th><th>UoM</th><th>Retail Stock Value</th><th>Batch No</th><th>Manufacturing Date</th><th>Expiry Date</th><th>Aging</th><th>Aging Remaining</th><th>Stock Location</th><th>Grade</th>
                 </tr></thead>
                 <tbody id="gradeModalRows">
                 <?php foreach (($rows ?? []) as $r):
@@ -346,8 +368,8 @@ ksort($modalLocations);
                         <td><?= e($r['batch_no']) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
-                        <td class="num"><?= number_format($r['aging_days']) ?></td>
-                        <td class="num <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= number_format($r['remaining_days']) ?></td>
+                        <td class="num aging-period"><?= e($dashboardAgingPeriod($r['aging_days'])) ?></td>
+                        <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($dashboardAgingPeriod($r['remaining_days'])) ?></td>
                         <td><?= e($r['receiving_store'] ?? '') ?></td>
                         <td><span class="grade-bar <?= e($r['grade']['color_class']) ?>"></span></td>
                     </tr>

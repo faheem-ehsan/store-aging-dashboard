@@ -893,3 +893,7 @@ body.modal-open{overflow:hidden}
     .stock-context-strip>span,.stock-context-strip .criteria{width:100%;flex:1 1 100%;border-radius:10px;justify-content:space-between}
     .stock-overview-copy strong{font-size:22px}
 }
+
+/* Human-readable aging period labels */
+.aging-period{white-space:nowrap;font-weight:600;color:#344054}
+.aging-period.text-danger{color:var(--danger)}
