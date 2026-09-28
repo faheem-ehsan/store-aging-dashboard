@@ -17,69 +17,81 @@ $gradeOptions = [
     'EX' => 'Expired · Black',
 ];
 ?>
-<div class="toolbar wrap stock-toolbar">
-    <form method="get" action="<?= e(url('/stocks')) ?>" class="filter-grid stock-filter-grid">
-        <input class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, name or batch...">
+<section class="stock-control-panel" aria-label="Stock filters and actions">
+    <div class="stock-control-head">
+        <div class="stock-control-heading">
+            <span class="stock-control-kicker">Stock View</span>
+            <strong>Filter Finish Goods Aging</strong>
+        </div>
+        <?php if ($canManage): ?>
+            <div class="stock-actions stock-control-actions">
+                <a class="btn ghost" href="<?= e(url('/stocks/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import CSV</a>
+                <a class="btn primary" href="<?= e(url('/stocks/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Batch</a>
+            </div>
+        <?php endif; ?>
+    </div>
+
+    <form method="get" action="<?= e(url('/stocks')) ?>" class="stock-filter-grid stock-filter-grid-refined">
+        <div class="stock-filter-field stock-filter-search-wrap">
+            <label for="stockSearch">Search</label>
+            <input id="stockSearch" class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, product name or batch no...">
+        </div>
+
         <?php if ($user['role'] === 'super_admin'): ?>
-            <select name="division_id">
-                <option value="">All divisions</option>
-                <?php foreach ($divisions as $d): ?>
-                    <option value="<?= (int)$d['id'] ?>" <?= (int)$filters['division_id'] === (int)$d['id'] ? 'selected' : '' ?>><?= e($d['code']) ?></option>
+            <div class="stock-filter-field">
+                <label for="stockDivision">Division</label>
+                <select id="stockDivision" name="division_id">
+                    <option value="">All divisions</option>
+                    <?php foreach ($divisions as $d): ?>
+                        <option value="<?= (int)$d['id'] ?>" <?= (int)$filters['division_id'] === (int)$d['id'] ? 'selected' : '' ?>><?= e($d['code']) ?> — <?= e($d['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        <?php endif; ?>
+
+        <div class="stock-filter-field">
+            <label for="stockGrade">Grade</label>
+            <select id="stockGrade" name="grade">
+                <option value="">All Grades</option>
+                <?php foreach ($gradeOptions as $g => $label): ?>
+                    <option value="<?= $g ?>" <?= $filters['grade'] === $g ? 'selected' : '' ?>><?= e($label) ?></option>
                 <?php endforeach; ?>
             </select>
-        <?php endif; ?>
-        <select name="grade">
-            <option value="">All Grades</option>
-            <?php foreach ($gradeOptions as $g => $label): ?>
-                <option value="<?= $g ?>" <?= $filters['grade'] === $g ? 'selected' : '' ?>><?= e($label) ?></option>
-            <?php endforeach; ?>
-        </select>
-        <div class="stock-filter-actions">
-            <button class="btn" type="submit">Filter</button>
+        </div>
+
+        <div class="stock-filter-actions stock-filter-actions-refined">
+            <button class="btn primary" type="submit">Apply Filters</button>
             <a class="btn ghost" href="<?= e(url('/stocks')) ?>">Reset</a>
         </div>
     </form>
-    <?php if ($canManage): ?>
-        <div class="stock-actions">
-            <a class="btn ghost" href="<?= e(url('/stocks/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import CSV</a>
-            <a class="btn primary" href="<?= e(url('/stocks/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Batch</a>
-        </div>
-    <?php endif; ?>
-</div>
 
-<section class="stock-filter-summary" aria-label="Filtered stock summary">
-    <div class="stock-summary-context">
-        <div>
-            <span>Selected Division</span>
-            <strong><?= e($selectedDivisionLabel ?? 'All Divisions') ?></strong>
-        </div>
-        <div>
-            <span>Grade Filter</span>
-            <strong><?= e($selectedGradeLabel ?? 'All Grades') ?></strong>
-        </div>
-        <div>
-            <span>Grading Criteria</span>
-            <strong><?php if (!empty($selectedCriteria)): ?>A+ <?= (int)$selectedCriteria['a_plus_days'] ?>d+ · A <?= (int)$selectedCriteria['a_days'] ?>–<?= ((int)$selectedCriteria['a_plus_days'] - 1) ?>d · B <?= (int)$selectedCriteria['b_days'] ?>–<?= ((int)$selectedCriteria['a_days'] - 1) ?>d · C 1–<?= ((int)$selectedCriteria['b_days'] - 1) ?>d (Ref <?= (int)$selectedCriteria['c_days'] ?>d)<?php else: ?>Varies by division<?php endif; ?></strong>
-        </div>
+    <div class="stock-context-strip" aria-label="Current filter context">
+        <span><small>Division</small><strong><?= e($selectedDivisionLabel ?? 'All Divisions') ?></strong></span>
+        <span><small>Grade</small><strong><?= e($selectedGradeLabel ?? 'All Grades') ?></strong></span>
+        <span class="criteria"><small>Criteria</small><strong><?php if (!empty($selectedCriteria)): ?>A+ <?= (int)$selectedCriteria['a_plus_days'] ?>d+ · A <?= (int)$selectedCriteria['a_days'] ?>–<?= ((int)$selectedCriteria['a_plus_days'] - 1) ?>d · B <?= (int)$selectedCriteria['b_days'] ?>–<?= ((int)$selectedCriteria['a_days'] - 1) ?>d · C 1–<?= ((int)$selectedCriteria['b_days'] - 1) ?>d<?php else: ?>Varies by division<?php endif; ?></strong></span>
     </div>
-    <div class="stock-summary-cards">
-        <article class="stock-summary-card qty">
-            <div class="stock-summary-icon" aria-hidden="true">QTY</div>
-            <div>
-                <span>Current Stock</span>
-                <strong><?= $stockQtyNumber($summary['current_qty'] ?? 0) ?></strong>
-                <small><?= number_format((int)($summary['batch_count'] ?? 0)) ?> filtered batch<?= (int)($summary['batch_count'] ?? 0) === 1 ? '' : 'es' ?></small>
-            </div>
-        </article>
-        <article class="stock-summary-card value">
-            <div class="stock-summary-icon" aria-hidden="true">VAL</div>
-            <div>
-                <span>Current Retail Stock Value</span>
-                <strong><?= $stockValueNumber($summary['stock_value'] ?? 0) ?></strong>
-                <small>For the selected division and grade filter</small>
-            </div>
-        </article>
-    </div>
+</section>
+
+<section class="stock-overview-grid" aria-label="Filtered stock summary">
+    <article class="stock-overview-card qty">
+        <div class="stock-overview-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m4 7 8-4 8 4-8 4-8-4Zm0 0v10l8 4 8-4V7M4 12l8 4 8-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <div class="stock-overview-copy">
+            <span>Current Stock</span>
+            <strong><?= $stockQtyNumber($summary['current_qty'] ?? 0) ?></strong>
+            <small><?= number_format((int)($summary['batch_count'] ?? 0)) ?> filtered batch<?= (int)($summary['batch_count'] ?? 0) === 1 ? '' : 'es' ?></small>
+        </div>
+    </article>
+
+    <article class="stock-overview-card value">
+        <div class="stock-overview-icon" aria-hidden="true">Rs</div>
+        <div class="stock-overview-copy">
+            <span>Current Retail Stock Value</span>
+            <strong><?= $stockValueNumber($summary['stock_value'] ?? 0) ?></strong>
+            <small>Selected division and grade</small>
+        </div>
+    </article>
 </section>
 
 <div class="card flush">

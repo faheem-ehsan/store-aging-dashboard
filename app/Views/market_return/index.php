@@ -115,89 +115,97 @@ ksort($modalCategories);
 ksort($modalUnits);
 ?>
 
-<div class="dashboard-clean-head market-return-clean-head">
-    <div class="market-return-head-side">
-        <div class="market-return-head-actions">
-            <?php if ($canManage && $databaseReady): ?>
-                <?php if ($user['role'] === 'super_admin'): ?><a class="btn" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a><?php endif; ?>
-                <a class="btn" href="<?= e(url('/market-return/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import Market Return File</a>
+<section class="stock-control-panel market-return-control-panel" aria-label="Market Return filters and actions">
+    <div class="stock-control-head">
+        <div class="stock-control-heading">
+            <span class="stock-control-kicker">Market Return View</span>
+            <strong>Filter Market Return Store</strong>
+        </div>
+        <?php if ($canManage && $databaseReady): ?>
+            <div class="stock-actions stock-control-actions">
+                <?php if ($user['role'] === 'super_admin'): ?><a class="btn ghost" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a><?php endif; ?>
+                <a class="btn ghost" href="<?= e(url('/market-return/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import Market Return File</a>
                 <a class="btn primary" href="<?= e(url('/market-return/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Item</a>
-            <?php endif; ?>
-        </div>
-
-        <div class="dashboard-division-selector">
-            <span class="division-selector-icon" aria-hidden="true">
-                <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V8l8-4 8 4v12M8 20v-5h8v5M8 10h.01M12 10h.01M16 10h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
-            <div class="division-selector-content">
-                <small>Division</small>
-                <?php if ($user['role'] === 'super_admin'): ?>
-                    <form method="get" action="<?= e(url('/market-return')) ?>" class="dashboard-division-form">
-                        <input type="hidden" name="q" value="<?= e($filters['q'] ?? '') ?>">
-                        <input type="hidden" name="category" value="<?= e($filters['category'] ?? '') ?>">
-                        <input type="hidden" name="expiry_bucket" value="<?= e($filters['expiry_bucket'] ?? '') ?>">
-                        <input type="hidden" name="value_status" value="<?= e($filters['value_status'] ?? '') ?>">
-                        <select name="division_id" onchange="this.form.submit()" aria-label="Select division">
-                            <option value="">All divisions</option>
-                            <?php foreach ($divisions as $division): ?>
-                                <option value="<?= (int)$division['id'] ?>" <?= (int)($filters['division_id'] ?? 0) === (int)$division['id'] ? 'selected' : '' ?>><?= e($division['code']) ?> — <?= e($division['name']) ?></option>
-                            <?php endforeach; ?>
-                        </select>
-                    </form>
-                <?php else: ?>
-                    <strong><?= e($selectedDivisionLabel) ?></strong>
-                <?php endif; ?>
             </div>
+        <?php endif; ?>
+    </div>
+
+    <?php if (!$databaseReady): ?>
+        <div class="market-return-install-note">
+            <strong>Market Return Store setup required</strong>
+            <p><?= e($databaseError) ?></p>
         </div>
-    </div>
-</div>
+    <?php else: ?>
 
-<?php if (!$databaseReady): ?>
-    <div class="market-return-install-note">
-        <strong>Market Return Store setup required</strong>
-        <p><?= e($databaseError) ?></p>
-    </div>
-<?php else: ?>
+    <form method="get" action="<?= e(url('/market-return')) ?>" class="market-return-filter-grid-refined">
+        <div class="stock-filter-field stock-filter-search-wrap">
+            <label for="marketReturnSearch">Search</label>
+            <input id="marketReturnSearch" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product, remarks, section, expiry...">
+        </div>
 
-<div class="card market-return-toolbar-card">
-    <form method="get" action="<?= e(url('/market-return')) ?>" class="market-return-filters market-return-filters-clean">
-        <input type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product, remarks, section, expiry...">
-        <?php if ($user['role'] !== 'super_admin'): ?>
+        <?php if ($user['role'] === 'super_admin'): ?>
+            <div class="stock-filter-field">
+                <label for="marketReturnDivision">Division</label>
+                <select id="marketReturnDivision" name="division_id">
+                    <option value="">All divisions</option>
+                    <?php foreach ($divisions as $division): ?>
+                        <option value="<?= (int)$division['id'] ?>" <?= (int)($filters['division_id'] ?? 0) === (int)$division['id'] ? 'selected' : '' ?>><?= e($division['code']) ?> — <?= e($division['name']) ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+        <?php else: ?>
             <input type="hidden" name="division_id" value="<?= (int)($filters['division_id'] ?? 0) ?>">
         <?php endif; ?>
-        <select name="category">
-            <option value="">All source categories</option>
-            <?php foreach ($categories as $code => $meta): ?>
-                <option value="<?= e($code) ?>" <?= $activeCategory === $code ? 'selected' : '' ?>><?= e($meta['label']) ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="expiry_bucket">
-            <option value="">All expiry groups</option>
-            <?php foreach ($expiryBuckets as $code => $meta): ?>
-                <option value="<?= e($code) ?>" <?= $activeExpiryBucket === $code ? 'selected' : '' ?>><?= e($meta['label']) ?></option>
-            <?php endforeach; ?>
-        </select>
-        <select name="value_status">
-            <option value="">All valuation statuses</option>
-            <option value="valued" <?= ($filters['value_status'] ?? '') === 'valued' ? 'selected' : '' ?>>Value available</option>
-            <option value="unvalued" <?= ($filters['value_status'] ?? '') === 'unvalued' ? 'selected' : '' ?>>Value not available</option>
-        </select>
-        <button class="btn primary" type="submit">Apply Filters</button>
-        <a class="btn ghost" href="<?= e(url('/market-return')) ?>">Reset</a>
+
+        <div class="stock-filter-field">
+            <label for="marketReturnCategory">Source Category</label>
+            <select id="marketReturnCategory" name="category">
+                <option value="">All source categories</option>
+                <?php foreach ($categories as $code => $meta): ?>
+                    <option value="<?= e($code) ?>" <?= $activeCategory === $code ? 'selected' : '' ?>><?= e($meta['label']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="stock-filter-field">
+            <label for="marketReturnExpiry">Expiry Group</label>
+            <select id="marketReturnExpiry" name="expiry_bucket">
+                <option value="">All expiry groups</option>
+                <?php foreach ($expiryBuckets as $code => $meta): ?>
+                    <option value="<?= e($code) ?>" <?= $activeExpiryBucket === $code ? 'selected' : '' ?>><?= e($meta['label']) ?></option>
+                <?php endforeach; ?>
+            </select>
+        </div>
+
+        <div class="stock-filter-field">
+            <label for="marketReturnValueStatus">Valuation Status</label>
+            <select id="marketReturnValueStatus" name="value_status">
+                <option value="">All valuation statuses</option>
+                <option value="valued" <?= ($filters['value_status'] ?? '') === 'valued' ? 'selected' : '' ?>>Value available</option>
+                <option value="unvalued" <?= ($filters['value_status'] ?? '') === 'unvalued' ? 'selected' : '' ?>>Value not available</option>
+            </select>
+        </div>
+
+        <div class="stock-filter-actions stock-filter-actions-refined market-return-filter-actions-refined">
+            <button class="btn primary" type="submit">Apply Filters</button>
+            <a class="btn ghost" href="<?= e(url('/market-return')) ?>">Reset</a>
+        </div>
     </form>
 
-    <div class="market-return-filter-context clean">
-        <span>Division <b><?= e($selectedDivisionLabel) ?></b></span>
+    <div class="stock-context-strip market-return-context-strip" aria-label="Current filter context">
+        <span><small>Division</small><strong><?= e($selectedDivisionLabel) ?></strong></span>
         <?php if ($activeCategory !== '' && isset($categories[$activeCategory])): ?>
-            <span>Source Category <b><?= e($categories[$activeCategory]['label']) ?></b></span>
+            <span><small>Source Category</small><strong><?= e($categories[$activeCategory]['label']) ?></strong></span>
         <?php endif; ?>
         <?php if ($activeExpiryBucket !== '' && isset($expiryBuckets[$activeExpiryBucket])): ?>
-            <span>Expiry Group <b><?= e($expiryBuckets[$activeExpiryBucket]['label']) ?></b></span>
+            <span><small>Expiry Group</small><strong><?= e($expiryBuckets[$activeExpiryBucket]['label']) ?></strong></span>
         <?php endif; ?>
-        <span>Visible Items <b><?= $formatInt($metrics['lines']) ?></b></span>
+        <span><small>Visible Items</small><strong><?= $formatInt($metrics['lines']) ?></strong></span>
     </div>
-</div>
+    <?php endif; ?>
+</section>
 
+<?php if ($databaseReady): ?>
 <div class="dashboard-summary-grid market-return-summary-cards">
     <div class="dashboard-summary-card">
         <span class="summary-icon">📦</span>
