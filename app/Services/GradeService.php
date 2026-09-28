@@ -55,36 +55,35 @@ class GradeService
             ];
         }
 
-        // Expiry-based grading uses remaining shelf-life days.
-        // A+ = above A limit, A = above B through A limit,
-        // B = above C through B limit, C = 1 through C limit.
-        if ($remainingDays > $settings['a_days']) {
+        // Expiry-based grading uses user-defined minimum remaining-day thresholds.
+        // Expired remains tied strictly to the actual Expiry Date.
+        if ($remainingDays >= $settings['a_plus_days']) {
             return [
                 'grade_code' => 'A+',
                 'grade_name' => 'A+ Grade',
                 'color_class' => 'blue',
-                'criteria_text' => 'More than ' . $settings['a_days'] . ' day(s) remaining to Expiry Date',
-                'period_end' => $expiryDate->modify('-' . $settings['a_days'] . ' days')->format('Y-m-d'),
+                'criteria_text' => $settings['a_plus_days'] . '+ day(s) remaining to Expiry Date',
+                'period_end' => $expiryDate->modify('-' . $settings['a_plus_days'] . ' days')->format('Y-m-d'),
             ];
         }
 
-        if ($remainingDays > $settings['b_days']) {
+        if ($remainingDays >= $settings['a_days']) {
             return [
                 'grade_code' => 'A',
                 'grade_name' => 'A Grade',
                 'color_class' => 'green',
-                'criteria_text' => ($settings['b_days'] + 1) . '–' . $settings['a_days'] . ' day(s) remaining to Expiry Date',
-                'period_end' => $expiryDate->modify('-' . $settings['b_days'] . ' days')->format('Y-m-d'),
+                'criteria_text' => $settings['a_days'] . '–' . ($settings['a_plus_days'] - 1) . ' day(s) remaining to Expiry Date',
+                'period_end' => $expiryDate->modify('-' . $settings['a_days'] . ' days')->format('Y-m-d'),
             ];
         }
 
-        if ($remainingDays > $settings['c_days']) {
+        if ($remainingDays >= $settings['b_days']) {
             return [
                 'grade_code' => 'B',
                 'grade_name' => 'B Grade',
                 'color_class' => 'yellow',
-                'criteria_text' => ($settings['c_days'] + 1) . '–' . $settings['b_days'] . ' day(s) remaining to Expiry Date',
-                'period_end' => $expiryDate->modify('-' . $settings['c_days'] . ' days')->format('Y-m-d'),
+                'criteria_text' => $settings['b_days'] . '–' . ($settings['a_days'] - 1) . ' day(s) remaining to Expiry Date',
+                'period_end' => $expiryDate->modify('-' . $settings['b_days'] . ' days')->format('Y-m-d'),
             ];
         }
 
@@ -92,27 +91,29 @@ class GradeService
             'grade_code' => 'C',
             'grade_name' => 'C Grade',
             'color_class' => 'red',
-            'criteria_text' => '1–' . $settings['c_days'] . ' day(s) remaining to Expiry Date',
+            'criteria_text' => '1–' . ($settings['b_days'] - 1) . ' day(s) remaining to Expiry Date; configured C reference: ' . $settings['c_days'] . ' day(s)',
             'period_end' => $expiryDate->modify('-1 day')->format('Y-m-d'),
         ];
     }
 
     private function normalizeSettings(array $row): array
     {
+        $aPlus = (int)($row['a_plus_days'] ?? 366);
         $a = (int)($row['a_days'] ?? 365);
         $b = (int)($row['b_days'] ?? 180);
         $c = (int)($row['c_days'] ?? 90);
 
         // Old manufacture-age settings used ascending values. If found, use the
-        // new safe expiry-based defaults until Super Admin saves division criteria.
-        if ($c < 1 || $b <= $c || $a <= $b) {
+        // safe expiry-based defaults until Super Admin saves division criteria.
+        if ($c < 1 || $b <= $c || $a <= $b || $aPlus <= $a) {
+            $aPlus = 366;
             $a = 365;
             $b = 180;
             $c = 90;
         }
 
         return [
-            'a_plus_days' => $a + 1,
+            'a_plus_days' => $aPlus,
             'a_days' => $a,
             'b_days' => $b,
             'c_days' => $c,

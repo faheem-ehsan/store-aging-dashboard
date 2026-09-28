@@ -62,9 +62,8 @@ class GradeSetting
         }
     }
 
-    public function upsert(int $divisionId, int $aDays, int $bDays, int $cDays): void
+    public function upsert(int $divisionId, int $aPlusDays, int $aDays, int $bDays, int $cDays): void
     {
-        $aPlusDays = $aDays + 1;
         $stmt = Database::connection()->prepare(
             'INSERT INTO division_grade_settings (division_id, a_plus_days, a_days, b_days, c_days)
              VALUES (?, ?, ?, ?, ?)
@@ -79,19 +78,21 @@ class GradeSetting
 
     private function normalizeExpiryRow(array $row): array
     {
+        $aPlus = (int)($row['a_plus_days'] ?? 0);
         $a = (int)($row['a_days'] ?? 0);
         $b = (int)($row['b_days'] ?? 0);
         $c = (int)($row['c_days'] ?? 0);
 
-        // Manufacture-based criteria from older versions were ascending (for example
-        // 15, 30, 45). Expiry remaining-day limits must descend A > B > C.
-        if ($c < 1 || $b <= $c || $a <= $b) {
+        // Expiry remaining-day thresholds must descend A+ > A > B > C.
+        // Older manufacture-age settings were ascending, so fall back safely until saved.
+        if ($c < 1 || $b <= $c || $a <= $b || $aPlus <= $a) {
+            $aPlus = self::DEFAULTS['a_plus_days'];
             $a = self::DEFAULTS['a_days'];
             $b = self::DEFAULTS['b_days'];
             $c = self::DEFAULTS['c_days'];
         }
 
-        $row['a_plus_days'] = $a + 1;
+        $row['a_plus_days'] = $aPlus;
         $row['a_days'] = $a;
         $row['b_days'] = $b;
         $row['c_days'] = $c;

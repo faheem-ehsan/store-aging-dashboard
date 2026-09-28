@@ -1,13 +1,14 @@
 <?php
 if (!empty($selectedCriteria)) {
+    $aPlusDays = (int)$selectedCriteria['a_plus_days'];
     $aDays = (int)$selectedCriteria['a_days'];
     $bDays = (int)$selectedCriteria['b_days'];
     $cDays = (int)$selectedCriteria['c_days'];
     $legendItems = [
-        ['class' => 'blue', 'label' => 'A+', 'range' => 'More than ' . $aDays . ' days remaining'],
-        ['class' => 'green', 'label' => 'A', 'range' => ($bDays + 1) . '–' . $aDays . ' days remaining'],
-        ['class' => 'yellow', 'label' => 'B', 'range' => ($cDays + 1) . '–' . $bDays . ' days remaining'],
-        ['class' => 'red', 'label' => 'C', 'range' => '1–' . $cDays . ' days remaining'],
+        ['class' => 'blue', 'label' => 'A+', 'range' => $aPlusDays . '+ days remaining'],
+        ['class' => 'green', 'label' => 'A', 'range' => $aDays . '–' . ($aPlusDays - 1) . ' days remaining'],
+        ['class' => 'yellow', 'label' => 'B', 'range' => $bDays . '–' . ($aDays - 1) . ' days remaining'],
+        ['class' => 'red', 'label' => 'C', 'range' => '1–' . ($bDays - 1) . ' days remaining · C ref ' . $cDays . 'd'],
         ['class' => 'black', 'label' => 'Expired', 'range' => 'Expiry Date and after'],
     ];
 } else {

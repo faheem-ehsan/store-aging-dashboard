@@ -223,7 +223,8 @@ INSERT INTO grade_rules (division_id,grade_code,grade_name,min_days,max_days,col
 (NULL,'EX','Expired',NULL,NULL,'black',5);
 
 -- Default expiry remaining-day criteria for every division.
--- A+ >365 days, A 181-365 days, B 91-180 days, C 1-90 days, Expired on/after Expiry Date.
+-- A+, A, B and C values are stored independently and can be changed by Super Admin per division.
+-- Expired always remains tied to the actual Expiry Date.
 INSERT INTO division_grade_settings (division_id,a_plus_months,a_months,b_months,a_plus_days,a_days,b_days,c_days)
 SELECT id,1,2,3,366,365,180,90 FROM divisions;
 
