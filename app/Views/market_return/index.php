@@ -78,7 +78,7 @@ if (!empty($filters['value_status'])) $queryBase['value_status'] = $filters['val
         <small><?= number_format($metrics['qty'], 3) ?> total quantity</small>
     </div>
     <div class="market-return-summary value-summary">
-        <span>Visible Stock Value</span>
+        <span>Visible Retail Stock Value</span>
         <strong>Rs/ <?= number_format($metrics['value'], 2) ?></strong>
         <small><?= number_format($metrics['unvalued']) ?> line(s) without known value</small>
     </div>
@@ -103,7 +103,7 @@ if (!empty($filters['value_status'])) $queryBase['value_status'] = $filters['val
             </div>
             <strong><?= number_format($m['qty'], 3) ?></strong>
             <small>Qty</small>
-            <em>Rs/ <?= number_format($m['value'], 2) ?> stock value<?= $m['unvalued'] ? ' · ' . number_format($m['unvalued']) . ' unvalued' : '' ?></em>
+            <em>Rs/ <?= number_format($m['value'], 2) ?> retail stock value<?= $m['unvalued'] ? ' · ' . number_format($m['unvalued']) . ' unvalued' : '' ?></em>
             <div class="expiry-card-range"><?= e($meta['range']) ?></div>
         </a>
     <?php endforeach; ?>

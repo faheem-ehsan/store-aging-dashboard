@@ -11,7 +11,7 @@
         <div class="import-notes">
             <strong>Required CSV headings</strong>
             <div class="csv-columns">
-                <span>Division</span><span>Product Code</span><span>Product Name</span><span>Current Stock</span><span>UoM</span><span>Stock Value</span><span>Batch No</span><span>Manufacturing Date</span><span>Expiry Date</span><span>Aging (Days)</span><span>Aging Remaining (Days)</span><span>Stock Location</span>
+                <span>Division</span><span>Product Code</span><span>Product Name</span><span>Current Stock</span><span>UoM</span><span>Retail Stock Value</span><span>Batch No</span><span>Manufacturing Date</span><span>Expiry Date</span><span>Aging (Days)</span><span>Aging Remaining (Days)</span><span>Stock Location</span>
             </div>
             <p>This matches the uploaded Stock Aging Report layout. Aging columns may be blank because the system calculates them automatically. Dates can be YYYY-MM-DD or DD.MM.YYYY, and Excel date serials are accepted. The source code SNMW is also accepted as SNW.</p>
             <?php if ($user['role'] !== 'super_admin'): ?>

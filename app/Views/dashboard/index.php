@@ -32,24 +32,23 @@ $dashboardNumber = static function ($value): string {
 $dashboardPlainNumber = static function ($value): string {
     return number_format((int)round((float)$value));
 };
+$uomTotals = $metrics['uoms'] ?? [];
 $gradeSeries = [
-    ['key' => 'A+', 'label' => 'A+', 'class' => 'grade-aplus', 'legend_class' => 'blue', 'color' => '#0b2f6b', 'qty' => (float)($metrics['grades']['A+']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A+']['value'] ?? 0)],
-    ['key' => 'A', 'label' => 'A', 'class' => 'grade-a', 'legend_class' => 'green', 'color' => '#92d050', 'qty' => (float)($metrics['grades']['A']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A']['value'] ?? 0)],
-    ['key' => 'B', 'label' => 'B', 'class' => 'grade-b', 'legend_class' => 'yellow', 'color' => '#fff200', 'qty' => (float)($metrics['grades']['B']['qty'] ?? 0), 'value' => (float)($metrics['grades']['B']['value'] ?? 0)],
-    ['key' => 'C', 'label' => 'C', 'class' => 'grade-c', 'legend_class' => 'red', 'color' => '#ff1717', 'qty' => (float)($metrics['grades']['C']['qty'] ?? 0), 'value' => (float)($metrics['grades']['C']['value'] ?? 0)],
-    ['key' => 'EX', 'label' => 'Expired', 'class' => 'grade-ex', 'legend_class' => 'black', 'color' => '#000000', 'qty' => (float)($metrics['grades']['EX']['qty'] ?? 0), 'value' => (float)($metrics['grades']['EX']['value'] ?? 0)],
+    ['key' => 'A+', 'label' => 'A+', 'class' => 'grade-aplus', 'legend_class' => 'blue', 'color' => '#0b2f6b', 'qty' => (float)($metrics['grades']['A+']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A+']['value'] ?? 0), 'batches' => (int)($metrics['grades']['A+']['batches'] ?? 0), 'uoms' => $metrics['grades']['A+']['uoms'] ?? []],
+    ['key' => 'A', 'label' => 'A', 'class' => 'grade-a', 'legend_class' => 'green', 'color' => '#92d050', 'qty' => (float)($metrics['grades']['A']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A']['value'] ?? 0), 'batches' => (int)($metrics['grades']['A']['batches'] ?? 0), 'uoms' => $metrics['grades']['A']['uoms'] ?? []],
+    ['key' => 'B', 'label' => 'B', 'class' => 'grade-b', 'legend_class' => 'yellow', 'color' => '#fff200', 'qty' => (float)($metrics['grades']['B']['qty'] ?? 0), 'value' => (float)($metrics['grades']['B']['value'] ?? 0), 'batches' => (int)($metrics['grades']['B']['batches'] ?? 0), 'uoms' => $metrics['grades']['B']['uoms'] ?? []],
+    ['key' => 'C', 'label' => 'C', 'class' => 'grade-c', 'legend_class' => 'red', 'color' => '#ff1717', 'qty' => (float)($metrics['grades']['C']['qty'] ?? 0), 'value' => (float)($metrics['grades']['C']['value'] ?? 0), 'batches' => (int)($metrics['grades']['C']['batches'] ?? 0), 'uoms' => $metrics['grades']['C']['uoms'] ?? []],
+    ['key' => 'EX', 'label' => 'Expired', 'class' => 'grade-ex', 'legend_class' => 'black', 'color' => '#000000', 'qty' => (float)($metrics['grades']['EX']['qty'] ?? 0), 'value' => (float)($metrics['grades']['EX']['value'] ?? 0), 'batches' => (int)($metrics['grades']['EX']['batches'] ?? 0), 'uoms' => $metrics['grades']['EX']['uoms'] ?? []],
 ];
-$totalQty = 0.0;
-$maxQty = 0.0;
+$totalBatches = (int)($metrics['batches'] ?? 0);
+$maxBatches = 1;
 $activeGradeGroups = 0;
 foreach ($gradeSeries as $gs) {
-    $totalQty += $gs['qty'];
-    $maxQty = max($maxQty, $gs['qty']);
-    if ($gs['qty'] > 0) {
+    $maxBatches = max($maxBatches, $gs['batches']);
+    if ($gs['batches'] > 0) {
         $activeGradeGroups++;
     }
 }
-$maxQty = max($maxQty, 1);
 $selectedDivisionLabel = !empty($pageDivision) ? (($pageDivision['code'] ?? '') . ' — ' . ($pageDivision['name'] ?? '')) : 'All divisions';
 $dashboardWelcomeName = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
@@ -59,12 +58,12 @@ $displayRows = array_slice($rows ?? [], 0, 10);
 $cumulativePct = 0;
 $distributionStops = [];
 foreach ($gradeSeries as $gs) {
-    $pct = $totalQty > 0 ? round(($gs['qty'] / $totalQty) * 100, 2) : 0;
+    $pct = $totalBatches > 0 ? round(($gs['batches'] / $totalBatches) * 100, 2) : 0;
     $distributionStops[] = [
         'label' => $gs['label'],
         'class' => $gs['class'],
         'color' => $gs['color'],
-        'qty' => $gs['qty'],
+        'batches' => $gs['batches'],
         'value' => $gs['value'],
         'pct' => $pct,
         'from' => $cumulativePct,
@@ -119,15 +118,15 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     <div class="dashboard-summary-card">
         <span class="summary-icon">▣</span>
         <div>
-            <small>Total Stock Qty</small>
-            <strong><?= $dashboardNumber($totalQty) ?></strong>
-            <p>Across all visible grades</p>
+            <small>UoM Types</small>
+            <strong><?= $dashboardPlainNumber(count($uomTotals)) ?></strong>
+            <p>Quantity is separated by unit below</p>
         </div>
     </div>
     <div class="dashboard-summary-card">
         <span class="summary-icon">₨</span>
         <div>
-            <small>Stock Value (Rs/)</small>
+            <small>Retail Stock Value (Rs/)</small>
             <strong><?= $dashboardNumber($metrics['stock_value']) ?></strong>
             <p>Total inventory value</p>
         </div>
@@ -142,20 +141,46 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     </div>
 </div>
 
+<div class="dashboard-uom-section">
+    <div class="dashboard-uom-head">
+        <div>
+            <h2>Stock Quantity by Unit</h2>
+            <p>Each unit of measure is shown separately so unlike units are never combined.</p>
+        </div>
+        <span class="uom-count-badge"><?= number_format(count($uomTotals)) ?> UoM<?= count($uomTotals) === 1 ? '' : 's' ?></span>
+    </div>
+    <div class="dashboard-uom-grid">
+        <?php if (empty($uomTotals)): ?>
+            <div class="dashboard-uom-empty">No stock quantity is available for the selected division.</div>
+        <?php endif; ?>
+        <?php foreach ($uomTotals as $uomCode => $uomMetric): ?>
+            <div class="dashboard-uom-card">
+                <div class="uom-card-top">
+                    <span class="uom-code"><?= e($uomCode) ?></span>
+                    <span class="uom-lines"><?= number_format((int)$uomMetric['batches']) ?> line<?= (int)$uomMetric['batches'] === 1 ? '' : 's' ?></span>
+                </div>
+                <strong><?= $dashboardNumber($uomMetric['qty']) ?></strong>
+                <small>Quantity</small>
+                <div class="uom-card-value">Rs/ <?= $dashboardNumber($uomMetric['value']) ?></div>
+            </div>
+        <?php endforeach; ?>
+    </div>
+</div>
+
 <div class="dashboard-analytics-grid">
     <div class="card dashboard-analytics-card">
         <div class="card-head analytics-head">
             <div>
-                <h2>Stock by Aging Group</h2>
+                <h2>Stock Lines by Aging Group</h2>
             </div>
-            <span class="analytics-badge">Quantity</span>
+            <span class="analytics-badge">Lines</span>
         </div>
         <div class="aging-bars-panel">
             <?php foreach ($gradeSeries as $gs):
-                $height = max(14, (int)round(($gs['qty'] / $maxQty) * 100));
+                $height = max(14, (int)round(($gs['batches'] / $maxBatches) * 100));
             ?>
                 <div class="aging-bar-col">
-                    <span class="bar-value"><?= $dashboardNumber($gs['qty']) ?></span>
+                    <span class="bar-value"><?= number_format($gs['batches']) ?></span>
                     <div class="aging-bar-track">
                         <div class="aging-bar-fill <?= e($gs['class']) ?>" style="height: <?= $height ?>%;"></div>
                     </div>
@@ -168,14 +193,14 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     <div class="card dashboard-analytics-card">
         <div class="card-head analytics-head">
             <div>
-                <h2>Aging Group Distribution</h2>
+                <h2>Aging Group Line Distribution</h2>
             </div>
         </div>
         <div class="distribution-panel">
             <div class="distribution-donut" style="background: <?= e($donutGradient) ?>;">
                 <div class="distribution-donut-hole">
-                    <strong><?= $dashboardNumber($totalQty) ?></strong>
-                    <span>Total Qty</span>
+                    <strong><?= number_format($totalBatches) ?></strong>
+                    <span>Total Lines</span>
                 </div>
             </div>
             <div class="distribution-list">
@@ -184,7 +209,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
                         <span class="distribution-swatch <?= e($stop['class']) ?>"></span>
                         <div class="distribution-copy">
                             <strong><?= e($stop['label']) ?></strong>
-                            <small><?= $dashboardNumber($stop['qty']) ?> qty</small>
+                            <small><?= number_format($stop['batches']) ?> line<?= $stop['batches'] === 1 ? '' : 's' ?></small>
                         </div>
                         <b><?= number_format($stop['pct'], 0) ?>%</b>
                     </div>
@@ -201,31 +226,27 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
 </div>
 
 <div class="metric-grid dashboard-grade-metrics dashboard-grade-metrics-refreshed">
-    <div class="metric grade-aplus grade-click-card" role="button" tabindex="0" data-grade="A+" data-grade-label="A+" aria-label="Open A+ grade stock details">
-        <span class="grade-card-title">A+</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['A+']['qty']) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['A+']['value']) ?></span></div>
-    </div>
-    <div class="metric grade-a grade-click-card" role="button" tabindex="0" data-grade="A" data-grade-label="A" aria-label="Open A grade stock details">
-        <span class="grade-card-title">A</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['A']['qty']) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['A']['value']) ?></span></div>
-    </div>
-    <div class="metric grade-b grade-click-card" role="button" tabindex="0" data-grade="B" data-grade-label="B" aria-label="Open B grade stock details">
-        <span class="grade-card-title">B</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['B']['qty']) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['B']['value']) ?></span></div>
-    </div>
-    <div class="metric grade-c grade-click-card" role="button" tabindex="0" data-grade="C" data-grade-label="C" aria-label="Open C grade stock details">
-        <span class="grade-card-title">C</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['C']['qty']) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['C']['value']) ?></span></div>
-    </div>
-    <div class="metric grade-ex grade-click-card" role="button" tabindex="0" data-grade="EX" data-grade-label="Expired" aria-label="Open expired stock details">
-        <span class="grade-card-title">Expired</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['EX']['qty']) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['EX']['value']) ?></span></div>
-    </div>
+    <?php foreach ($gradeSeries as $gs): ?>
+        <div class="metric <?= e($gs['class']) ?> grade-click-card" role="button" tabindex="0" data-grade="<?= e($gs['key']) ?>" data-grade-label="<?= e($gs['label']) ?>" aria-label="Open <?= e($gs['label']) ?> grade stock details">
+            <div class="grade-card-topline">
+                <span class="grade-card-title"><?= e($gs['label']) ?></span>
+                <span class="grade-uom-count"><?= number_format(count($gs['uoms'])) ?> UoM</span>
+            </div>
+            <div class="grade-uom-list">
+                <?php if (empty($gs['uoms'])): ?>
+                    <div class="grade-uom-empty">No stock</div>
+                <?php else: ?>
+                    <?php foreach ($gs['uoms'] as $uomCode => $uomMetric): ?>
+                        <div class="grade-uom-row">
+                            <span><?= e($uomCode) ?></span>
+                            <strong><?= $dashboardNumber($uomMetric['qty']) ?></strong>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+            <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($gs['value']) ?></span></div>
+        </div>
+    <?php endforeach; ?>
 </div>
 
 <div class="grade-legend">
@@ -268,9 +289,10 @@ ksort($modalLocations);
 
         <div class="grade-modal-summary">
             <div><span>No. of Batches</span><strong id="gradeModalBatchCount">0</strong></div>
-            <div><span>Current Stock Qty.</span><strong id="gradeModalQty">0</strong></div>
-            <div><span>Stock Value</span><strong id="gradeModalValue">Rs/ 0</strong></div>
+            <div><span>UoM Types</span><strong id="gradeModalQty">0</strong></div>
+            <div><span>Retail Stock Value</span><strong id="gradeModalValue">Rs/ 0</strong></div>
         </div>
+        <div class="grade-modal-uoms" id="gradeModalUoms"></div>
 
         <div class="grade-modal-filters">
             <label>Search
@@ -298,7 +320,7 @@ ksort($modalLocations);
         <div class="grade-modal-table-wrap">
             <table class="aging-table grade-modal-table">
                 <thead><tr>
-                    <th>Division</th><th>Product Code</th><th>Product Name</th><th>Current Stock</th><th>UoM</th><th>Stock Value</th><th>Batch No</th><th>Manufacturing Date</th><th>Expiry Date</th><th>Aging (Days)</th><th>Aging Remaining (Days)</th><th>Stock Location</th><th>Grade</th>
+                    <th>Division</th><th>Product Code</th><th>Product Name</th><th>Current Stock</th><th>UoM</th><th>Retail Stock Value</th><th>Batch No</th><th>Manufacturing Date</th><th>Expiry Date</th><th>Aging (Days)</th><th>Aging Remaining (Days)</th><th>Stock Location</th><th>Grade</th>
                 </tr></thead>
                 <tbody id="gradeModalRows">
                 <?php foreach (($rows ?? []) as $r):
@@ -313,6 +335,7 @@ ksort($modalLocations);
                         data-location="<?= e($r['receiving_store'] ?? '') ?>"
                         data-search="<?= e($searchText) ?>"
                         data-qty="<?= e((string)(float)$r['current_qty']) ?>"
+                        data-uom="<?= e(strtoupper(trim((string)($r['uom'] ?? ''))) ?: 'UNSPECIFIED') ?>"
                         data-value="<?= e((string)(float)($r['stock_value'] ?? 0)) ?>">
                         <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
                         <td><?= e($r['material_code']) ?></td>
@@ -356,6 +379,7 @@ ksort($modalLocations);
     const countEl = document.getElementById('gradeModalBatchCount');
     const qtyEl = document.getElementById('gradeModalQty');
     const valueEl = document.getElementById('gradeModalValue');
+    const uomsEl = document.getElementById('gradeModalUoms');
     const resultText = document.getElementById('gradeModalResultText');
     let activeGrade = '';
     let lastFocused = null;
@@ -372,7 +396,8 @@ ksort($modalLocations);
         const q = search.value.trim().toLowerCase();
         const d = division.value;
         const l = location.value;
-        let count = 0, qty = 0, value = 0;
+        let count = 0, value = 0;
+        const uomTotals = {};
 
         rows.forEach(function (row) {
             const visible = row.dataset.grade === activeGrade &&
@@ -382,15 +407,23 @@ ksort($modalLocations);
             row.hidden = !visible;
             if (visible) {
                 count += 1;
-                qty += parseFloat(row.dataset.qty || '0');
+                const uom = row.dataset.uom || 'UNSPECIFIED';
+                uomTotals[uom] = (uomTotals[uom] || 0) + parseFloat(row.dataset.qty || '0');
                 value += parseFloat(row.dataset.value || '0');
             }
         });
 
         empty.hidden = count !== 0;
         countEl.textContent = count.toLocaleString();
-        qtyEl.textContent = dashboardNumber(qty);
+        qtyEl.textContent = Object.keys(uomTotals).length.toLocaleString();
         valueEl.textContent = 'Rs/ ' + dashboardNumber(value);
+        uomsEl.innerHTML = '';
+        Object.keys(uomTotals).sort().forEach(function (uom) {
+            const chip = document.createElement('div');
+            chip.className = 'grade-modal-uom-chip';
+            chip.innerHTML = '<span>' + uom + '</span><strong>' + dashboardNumber(uomTotals[uom]) + '</strong>';
+            uomsEl.appendChild(chip);
+        });
         resultText.textContent = 'Showing ' + count.toLocaleString() + ' batch' + (count === 1 ? '' : 'es');
     }
 

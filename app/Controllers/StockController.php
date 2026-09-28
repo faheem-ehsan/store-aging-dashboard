@@ -426,7 +426,7 @@ class StockController
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'wb');
         fputcsv($out, [
-            'Division','Product Code','Product Name','Current Stock','UoM','Stock Value','Batch No',
+            'Division','Product Code','Product Name','Current Stock','UoM','Retail Stock Value','Batch No',
             'Manufacturing Date','Expiry Date','Aging (Days)','Aging Remaining (Days)','Stock Location'
         ]);
         // Example row follows the uploaded stock-aging report layout. Aging columns are
@@ -502,7 +502,7 @@ class StockController
         }
         if ($d['manufacture_date'] > $d['expiry_date']) return 'Manufacture date cannot be after expiry date.';
         if (!is_numeric($d['current_qty']) || (float)$d['current_qty'] < 0) return 'Current Stock must be zero or greater.';
-        if (!is_numeric($d['stock_value']) || (float)$d['stock_value'] < 0) return 'Stock value must be zero or greater.';
+        if (!is_numeric($d['stock_value']) || (float)$d['stock_value'] < 0) return 'Retail stock value must be zero or greater.';
         if (trim((string)$d['uom']) === '') return 'UoM is required.';
         if (trim((string)$d['receiving_store']) === '') return 'Stock Location is required.';
         return null;
@@ -519,7 +519,7 @@ class StockController
             'material_no' => 'material_no', 'material_number' => 'material_no', 'material' => 'material_no', 'material_code' => 'material_no', 'product_code' => 'material_no', 'product_no' => 'material_no',
             'material_des' => 'material_description', 'material_description' => 'material_description', 'description' => 'material_description', 'product_name' => 'material_description', 'product_description' => 'material_description',
             'current_qty' => 'current_qty', 'current_quantity' => 'current_qty', 'current_stock' => 'current_qty', 'qty' => 'current_qty', 'stock_qty' => 'current_qty',
-            'stock_value' => 'stock_value', 'value' => 'stock_value',
+            'stock_value' => 'stock_value', 'retail_stock_value' => 'stock_value', 'retail_value' => 'stock_value', 'value' => 'stock_value',
             'batch_no' => 'batch_no', 'batch_number' => 'batch_no', 'batch' => 'batch_no',
             'date_of_manufactuer' => 'manufacture_date', 'date_of_manufacturer' => 'manufacture_date', 'date_of_manufacture' => 'manufacture_date', 'manufacture_date' => 'manufacture_date', 'manufacturing_date' => 'manufacture_date', 'mfg_date' => 'manufacture_date',
             'expiry_date' => 'expiry_date', 'expiration_date' => 'expiry_date',

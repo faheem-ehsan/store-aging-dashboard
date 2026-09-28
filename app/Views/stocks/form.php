@@ -45,7 +45,7 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
         <label class="span-2">Product Name<input name="material_description" value="<?= e($batch['material_description'] ?? '') ?>" required></label>
         <label>Current Stock<input type="number" step="0.001" min="0" name="current_qty" value="<?= e($batch['current_qty'] ?? '0') ?>" required></label>
         <label>UoM<input name="uom" value="<?= e($batch['uom'] ?? '') ?>" placeholder="e.g. CS, PCS, BT" required></label>
-        <label>Stock Value<input type="number" step="0.01" min="0" name="stock_value" value="<?= e($batch['stock_value'] ?? '0') ?>" required></label>
+        <label>Retail Stock Value<input type="number" step="0.01" min="0" name="stock_value" value="<?= e($batch['stock_value'] ?? '0') ?>" required></label>
         <label>Batch No<input name="batch_no" value="<?= e($batch['batch_no'] ?? '') ?>" required></label>
         <label>Manufacturing Date<input type="date" id="manufacture_date" name="manufacture_date" value="<?= e($manufactureDate) ?>" required></label>
         <label>Expiry Date<input type="date" id="expiry_date" name="expiry_date" value="<?= e($expiryDate) ?>" required></label>

@@ -1,4 +1,4 @@
-Division,Product Code,Product Name,Current Stock,UoM,Stock Value,Batch No,Manufacturing Date,Expiry Date,Aging (Days),Aging Remaining (Days),Stock Location
+Division,Product Code,Product Name,Current Stock,UoM,Retail Stock Value,Batch No,Manufacturing Date,Expiry Date,Aging (Days),Aging Remaining (Days),Stock Location
 SNW,100409,SPRINGLEY 500 ML (1*12),2085,CS,505946.10,SP180926,2026-09-18,2027-09-18,,,FW02
 SNW,100411,SPRINGLEY 1500 ML (1*6),3230,CS,661310.20,SP090926,2026-09-09,2027-09-09,,,FW02
 SNW,100684,SPRINGLEY BOTTLE 19LTR,220,BT,0.00,SB220926,2026-09-22,2027-09-22,,,FW02

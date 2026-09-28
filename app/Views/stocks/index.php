@@ -62,7 +62,7 @@ $gradeOptions = [
         <article class="stock-summary-card value">
             <div class="stock-summary-icon" aria-hidden="true">VAL</div>
             <div>
-                <span>Current Stock Value</span>
+                <span>Current Retail Stock Value</span>
                 <strong>Rs/ <?= number_format((float)($summary['stock_value'] ?? 0), 2) ?></strong>
                 <small>For the selected division and grade filter</small>
             </div>
@@ -79,7 +79,7 @@ $gradeOptions = [
     <th>Product Name</th>
     <th>Current Stock</th>
     <th>UoM</th>
-    <th>Stock Value</th>
+    <th>Retail Stock Value</th>
     <th>Batch No</th>
     <th>Manufacturing Date</th>
     <th>Expiry Date</th>
