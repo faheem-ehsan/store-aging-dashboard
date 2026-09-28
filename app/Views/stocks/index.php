@@ -1,4 +1,14 @@
 <?php
+$stockQtyNumber = static function ($value): string {
+    return number_format((int)round((float)$value));
+};
+$stockValueNumber = static function ($value): string {
+    $number = (float)$value;
+    if (abs($number) >= 100000) {
+        return 'Rs/ ' . number_format((int)round($number / 1000000)) . ' Million';
+    }
+    return 'Rs/ ' . number_format((int)round($number));
+};
 $gradeOptions = [
     'A+' => 'A+ · Dark Blue',
     'A' => 'A · Green',
@@ -7,9 +17,9 @@ $gradeOptions = [
     'EX' => 'Expired · Black',
 ];
 ?>
-<div class="toolbar wrap">
-    <form method="get" action="<?= e(url('/stocks')) ?>" class="filter-grid">
-        <input type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, name or batch...">
+<div class="toolbar wrap stock-toolbar">
+    <form method="get" action="<?= e(url('/stocks')) ?>" class="filter-grid stock-filter-grid">
+        <input class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, name or batch...">
         <?php if ($user['role'] === 'super_admin'): ?>
             <select name="division_id">
                 <option value="">All divisions</option>
@@ -24,8 +34,10 @@ $gradeOptions = [
                 <option value="<?= $g ?>" <?= $filters['grade'] === $g ? 'selected' : '' ?>><?= e($label) ?></option>
             <?php endforeach; ?>
         </select>
-        <button class="btn" type="submit">Filter</button>
-        <a class="btn ghost" href="<?= e(url('/stocks')) ?>">Reset</a>
+        <div class="stock-filter-actions">
+            <button class="btn" type="submit">Filter</button>
+            <a class="btn ghost" href="<?= e(url('/stocks')) ?>">Reset</a>
+        </div>
     </form>
     <?php if ($canManage): ?>
         <div class="stock-actions">
@@ -55,7 +67,7 @@ $gradeOptions = [
             <div class="stock-summary-icon" aria-hidden="true">QTY</div>
             <div>
                 <span>Current Stock</span>
-                <strong><?= number_format((float)($summary['current_qty'] ?? 0), 3) ?></strong>
+                <strong><?= $stockQtyNumber($summary['current_qty'] ?? 0) ?></strong>
                 <small><?= number_format((int)($summary['batch_count'] ?? 0)) ?> filtered batch<?= (int)($summary['batch_count'] ?? 0) === 1 ? '' : 'es' ?></small>
             </div>
         </article>
@@ -63,7 +75,7 @@ $gradeOptions = [
             <div class="stock-summary-icon" aria-hidden="true">VAL</div>
             <div>
                 <span>Current Retail Stock Value</span>
-                <strong>Rs/ <?= number_format((float)($summary['stock_value'] ?? 0), 2) ?></strong>
+                <strong><?= $stockValueNumber($summary['stock_value'] ?? 0) ?></strong>
                 <small>For the selected division and grade filter</small>
             </div>
         </article>
@@ -96,9 +108,9 @@ $gradeOptions = [
     <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
     <td><?= e($r['material_code']) ?></td>
     <td><?= e($r['material_description']) ?></td>
-    <td class="num"><?= number_format((float)$r['current_qty'], 3) ?></td>
+    <td class="num"><?= $stockQtyNumber($r['current_qty']) ?></td>
     <td><?= e($r['uom'] ?? '') ?></td>
-    <td class="num">Rs/ <?= number_format((float)($r['stock_value'] ?? 0), 2) ?></td>
+    <td class="num"><?= $stockValueNumber($r['stock_value'] ?? 0) ?></td>
     <td><?= e($r['batch_no']) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>

@@ -49,28 +49,28 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
             </a>
             <a class="nav-link<?= $isStocksActive ? ' active' : '' ?>" href="<?= e(url('/stocks')) ?>"<?= $isStocksActive ? ' aria-current="page"' : '' ?>>
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5 12 4l7 3.5-7 3.5-7-3.5Zm0 0V16.5L12 20l7-3.5V7.5M5 12l7 3.5 7-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                <span class="nav-label">Stock Aging Dashboard</span>
+                <span class="nav-label">Finish Goods Aging</span>
             </a>
             <a class="nav-link<?= $isMarketReturnActive ? ' active' : '' ?>" href="<?= e(url('/market-return')) ?>"<?= $isMarketReturnActive ? ' aria-current="page"' : '' ?>>
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7 7h10M7 12h10M7 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                <span class="nav-label">Market Return Store</span>
+                <span class="nav-label">Market Returns</span>
             </a>
             <?php if ($me['role'] === 'super_admin'): ?>
-                <a class="nav-link<?= $isUsersActive ? ' active' : '' ?>" href="<?= e(url('/users')) ?>"<?= $isUsersActive ? ' aria-current="page"' : '' ?>>
-                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M16 19a4 4 0 0 0-8 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 6a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M5 19a4 4 0 0 1 3-3.87" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <span class="nav-label">Users</span>
+                <a class="nav-link<?= $isGradesActive ? ' active' : '' ?>" href="<?= e(url('/grade-criteria')) ?>"<?= $isGradesActive ? ' aria-current="page"' : '' ?>>
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="nav-label">Grading Criteria</span>
                 </a>
                 <a class="nav-link<?= $isDivisionsActive ? ' active' : '' ?>" href="<?= e(url('/divisions')) ?>"<?= $isDivisionsActive ? ' aria-current="page"' : '' ?>>
                     <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 6a2 2 0 0 1 2-2h4v6H4V6Zm10-2h4a2 2 0 0 1 2 2v4h-6V4ZM4 14h6v6H6a2 2 0 0 1-2-2v-4Zm10 0h6v4a2 2 0 0 1-2 2h-4v-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                     <span class="nav-label">Divisions</span>
                 </a>
-                <a class="nav-link<?= $isGradesActive ? ' active' : '' ?>" href="<?= e(url('/grade-criteria')) ?>"<?= $isGradesActive ? ' aria-current="page"' : '' ?>>
-                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <span class="nav-label">Grading Criteria</span>
+                <a class="nav-link<?= $isUsersActive ? ' active' : '' ?>" href="<?= e(url('/users')) ?>"<?= $isUsersActive ? ' aria-current="page"' : '' ?>>
+                    <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M16 19a4 4 0 0 0-8 0M12 13a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm7 6a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75M5 19a4 4 0 0 1 3-3.87" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                    <span class="nav-label">User Management</span>
                 </a>
                 <a class="nav-link<?= $isLogsActive ? ' active' : '' ?>" href="<?= e(url('/logs')) ?>"<?= $isLogsActive ? ' aria-current="page"' : '' ?>>
                     <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M8 7h8M8 11h8M8 15h5M6 4h12a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                    <span class="nav-label">System Logs</span>
+                    <span class="nav-label">Activity Logs</span>
                 </a>
             <?php endif; ?>
         </nav>

@@ -41,6 +41,20 @@ foreach ($expiryMetrics as $metric) {
     if ((int)($metric['lines'] ?? 0) > 0) $activeExpiryGroups++;
 }
 $totalExpiryLines = 0;
+$expiryUomTotals = [];
+foreach (($baseRows ?? []) as $uomRow) {
+    $bucketCode = $uomRow['expiry_bucket'] ?? 'no_expiry';
+    if (!isset($expiryBuckets[$bucketCode])) $bucketCode = 'no_expiry';
+    $unitCode = strtoupper(trim((string)($uomRow['unit'] ?? '')));
+    if ($unitCode === '') $unitCode = 'UNSPECIFIED';
+    if (!isset($expiryUomTotals[$bucketCode])) $expiryUomTotals[$bucketCode] = [];
+    if (!isset($expiryUomTotals[$bucketCode][$unitCode])) $expiryUomTotals[$bucketCode][$unitCode] = 0.0;
+    $expiryUomTotals[$bucketCode][$unitCode] += (float)($uomRow['quantity'] ?? 0);
+}
+foreach ($expiryUomTotals as &$uomGroup) {
+    ksort($uomGroup);
+}
+unset($uomGroup);
 $distributionStops = [];
 $distributionColors = [
     'a' => '#92d050',
@@ -64,6 +78,7 @@ foreach ($expiryBuckets as $code => $meta) {
         'qty' => (float)($expiryMetrics[$code]['qty'] ?? 0),
         'value' => (float)($expiryMetrics[$code]['value'] ?? 0),
         'unvalued' => (int)($expiryMetrics[$code]['unvalued'] ?? 0),
+        'uoms' => $expiryUomTotals[$code] ?? [],
         'range' => $meta['range'],
         'pct' => $pct,
     ];
@@ -279,11 +294,17 @@ ksort($modalUnits);
                 <span class="grade-card-title"><?= e($stop['label']) ?></span>
                 <span class="grade-uom-count"><?= $formatInt($stop['lines']) ?> item(s)</span>
             </div>
-            <div class="grade-uom-list compact">
-                <div class="grade-uom-row single-row">
-                    <span>Qty</span>
-                    <strong><?= $formatQty($stop['qty']) ?></strong>
-                </div>
+            <div class="grade-uom-list">
+                <?php if (empty($stop['uoms'])): ?>
+                    <div class="grade-uom-empty">No stock</div>
+                <?php else: ?>
+                    <?php foreach ($stop['uoms'] as $uomCode => $uomQty): ?>
+                        <div class="grade-uom-row">
+                            <span><?= e($uomCode) ?></span>
+                            <strong><?= $formatQty($uomQty) ?></strong>
+                        </div>
+                    <?php endforeach; ?>
+                <?php endif; ?>
             </div>
             <div class="grade-value-line"><span class="grade-currency-label">Retail Value</span><span class="grade-stock-value"><?= e($formatMoney($stop['value'])) ?></span></div>
             <?php if ($stop['unvalued'] > 0): ?><em><?= $formatInt($stop['unvalued']) ?> unvalued item(s)</em><?php endif; ?>
