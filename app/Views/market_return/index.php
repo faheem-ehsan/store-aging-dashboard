@@ -101,11 +101,6 @@ ksort($modalUnits);
 ?>
 
 <div class="dashboard-clean-head market-return-clean-head">
-    <div class="dashboard-clean-title">
-        <h1>Market Return Store</h1>
-        <span class="dashboard-welcome-title">Market Return Store Dashboard</span>
-    </div>
-
     <div class="market-return-head-side">
         <div class="market-return-head-actions">
             <?php if ($canManage && $databaseReady): ?>

@@ -510,3 +510,117 @@ body.modal-open{overflow:hidden}
 @media(max-width:650px){
     .market-return-grade-cards{grid-template-columns:1fr}
 }
+
+/* Market Return single page title */
+.market-return-clean-head{justify-content:flex-end;margin-top:-4px}
+
+/* Responsive sidebar + dashboard refinement */
+.app-shell{grid-template-columns:220px minmax(0,1fr)}
+.sidebar{
+    background:
+        radial-gradient(circle at 18% 5%,rgba(255,255,255,.18),transparent 24%),
+        radial-gradient(circle at 90% 72%,rgba(255,255,255,.08),transparent 28%),
+        linear-gradient(180deg,#ff4655 0%,#ef2635 48%,#cf1725 100%);
+    padding:20px 14px 16px;
+    height:100dvh;
+    min-height:0;
+    overflow-y:auto;
+    overflow-x:hidden;
+    scrollbar-width:thin;
+    scrollbar-color:rgba(255,255,255,.34) transparent;
+    box-shadow:inset -1px 0 0 rgba(255,255,255,.15),8px 0 28px rgba(134,15,25,.08);
+}
+.sidebar::-webkit-scrollbar{width:5px}.sidebar::-webkit-scrollbar-track{background:transparent}.sidebar::-webkit-scrollbar-thumb{background:rgba(255,255,255,.30);border-radius:999px}
+.brand-block{gap:8px;margin-bottom:14px}
+.brand-logo{max-width:142px;border-radius:17px;padding:7px;box-shadow:0 10px 24px rgba(117,9,18,.17)}
+.brand-text.single-line span{font-size:11.5px;letter-spacing:.02em;font-weight:800;color:#fff}
+.division-chip{margin:12px 0 14px;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.32);font-size:10px;font-weight:800;box-shadow:inset 0 1px 0 rgba(255,255,255,.10)}
+.sidebar nav{gap:7px}
+.nav-link{min-height:46px;padding:7px 9px;border-radius:13px;background:rgba(255,255,255,.075);border:1px solid rgba(255,255,255,.06);box-shadow:inset 0 1px 0 rgba(255,255,255,.05);transition:background .18s ease,color .18s ease,transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.nav-link .nav-icon,.sidebar-account-zone .link-button .nav-icon{width:30px;height:30px;border-radius:9px;background:rgba(255,255,255,.14)}
+.nav-link .nav-icon svg,.sidebar-account-zone .link-button .nav-icon svg{width:17px;height:17px}
+.nav-link .nav-label{font-size:12px;font-weight:700;letter-spacing:.005em}
+.nav-link:hover{background:rgba(255,255,255,.17);border-color:rgba(255,255,255,.12);transform:translateX(2px)}
+.sidebar .nav-link.active{background:#fff;color:#c91827;border-color:#fff;box-shadow:0 10px 24px rgba(104,4,13,.18);transform:translateX(2px)}
+.sidebar .nav-link.active::before{left:-6px;width:3px;height:22px;background:#fff8f8}
+.sidebar .nav-link.active .nav-icon{background:#fff0f2;box-shadow:inset 0 0 0 1px #ffd7dc}
+.sidebar-account-zone{gap:7px;margin-top:auto;padding-top:14px}
+.sidebar-user-profile{padding:8px 9px;border-radius:12px;background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.28);box-shadow:inset 0 1px 0 rgba(255,255,255,.08)}
+.sidebar-user-avatar{width:36px;height:36px;border-width:1.5px}
+.sidebar-user-copy strong{font-size:11px}.sidebar-user-copy small,.sidebar-user-copy span{font-size:9px}
+.sidebar-account-zone .logout .link-button{min-height:39px;padding:6px 9px;border-radius:12px;background:rgba(255,255,255,.08)}
+.sidebar-account-zone .logout .link-button:hover{background:rgba(255,255,255,.16)}
+.main{padding:22px;min-width:0}
+.dashboard-main{padding-top:20px}
+
+@media(max-width:1440px){
+    .app-shell{grid-template-columns:205px minmax(0,1fr)}
+    .main{padding:16px 18px}
+    .dashboard-main{padding-top:16px}
+    .dashboard-clean-head{margin-bottom:14px;gap:12px}
+    .dashboard-clean-title h1{font-size:25px}
+    .dashboard-welcome-title{font-size:12px;min-height:30px;padding:6px 10px}
+    .dashboard-division-selector{min-width:300px;padding:9px 11px;border-radius:13px}
+    .division-selector-icon{width:36px;height:36px;border-radius:10px}.division-selector-icon svg{width:18px;height:18px}
+    .dashboard-division-form select{min-width:220px;font-size:13px;height:32px}
+    .dashboard-summary-grid{gap:10px;margin-bottom:12px}
+    .dashboard-summary-card{padding:14px;border-radius:14px;gap:11px}
+    .dashboard-summary-card .summary-icon{width:37px;height:37px;border-radius:10px;font-size:16px}
+    .dashboard-summary-card strong{font-size:26px}.dashboard-summary-card p{margin-top:5px;font-size:10px}
+    .dashboard-uom-section{padding:14px;margin-bottom:12px;border-radius:15px}
+    .dashboard-uom-head{margin-bottom:10px}.dashboard-uom-head h2{font-size:16px}.dashboard-uom-head p{font-size:10px}
+    .dashboard-uom-card{padding:11px 12px;border-radius:12px}.dashboard-uom-card>strong{font-size:21px}.uom-card-value{margin-top:8px;padding-top:7px;font-size:11px}
+    .dashboard-analytics-grid{gap:12px;margin-bottom:12px}
+    .dashboard-analytics-card{padding:14px}
+    .dashboard-analytics-card .card-head h2{font-size:16px}
+    .aging-bars-panel{min-height:220px}.aging-bar-track{height:145px;max-width:68px}.aging-bar-col{gap:8px}
+    .distribution-panel{min-height:220px;gap:14px}.distribution-donut{width:175px;height:175px}.distribution-donut-hole{width:104px;height:104px}.distribution-donut-hole strong{font-size:23px}
+    .distribution-list{gap:7px}.distribution-item{padding:8px 9px;border-radius:10px}
+    .dashboard-grade-section-head{margin-bottom:8px}.dashboard-grade-section-head h2{font-size:16px}
+    .dashboard-grade-metrics-refreshed{gap:10px;margin-bottom:12px}.dashboard-grade-metrics-refreshed .grade-click-card{min-height:145px;padding:12px}
+    .grade-legend{margin-top:8px;margin-bottom:12px;gap:6px;font-size:10px}.grade-legend span{padding:5px 7px}.grade-bar{width:42px;height:10px}
+    .card{border-radius:14px}
+}
+
+@media(max-height:820px) and (min-width:801px){
+    .sidebar{padding:12px 10px 10px}
+    .brand-block{gap:5px;margin-bottom:8px}.brand-logo{max-width:112px;padding:5px;border-radius:14px}.brand-text.single-line span{font-size:10px}
+    .division-chip{margin:7px 0 8px;padding:6px 8px;font-size:9px}
+    .sidebar nav{gap:4px}
+    .nav-link{min-height:38px;padding:4px 7px;border-radius:11px;gap:8px}
+    .nav-link .nav-icon,.sidebar-account-zone .link-button .nav-icon{width:27px;height:27px;border-radius:8px}.nav-link .nav-icon svg,.sidebar-account-zone .link-button .nav-icon svg{width:15px;height:15px}
+    .nav-link .nav-label{font-size:10.5px}
+    .sidebar-account-zone{gap:5px;padding-top:8px}.sidebar-user-profile{padding:6px 7px}.sidebar-user-avatar{width:31px;height:31px}.sidebar-user-copy strong{font-size:10px}.sidebar-user-copy small,.sidebar-user-copy span{font-size:8px}
+    .sidebar-account-zone .logout .link-button{min-height:34px;padding:4px 7px;font-size:10.5px}
+}
+
+@media(max-width:1180px) and (min-width:801px){
+    .app-shell{grid-template-columns:190px minmax(0,1fr)}
+    .main{padding:14px}
+    .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .dashboard-analytics-grid{grid-template-columns:1fr}
+    .dashboard-uom-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .market-return-grade-cards,.dashboard-grade-metrics-refreshed{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+
+@media(max-width:800px){
+    .app-shell{display:block}
+    .sidebar{position:relative;top:auto;width:100%;height:auto;min-height:0;overflow:visible;padding:14px;background:linear-gradient(135deg,#ff4655 0%,#df1e2d 100%)}
+    .brand-block{grid-template-columns:auto 1fr;align-items:center;gap:10px}.brand-logo{max-width:110px}.brand-text.single-line span{font-size:11px}
+    .division-chip{margin:8px 0 10px;max-width:240px}
+    .sidebar nav{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+    .nav-link{min-height:42px}.sidebar .nav-link.active{transform:none}.sidebar .nav-link.active::before{display:none}
+    .sidebar-account-zone{margin-top:12px;padding-top:0;grid-template-columns:minmax(0,1fr) auto;align-items:center}.sidebar-user-profile{max-width:none}.sidebar-account-zone .logout .link-button{width:auto;min-width:120px}
+    .main{padding:14px}
+    .dashboard-clean-head{flex-direction:column;align-items:stretch}.dashboard-division-selector{width:100%;min-width:0}
+    .dashboard-summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+    .dashboard-analytics-grid{grid-template-columns:1fr}.distribution-panel{flex-direction:column;align-items:center}.distribution-list{width:100%}
+}
+
+@media(max-width:520px){
+    .sidebar nav{grid-template-columns:1fr}.sidebar-account-zone{grid-template-columns:1fr}.sidebar-account-zone .logout .link-button{width:100%}
+    .main{padding:10px}
+    .dashboard-summary-grid,.dashboard-uom-grid,.dashboard-grade-metrics-refreshed,.market-return-grade-cards{grid-template-columns:1fr}
+    .dashboard-clean-title{display:grid;gap:7px}.dashboard-welcome-title{border-radius:10px}
+    .market-return-head-actions{display:grid;grid-template-columns:1fr;width:100%}.market-return-head-actions .btn{width:100%}
+}
