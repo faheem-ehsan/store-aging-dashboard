@@ -42,13 +42,10 @@ class GradeService
     ): array {
         $asOf = $asOf ?? new \DateTimeImmutable('today');
         $settings = $this->settingsForDivision($divisionId);
-        $aPlusEnd = $manufactureDate->modify('+' . $settings['a_plus_days'] . ' days');
-        $aEnd = $manufactureDate->modify('+' . $settings['a_days'] . ' days');
-        $bEnd = $manufactureDate->modify('+' . $settings['b_days'] . ' days');
-        $cEnd = $manufactureDate->modify('+' . $settings['c_days'] . ' days');
+        $remainingDays = (int)$asOf->diff($expiryDate)->format('%r%a');
 
-        // Expired is always determined by the actual expiry date, never by an aging threshold.
-        if ($asOf >= $expiryDate) {
+        // Expired is always based on the actual Expiry Date.
+        if ($remainingDays <= 0) {
             return [
                 'grade_code' => 'EX',
                 'grade_name' => 'Expired',
@@ -58,59 +55,64 @@ class GradeService
             ];
         }
 
-        if ($asOf < $aPlusEnd) {
+        // Expiry-based grading uses remaining shelf-life days.
+        // A+ = above A limit, A = above B through A limit,
+        // B = above C through B limit, C = 1 through C limit.
+        if ($remainingDays > $settings['a_days']) {
             return [
                 'grade_code' => 'A+',
                 'grade_name' => 'A+ Grade',
                 'color_class' => 'blue',
-                'criteria_text' => 'First ' . $settings['a_plus_days'] . ' day(s) from manufacture',
-                'period_end' => $aPlusEnd->modify('-1 day')->format('Y-m-d'),
+                'criteria_text' => 'More than ' . $settings['a_days'] . ' day(s) remaining to Expiry Date',
+                'period_end' => $expiryDate->modify('-' . $settings['a_days'] . ' days')->format('Y-m-d'),
             ];
         }
 
-        if ($asOf < $aEnd) {
+        if ($remainingDays > $settings['b_days']) {
             return [
                 'grade_code' => 'A',
                 'grade_name' => 'A Grade',
                 'color_class' => 'green',
-                'criteria_text' => 'After A+ through day ' . $settings['a_days'] . ' from manufacture',
-                'period_end' => $aEnd->modify('-1 day')->format('Y-m-d'),
+                'criteria_text' => ($settings['b_days'] + 1) . '–' . $settings['a_days'] . ' day(s) remaining to Expiry Date',
+                'period_end' => $expiryDate->modify('-' . $settings['b_days'] . ' days')->format('Y-m-d'),
             ];
         }
 
-        if ($asOf < $bEnd) {
+        if ($remainingDays > $settings['c_days']) {
             return [
                 'grade_code' => 'B',
                 'grade_name' => 'B Grade',
                 'color_class' => 'yellow',
-                'criteria_text' => 'After A through day ' . $settings['b_days'] . ' from manufacture',
-                'period_end' => $bEnd->modify('-1 day')->format('Y-m-d'),
+                'criteria_text' => ($settings['c_days'] + 1) . '–' . $settings['b_days'] . ' day(s) remaining to Expiry Date',
+                'period_end' => $expiryDate->modify('-' . $settings['c_days'] . ' days')->format('Y-m-d'),
             ];
         }
 
-        // C is the final non-expired grade. The configured C day limit is retained as
-        // the division's final aging threshold; if expiry is later, the item remains C.
-        $configuredCEnd = $cEnd < $expiryDate ? $cEnd : $expiryDate;
         return [
             'grade_code' => 'C',
             'grade_name' => 'C Grade',
             'color_class' => 'red',
-            'criteria_text' => $asOf < $cEnd
-                ? 'After B through day ' . $settings['c_days'] . ' from manufacture'
-                : 'Above day ' . $settings['c_days'] . ' from manufacture until Expiry Date',
-            'period_end' => ($configuredCEnd > $asOf ? $configuredCEnd : $expiryDate)->modify('-1 day')->format('Y-m-d'),
+            'criteria_text' => '1–' . $settings['c_days'] . ' day(s) remaining to Expiry Date',
+            'period_end' => $expiryDate->modify('-1 day')->format('Y-m-d'),
         ];
     }
 
     private function normalizeSettings(array $row): array
     {
-        $ap = max(1, (int)($row['a_plus_days'] ?? 30));
-        $a = max($ap + 1, (int)($row['a_days'] ?? 60));
-        $b = max($a + 1, (int)($row['b_days'] ?? 90));
-        $c = max($b + 1, (int)($row['c_days'] ?? 120));
+        $a = (int)($row['a_days'] ?? 365);
+        $b = (int)($row['b_days'] ?? 180);
+        $c = (int)($row['c_days'] ?? 90);
+
+        // Old manufacture-age settings used ascending values. If found, use the
+        // new safe expiry-based defaults until Super Admin saves division criteria.
+        if ($c < 1 || $b <= $c || $a <= $b) {
+            $a = 365;
+            $b = 180;
+            $c = 90;
+        }
 
         return [
-            'a_plus_days' => $ap,
+            'a_plus_days' => $a + 1,
             'a_days' => $a,
             'b_days' => $b,
             'c_days' => $c,

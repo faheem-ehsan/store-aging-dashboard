@@ -38,7 +38,7 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
         <div class="brand-block">
             <img class="brand-logo" src="<?= e(url('/assets/img/qarshi-logo.png')) ?>" alt="Qarshi logo">
             <div class="brand-text">
-              
+                <div class="brand-title">QARSHI</div>
                 <span>Stock Aging Dashboard</span>
             </div>
         </div>

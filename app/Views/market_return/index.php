@@ -73,18 +73,21 @@ if (!empty($filters['value_status'])) $queryBase['value_status'] = $filters['val
 
 <div class="market-return-summary-grid">
     <div class="market-return-summary primary-summary">
-        <span>Total Market Return</span>
+        <span>Visible Item Lines</span>
         <strong><?= number_format($metrics['lines']) ?></strong>
-       
+        <small><?= number_format($metrics['qty'], 3) ?> total quantity</small>
     </div>
     <div class="market-return-summary value-summary">
-        <span>Total Market Return Value</span>
+        <span>Visible Stock Value</span>
         <strong>Rs/ <?= number_format($metrics['value'], 2) ?></strong>
-        
+        <small><?= number_format($metrics['unvalued']) ?> line(s) without known value</small>
     </div>
 </div>
 
-
+<div class="market-return-expiry-intro">
+    <strong>Expiry Status</strong>
+    <span>B = 1+ year to expiry, C = less than 1 year, Expired = Expiry Date and after. Records without a valid expiry are grouped separately under Other / No Expiry.</span>
+</div>
 
 <div class="market-return-expiry-grid">
     <?php foreach ($expiryBuckets as $code => $meta):
@@ -100,8 +103,8 @@ if (!empty($filters['value_status'])) $queryBase['value_status'] = $filters['val
             </div>
             <strong><?= number_format($m['qty'], 3) ?></strong>
             <small>Qty</small>
-            <p>Rs/ <?= number_format($m['value'], 2) ?> </p>
-           
+            <em>Rs/ <?= number_format($m['value'], 2) ?> stock value<?= $m['unvalued'] ? ' · ' . number_format($m['unvalued']) . ' unvalued' : '' ?></em>
+            <div class="expiry-card-range"><?= e($meta['range']) ?></div>
         </a>
     <?php endforeach; ?>
 </div>
@@ -115,9 +118,10 @@ if (!empty($filters['value_status'])) $queryBase['value_status'] = $filters['val
                 <?php elseif ($activeCategory !== '' && isset($categories[$activeCategory])): ?>
                     <?= e($categories[$activeCategory]['label']) ?>
                 <?php else: ?>
-                    Market Return Store Detail
+                    Market Return Store Items
                 <?php endif; ?>
             </h2>
+            <p>Expiry status is calculated from Expiry Date using B / C / Expired rules; records without a valid expiry remain under Other / No Expiry.</p>
         </div>
         <div class="market-return-table-count"><?= number_format(count($rows)) ?> row(s)</div>
     </div>
@@ -127,7 +131,7 @@ if (!empty($filters['value_status'])) $queryBase['value_status'] = $filters['val
                 <tr>
                     <th>Division</th>
                     <th>Source Category</th>
-                  
+                    <th>S. No.</th>
                     <th>Product / Description</th>
                     <th>Quantity</th>
                     <th>Unit</th>
@@ -153,7 +157,7 @@ if (!empty($filters['value_status'])) $queryBase['value_status'] = $filters['val
                 <tr>
                     <td><span class="division-tag"><?= e($row['division_code']) ?></span></td>
                     <td><span class="market-return-category-tag <?= e($meta['class']) ?>"><?= e($meta['label']) ?></span></td>
-                   
+                    <td><?= e($row['serial_no'] ?? '') ?></td>
                     <td class="market-return-product"><?= e($row['product_name']) ?></td>
                     <td class="num"><?= number_format((float)$row['quantity'], 3) ?></td>
                     <td><?= e($row['unit']) ?></td>

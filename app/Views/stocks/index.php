@@ -47,7 +47,7 @@ $gradeOptions = [
         </div>
         <div>
             <span>Grading Criteria</span>
-            <strong><?php if (!empty($selectedCriteria)): ?>A+ <?= (int)$selectedCriteria['a_plus_days'] ?>d · A <?= (int)$selectedCriteria['a_days'] ?>d · B <?= (int)$selectedCriteria['b_days'] ?>d · C <?= (int)$selectedCriteria['c_days'] ?>d<?php else: ?>Varies by division<?php endif; ?></strong>
+            <strong><?php if (!empty($selectedCriteria)): ?>A+ &gt;<?= (int)$selectedCriteria['a_days'] ?>d · A <?= ((int)$selectedCriteria['b_days'] + 1) ?>–<?= (int)$selectedCriteria['a_days'] ?>d · B <?= ((int)$selectedCriteria['c_days'] + 1) ?>–<?= (int)$selectedCriteria['b_days'] ?>d · C 1–<?= (int)$selectedCriteria['c_days'] ?>d<?php else: ?>Varies by division<?php endif; ?></strong>
         </div>
     </div>
     <div class="stock-summary-cards">

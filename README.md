@@ -1,6 +1,6 @@
 # Stock Aging Dashboard — PHP MVC + MySQL
 
-A lightweight PHP MVC dispatch-store dashboard for division-based stores. It follows the supplied batch fields and grades **each batch separately** from its Date of Manufacturer, with EX applied on the actual Expiry Date.
+A lightweight PHP MVC dispatch-store dashboard for division-based stores. It follows the supplied batch fields and grades **each batch separately** from its Expiry Date, with EX applied on the actual Expiry Date.
 
 ## Included
 
@@ -22,7 +22,7 @@ A lightweight PHP MVC dispatch-store dashboard for division-based stores. It fol
 
 ## Default grading
 
-Grades are calculated from the **Date of Manufacturer** using division-specific day thresholds. The default settings are:
+Grades are calculated from the **Expiry Date** using division-specific day thresholds. The default settings are:
 
 | Grade | Color | Default rule |
 |---|---|---|

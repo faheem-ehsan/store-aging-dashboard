@@ -150,10 +150,10 @@ CREATE TABLE division_grade_settings (
     a_plus_months INT UNSIGNED NOT NULL DEFAULT 1,
     a_months INT UNSIGNED NOT NULL DEFAULT 2,
     b_months INT UNSIGNED NOT NULL DEFAULT 3,
-    a_plus_days INT UNSIGNED NOT NULL DEFAULT 30,
-    a_days INT UNSIGNED NOT NULL DEFAULT 60,
-    b_days INT UNSIGNED NOT NULL DEFAULT 90,
-    c_days INT UNSIGNED NOT NULL DEFAULT 120,
+    a_plus_days INT UNSIGNED NOT NULL DEFAULT 366,
+    a_days INT UNSIGNED NOT NULL DEFAULT 365,
+    b_days INT UNSIGNED NOT NULL DEFAULT 180,
+    c_days INT UNSIGNED NOT NULL DEFAULT 90,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_grade_settings_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE CASCADE,
@@ -214,7 +214,7 @@ INSERT INTO divisions (code,name) VALUES
 ('RTD','Ready To Drink');
 
 -- Legacy display table retained for compatibility. Current grading is calculated from
--- Date of Manufacturer + division_grade_settings and the actual Expiry Date.
+-- remaining days to Expiry Date + division_grade_settings.
 INSERT INTO grade_rules (division_id,grade_code,grade_name,min_days,max_days,color_class,sort_order) VALUES
 (NULL,'A+','A+ Grade',NULL,NULL,'blue',1),
 (NULL,'A','A Grade',NULL,NULL,'green',2),
@@ -222,11 +222,10 @@ INSERT INTO grade_rules (division_id,grade_code,grade_name,min_days,max_days,col
 (NULL,'C','C Grade',NULL,NULL,'red',4),
 (NULL,'EX','Expired',NULL,NULL,'black',5);
 
--- Default day criteria for every division. Thresholds are measured from Date of Manufacture.
--- A+ through day 30, A through day 60, B through day 90, C from then until expiry.
--- The C day value is the division's final aging threshold; C remains the final non-expired grade until Expiry Date.
+-- Default expiry remaining-day criteria for every division.
+-- A+ >365 days, A 181-365 days, B 91-180 days, C 1-90 days, Expired on/after Expiry Date.
 INSERT INTO division_grade_settings (division_id,a_plus_months,a_months,b_months,a_plus_days,a_days,b_days,c_days)
-SELECT id,1,2,3,30,60,90,120 FROM divisions;
+SELECT id,1,2,3,366,365,180,90 FROM divisions;
 
 -- Initial Super Admin. Change password after first login.
 -- email: admin@example.com  password: Admin@123

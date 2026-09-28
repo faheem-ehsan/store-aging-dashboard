@@ -1,29 +1,28 @@
 <?php
 if (!empty($selectedCriteria)) {
-    $apDays = (int)$selectedCriteria['a_plus_days'];
     $aDays = (int)$selectedCriteria['a_days'];
     $bDays = (int)$selectedCriteria['b_days'];
     $cDays = (int)$selectedCriteria['c_days'];
     $legendItems = [
-        ['class' => 'blue', 'label' => 'A+', 'range' => 'First ' . $apDays . ' day(s) from MFG'],
-        ['class' => 'green', 'label' => 'A', 'range' => 'After A+ through day ' . $aDays],
-        ['class' => 'yellow', 'label' => 'B', 'range' => 'After A through day ' . $bDays],
-        ['class' => 'red', 'label' => 'C', 'range' => 'After B; C limit day ' . $cDays . ', then until expiry'],
+        ['class' => 'blue', 'label' => 'A+', 'range' => 'More than ' . $aDays . ' days remaining'],
+        ['class' => 'green', 'label' => 'A', 'range' => ($bDays + 1) . '–' . $aDays . ' days remaining'],
+        ['class' => 'yellow', 'label' => 'B', 'range' => ($cDays + 1) . '–' . $bDays . ' days remaining'],
+        ['class' => 'red', 'label' => 'C', 'range' => '1–' . $cDays . ' days remaining'],
         ['class' => 'black', 'label' => 'Expired', 'range' => 'Expiry Date and after'],
     ];
 } else {
     $legendItems = [
-        ['class' => 'blue', 'label' => 'A+', 'range' => 'Division-specific MFG day period'],
-        ['class' => 'green', 'label' => 'A', 'range' => 'Division-specific MFG day period'],
-        ['class' => 'yellow', 'label' => 'B', 'range' => 'Division-specific MFG day period'],
-        ['class' => 'red', 'label' => 'C', 'range' => 'Division-specific MFG day period until expiry'],
+        ['class' => 'blue', 'label' => 'A+', 'range' => 'Division-specific expiry remaining-day range'],
+        ['class' => 'green', 'label' => 'A', 'range' => 'Division-specific expiry remaining-day range'],
+        ['class' => 'yellow', 'label' => 'B', 'range' => 'Division-specific expiry remaining-day range'],
+        ['class' => 'red', 'label' => 'C', 'range' => 'Division-specific expiry remaining-day range'],
         ['class' => 'black', 'label' => 'Expired', 'range' => 'Expiry Date and after'],
     ];
 }
 ?>
 <div class="toolbar">
     <div class="toolbar-left">
-        <span class="subtle">Grades are calculated from Date of Manufacturing. FEFO dispatch Rule.</span>
+        <span class="subtle">Grades are calculated from days remaining to Expiry Date. FEFO dispatch priority remains driven by the earliest Expiry Date.</span>
     </div>
     <?php if ($user['role'] === 'super_admin'): ?>
     <form method="get" action="<?= e(url('/')) ?>" class="inline-form">
@@ -41,12 +40,12 @@ if (!empty($selectedCriteria)) {
     <div class="metric metric-neutral">
         <span>Total Batches</span>
         <strong><?= number_format($metrics['batches']) ?></strong>
-        <small>active stock</small>
+        <small>active stock lots</small>
     </div>
     <div class="metric value-total metric-neutral">
         <span>Current Stock Value</span>
         <strong>Rs/ <?= number_format($metrics['stock_value'], 2) ?></strong>
-        <!-- <small>all selected grades</small> -->
+        <small>all selected grades</small>
     </div>
     <div class="metric grade-aplus grade-click-card" role="button" tabindex="0" data-grade="A+" data-grade-label="A+" aria-label="Open A+ grade stock details">
         <span class="grade-card-title">A+</span>
@@ -79,7 +78,8 @@ if (!empty($selectedCriteria)) {
 <div class="card dashboard-stock-card">
     <div class="card-head">
         <div>
-            <h2>Stock Aging Detail</h2>
+            <h2>Stock Aging Dashboard</h2>
+            <p>Complete stock view using the same columns as the Stock Aging Dashboard. Records remain in FEFO order by Expiry Date.</p>
         </div>
         <a class="btn" href="<?= e(url('/stocks' . (!empty($selectedDivision) ? '?division_id=' . (int)$selectedDivision : ''))) ?>">Open Stock Aging Dashboard</a>
     </div>
