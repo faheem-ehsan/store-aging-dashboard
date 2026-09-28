@@ -23,7 +23,7 @@ if (!empty($selectedCriteria)) {
 ?>
 <div class="toolbar">
     <div class="toolbar-left">
-        <span class="subtle">Grades are calculated from Date of Manufacturer. FEFO dispatch priority remains driven by Expiry Date.</span>
+        <span class="subtle">Grades are calculated from Date of Manufacturing. FEFO dispatch Rule.</span>
     </div>
     <?php if ($user['role'] === 'super_admin'): ?>
     <form method="get" action="<?= e(url('/')) ?>" class="inline-form">
@@ -41,12 +41,12 @@ if (!empty($selectedCriteria)) {
     <div class="metric metric-neutral">
         <span>Total Batches</span>
         <strong><?= number_format($metrics['batches']) ?></strong>
-        <small>active stock lots</small>
+        <small>active stock</small>
     </div>
     <div class="metric value-total metric-neutral">
         <span>Current Stock Value</span>
         <strong>Rs/ <?= number_format($metrics['stock_value'], 2) ?></strong>
-        <small>all selected grades</small>
+        <!-- <small>all selected grades</small> -->
     </div>
     <div class="metric grade-aplus grade-click-card" role="button" tabindex="0" data-grade="A+" data-grade-label="A+" aria-label="Open A+ grade stock details">
         <span class="grade-card-title">A+</span>
@@ -79,8 +79,7 @@ if (!empty($selectedCriteria)) {
 <div class="card dashboard-stock-card">
     <div class="card-head">
         <div>
-            <h2>Stock Aging Dashboard</h2>
-            <p>Complete stock view using the same columns as the Stock Aging Dashboard. Records remain in FEFO order by Expiry Date.</p>
+            <h2>Stock Aging Detail</h2>
         </div>
         <a class="btn" href="<?= e(url('/stocks' . (!empty($selectedDivision) ? '?division_id=' . (int)$selectedDivision : ''))) ?>">Open Stock Aging Dashboard</a>
     </div>
