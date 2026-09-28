@@ -21,123 +21,210 @@ if (!empty($selectedCriteria)) {
     ];
 }
 ?>
-<div class="toolbar">
-    <div class="toolbar-left">
-        <span class="subtle">Grades are calculated from days remaining to Expiry Date. FEFO dispatch priority remains driven by the earliest Expiry Date.</span>
+<?php
+$dashboardNumber = static function ($value): string {
+    $number = (float)$value;
+    if (abs($number) >= 1000000) {
+        return number_format((int)round($number / 1000000)) . ' Million';
+    }
+    return number_format((int)round($number));
+};
+$dashboardPlainNumber = static function ($value): string {
+    return number_format((int)round((float)$value));
+};
+$gradeSeries = [
+    ['key' => 'A+', 'label' => 'A+', 'class' => 'grade-aplus', 'legend_class' => 'blue', 'color' => '#0b2f6b', 'qty' => (float)($metrics['grades']['A+']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A+']['value'] ?? 0)],
+    ['key' => 'A', 'label' => 'A', 'class' => 'grade-a', 'legend_class' => 'green', 'color' => '#92d050', 'qty' => (float)($metrics['grades']['A']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A']['value'] ?? 0)],
+    ['key' => 'B', 'label' => 'B', 'class' => 'grade-b', 'legend_class' => 'yellow', 'color' => '#fff200', 'qty' => (float)($metrics['grades']['B']['qty'] ?? 0), 'value' => (float)($metrics['grades']['B']['value'] ?? 0)],
+    ['key' => 'C', 'label' => 'C', 'class' => 'grade-c', 'legend_class' => 'red', 'color' => '#ff1717', 'qty' => (float)($metrics['grades']['C']['qty'] ?? 0), 'value' => (float)($metrics['grades']['C']['value'] ?? 0)],
+    ['key' => 'EX', 'label' => 'Expired', 'class' => 'grade-ex', 'legend_class' => 'black', 'color' => '#000000', 'qty' => (float)($metrics['grades']['EX']['qty'] ?? 0), 'value' => (float)($metrics['grades']['EX']['value'] ?? 0)],
+];
+$totalQty = 0.0;
+$maxQty = 0.0;
+$activeGradeGroups = 0;
+foreach ($gradeSeries as $gs) {
+    $totalQty += $gs['qty'];
+    $maxQty = max($maxQty, $gs['qty']);
+    if ($gs['qty'] > 0) {
+        $activeGradeGroups++;
+    }
+}
+$maxQty = max($maxQty, 1);
+$selectedDivisionLabel = !empty($pageDivision) ? (($pageDivision['code'] ?? '') . ' — ' . ($pageDivision['name'] ?? '')) : 'All divisions';
+$dashboardWelcomeName = !empty($pageDivision) && !empty($pageDivision['name'])
+    ? (string)$pageDivision['name']
+    : 'All Division';
+$dashboardWelcomeText = 'Welcome to ' . $dashboardWelcomeName . ' Finish Goods Aging System';
+$displayRows = array_slice($rows ?? [], 0, 10);
+$cumulativePct = 0;
+$distributionStops = [];
+foreach ($gradeSeries as $gs) {
+    $pct = $totalQty > 0 ? round(($gs['qty'] / $totalQty) * 100, 2) : 0;
+    $distributionStops[] = [
+        'label' => $gs['label'],
+        'class' => $gs['class'],
+        'color' => $gs['color'],
+        'qty' => $gs['qty'],
+        'value' => $gs['value'],
+        'pct' => $pct,
+        'from' => $cumulativePct,
+        'to' => $cumulativePct + $pct,
+    ];
+    $cumulativePct += $pct;
+}
+$gradientParts = [];
+foreach ($distributionStops as $stop) {
+    $gradientParts[] = $stop['color'] . ' ' . rtrim(rtrim(number_format($stop['from'], 2, '.', ''), '0'), '.') . '% ' . rtrim(rtrim(number_format($stop['to'], 2, '.', ''), '0'), '.') . '%';
+}
+$donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gradientParts) . ')' : 'conic-gradient(#e5e7eb 0 100%)';
+?>
+
+<div class="dashboard-clean-head">
+    <div class="dashboard-clean-title">
+        <h1>Dashboard</h1>
+        <span class="dashboard-welcome-title"><?= e($dashboardWelcomeText) ?></span>
     </div>
-    <?php if ($user['role'] === 'super_admin'): ?>
-    <form method="get" action="<?= e(url('/')) ?>" class="inline-form">
-        <select name="division_id" onchange="this.form.submit()">
-            <option value="">All divisions</option>
-            <?php foreach ($divisions as $d): ?>
-                <option value="<?= (int)$d['id'] ?>" <?= (int)$selectedDivision === (int)$d['id'] ? 'selected' : '' ?>><?= e($d['code']) ?></option>
-            <?php endforeach; ?>
-        </select>
-    </form>
-    <?php endif; ?>
+
+    <div class="dashboard-division-selector">
+        <span class="division-selector-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V8l8-4 8 4v12M8 20v-5h8v5M8 10h.01M12 10h.01M16 10h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+        <div class="division-selector-content">
+            <small>Division</small>
+            <?php if ($user['role'] === 'super_admin'): ?>
+                <form method="get" action="<?= e(url('/')) ?>" class="dashboard-division-form">
+                    <select name="division_id" onchange="this.form.submit()" aria-label="Select division">
+                        <option value="">All Divisions</option>
+                        <?php foreach ($divisions as $d): ?>
+                            <option value="<?= (int)$d['id'] ?>" <?= (int)$selectedDivision === (int)$d['id'] ? 'selected' : '' ?>><?= e($d['code']) ?> — <?= e($d['name']) ?></option>
+                        <?php endforeach; ?>
+                    </select>
+                </form>
+            <?php else: ?>
+                <strong><?= e($selectedDivisionLabel) ?></strong>
+            <?php endif; ?>
+        </div>
+    </div>
 </div>
 
-<div class="metric-grid dashboard-grade-metrics">
-    <div class="metric metric-neutral">
-        <span>Total Batches</span>
-        <strong><?= number_format($metrics['batches']) ?></strong>
-        <small>active stock lots</small>
+<div class="dashboard-summary-grid">
+    <div class="dashboard-summary-card">
+        <span class="summary-icon">📦</span>
+        <div>
+            <small>Total Items</small>
+            <strong><?= $dashboardPlainNumber($metrics['batches']) ?></strong>
+            <p>Total visible lines</p>
+        </div>
     </div>
-    <div class="metric value-total metric-neutral">
-        <span>Current Stock Value</span>
-        <strong>Rs/ <?= number_format($metrics['stock_value'], 2) ?></strong>
-        <small>all selected grades</small>
+    <div class="dashboard-summary-card">
+        <span class="summary-icon">▣</span>
+        <div>
+            <small>Total Stock Qty</small>
+            <strong><?= $dashboardNumber($totalQty) ?></strong>
+            <p>Across all visible grades</p>
+        </div>
     </div>
+    <div class="dashboard-summary-card">
+        <span class="summary-icon">₨</span>
+        <div>
+            <small>Stock Value (Rs/)</small>
+            <strong><?= $dashboardNumber($metrics['stock_value']) ?></strong>
+            <p>Total inventory value</p>
+        </div>
+    </div>
+    <div class="dashboard-summary-card">
+        <span class="summary-icon">⚑</span>
+        <div>
+            <small>Active Grade Groups</small>
+            <strong><?= $dashboardPlainNumber($activeGradeGroups) ?></strong>
+            <p>Color-based stock groups</p>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-analytics-grid">
+    <div class="card dashboard-analytics-card">
+        <div class="card-head analytics-head">
+            <div>
+                <h2>Stock by Aging Group</h2>
+            </div>
+            <span class="analytics-badge">Quantity</span>
+        </div>
+        <div class="aging-bars-panel">
+            <?php foreach ($gradeSeries as $gs):
+                $height = max(14, (int)round(($gs['qty'] / $maxQty) * 100));
+            ?>
+                <div class="aging-bar-col">
+                    <span class="bar-value"><?= $dashboardNumber($gs['qty']) ?></span>
+                    <div class="aging-bar-track">
+                        <div class="aging-bar-fill <?= e($gs['class']) ?>" style="height: <?= $height ?>%;"></div>
+                    </div>
+                    <strong><?= e($gs['label']) ?></strong>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    </div>
+
+    <div class="card dashboard-analytics-card">
+        <div class="card-head analytics-head">
+            <div>
+                <h2>Aging Group Distribution</h2>
+            </div>
+        </div>
+        <div class="distribution-panel">
+            <div class="distribution-donut" style="background: <?= e($donutGradient) ?>;">
+                <div class="distribution-donut-hole">
+                    <strong><?= $dashboardNumber($totalQty) ?></strong>
+                    <span>Total Qty</span>
+                </div>
+            </div>
+            <div class="distribution-list">
+                <?php foreach ($distributionStops as $stop): ?>
+                    <div class="distribution-item">
+                        <span class="distribution-swatch <?= e($stop['class']) ?>"></span>
+                        <div class="distribution-copy">
+                            <strong><?= e($stop['label']) ?></strong>
+                            <small><?= $dashboardNumber($stop['qty']) ?> qty</small>
+                        </div>
+                        <b><?= number_format($stop['pct'], 0) ?>%</b>
+                    </div>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="dashboard-grade-section-head">
+    <div>
+        <h2>Grade Summary</h2>
+    </div>
+</div>
+
+<div class="metric-grid dashboard-grade-metrics dashboard-grade-metrics-refreshed">
     <div class="metric grade-aplus grade-click-card" role="button" tabindex="0" data-grade="A+" data-grade-label="A+" aria-label="Open A+ grade stock details">
         <span class="grade-card-title">A+</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['A+']['qty'], 3) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['A+']['value'], 2) ?></span></div>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['A+']['qty']) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['A+']['value']) ?></span></div>
     </div>
     <div class="metric grade-a grade-click-card" role="button" tabindex="0" data-grade="A" data-grade-label="A" aria-label="Open A grade stock details">
         <span class="grade-card-title">A</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['A']['qty'], 3) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['A']['value'], 2) ?></span></div>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['A']['qty']) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['A']['value']) ?></span></div>
     </div>
     <div class="metric grade-b grade-click-card" role="button" tabindex="0" data-grade="B" data-grade-label="B" aria-label="Open B grade stock details">
         <span class="grade-card-title">B</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['B']['qty'], 3) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['B']['value'], 2) ?></span></div>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['B']['qty']) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['B']['value']) ?></span></div>
     </div>
     <div class="metric grade-c grade-click-card" role="button" tabindex="0" data-grade="C" data-grade-label="C" aria-label="Open C grade stock details">
         <span class="grade-card-title">C</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['C']['qty'], 3) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['C']['value'], 2) ?></span></div>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['C']['qty']) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['C']['value']) ?></span></div>
     </div>
     <div class="metric grade-ex grade-click-card" role="button" tabindex="0" data-grade="EX" data-grade-label="Expired" aria-label="Open expired stock details">
         <span class="grade-card-title">Expired</span>
-        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= number_format($metrics['grades']['EX']['qty'], 3) ?></strong></div>
-        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= number_format($metrics['grades']['EX']['value'], 2) ?></span></div>
-    </div>
-</div>
-
-<?php $canManageDashboard = in_array($user['role'], ['super_admin', 'division_admin'], true); ?>
-<div class="card dashboard-stock-card">
-    <div class="card-head">
-        <div>
-            <h2>Stock Aging Dashboard</h2>
-            <p>Complete stock view using the same columns as the Stock Aging Dashboard. Records remain in FEFO order by Expiry Date.</p>
-        </div>
-        <a class="btn" href="<?= e(url('/stocks' . (!empty($selectedDivision) ? '?division_id=' . (int)$selectedDivision : ''))) ?>">Open Stock Aging Dashboard</a>
-    </div>
-    <div class="table-wrap">
-        <table class="aging-table dispatch-stock-table dashboard-stock-table">
-            <thead><tr>
-                <th>Division</th>
-                <th>Product Code</th>
-                <th>Product Name</th>
-                <th>Current Stock</th>
-                <th>UoM</th>
-                <th>Stock Value</th>
-                <th>Batch No</th>
-                <th>Manufacturing Date</th>
-                <th>Expiry Date</th>
-                <th>Aging (Days)</th>
-                <th>Aging Remaining (Days)</th>
-                <th>Stock Location</th>
-                <th>Grade</th>
-                <?php if ($canManageDashboard): ?><th>Action</th><?php endif; ?>
-            </tr></thead>
-            <tbody>
-            <?php if (empty($rows)): ?>
-                <tr><td colspan="14" class="empty">No stock batches found for the selected division.</td></tr>
-            <?php endif; ?>
-            <?php foreach (($rows ?? []) as $r): ?>
-                <tr>
-                    <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
-                    <td><?= e($r['material_code']) ?></td>
-                    <td><?= e($r['material_description']) ?></td>
-                    <td class="num"><?= number_format((float)$r['current_qty'], 3) ?></td>
-                    <td><?= e($r['uom'] ?? '') ?></td>
-                    <td class="num">Rs/ <?= number_format((float)($r['stock_value'] ?? 0), 2) ?></td>
-                    <td><?= e($r['batch_no']) ?></td>
-                    <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
-                    <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
-                    <td class="num"><?= number_format($r['aging_days']) ?></td>
-                    <td class="num <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= number_format($r['remaining_days']) ?></td>
-                    <td><?= e($r['receiving_store'] ?? '') ?></td>
-                    <td>
-                        <span class="grade-bar-wrap" title="<?= e($r['grade']['grade_code']) ?> · <?= e($r['grade']['criteria_text']) ?>">
-                            <span class="grade-bar <?= e($r['grade']['color_class']) ?>"></span>
-                            <span class="sr-only">Grade <?= e($r['grade']['grade_code']) ?> - <?= e($r['grade']['grade_name']) ?></span>
-                        </span>
-                    </td>
-                    <?php if ($canManageDashboard): ?><td class="actions">
-                        <a href="<?= e(url('/stocks/edit?id=' . (int)$r['id'])) ?>">Edit</a>
-                        <form method="post" action="<?= e(url('/stocks/delete')) ?>" onsubmit="return confirm('Delete this batch?')">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
-                            <button class="danger-link" type="submit">Delete</button>
-                        </form>
-                    </td><?php endif; ?>
-                </tr>
-            <?php endforeach; ?>
-            </tbody>
-        </table>
+        <div class="grade-qty-line"><span class="grade-metric-label">QTY</span><strong class="grade-qty-value"><?= $dashboardNumber($metrics['grades']['EX']['qty']) ?></strong></div>
+        <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($metrics['grades']['EX']['value']) ?></span></div>
     </div>
 </div>
 
@@ -181,8 +268,8 @@ ksort($modalLocations);
 
         <div class="grade-modal-summary">
             <div><span>No. of Batches</span><strong id="gradeModalBatchCount">0</strong></div>
-            <div><span>Current Stock Qty.</span><strong id="gradeModalQty">0.000</strong></div>
-            <div><span>Stock Value</span><strong id="gradeModalValue">Rs/ 0.00</strong></div>
+            <div><span>Current Stock Qty.</span><strong id="gradeModalQty">0</strong></div>
+            <div><span>Stock Value</span><strong id="gradeModalValue">Rs/ 0</strong></div>
         </div>
 
         <div class="grade-modal-filters">
@@ -230,9 +317,9 @@ ksort($modalLocations);
                         <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
                         <td><?= e($r['material_code']) ?></td>
                         <td><?= e($r['material_description']) ?></td>
-                        <td class="num"><?= number_format((float)$r['current_qty'], 3) ?></td>
+                        <td class="num"><?= $dashboardNumber((float)$r['current_qty']) ?></td>
                         <td><?= e($r['uom'] ?? '') ?></td>
-                        <td class="num">Rs/ <?= number_format((float)($r['stock_value'] ?? 0), 2) ?></td>
+                        <td class="num">Rs/ <?= $dashboardNumber((float)($r['stock_value'] ?? 0)) ?></td>
                         <td><?= e($r['batch_no']) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
@@ -273,8 +360,12 @@ ksort($modalLocations);
     let activeGrade = '';
     let lastFocused = null;
 
-    function number(value, decimals) {
-        return Number(value || 0).toLocaleString(undefined, {minimumFractionDigits: decimals, maximumFractionDigits: decimals});
+    function dashboardNumber(value) {
+        const number = Number(value || 0);
+        if (Math.abs(number) >= 1000000) {
+            return Math.round(number / 1000000).toLocaleString() + ' Million';
+        }
+        return Math.round(number).toLocaleString();
     }
 
     function applyFilters() {
@@ -298,8 +389,8 @@ ksort($modalLocations);
 
         empty.hidden = count !== 0;
         countEl.textContent = count.toLocaleString();
-        qtyEl.textContent = number(qty, 3);
-        valueEl.textContent = 'Rs/ ' + number(value, 2);
+        qtyEl.textContent = dashboardNumber(qty);
+        valueEl.textContent = 'Rs/ ' + dashboardNumber(value);
         resultText.textContent = 'Showing ' + count.toLocaleString() + ' batch' + (count === 1 ? '' : 'es');
     }
 
