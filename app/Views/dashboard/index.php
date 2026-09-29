@@ -155,32 +155,12 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     </div>
     <div class="dashboard-summary-card">
         <span class="summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm9 0h5v5h-5v-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
-        </span>
-        <div>
-            <small>UoM Types</small>
-            <strong><?= $dashboardPlainNumber(count($uomTotals)) ?></strong>
-            <p>Quantity is separated by unit below</p>
-        </div>
-    </div>
-    <div class="dashboard-summary-card">
-        <span class="summary-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v9H4v-9Zm3 4.5h.01M17 12h.01M12 9.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
         <div>
             <small>Retail Stock Value</small>
             <strong>Rs/ <?= $dashboardNumber($metrics['stock_value']) ?></strong>
             <p>Total inventory value</p>
-        </div>
-    </div>
-    <div class="dashboard-summary-card">
-        <span class="summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M6 20V5m0 1h10l-2 3 2 3H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-        </span>
-        <div>
-            <small>Active Grade Groups</small>
-            <strong><?= $dashboardPlainNumber($activeGradeGroups) ?></strong>
-            <p>Color-based stock groups</p>
         </div>
     </div>
 </div>
