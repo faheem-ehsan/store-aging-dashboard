@@ -42,8 +42,13 @@ $dashboardAgingPeriod = static function ($value): string {
     }
 
     $months = (int)floor($absDays / 30);
+    $remainingDays = $absDays % 30;
     if ($months <= 12) {
-        return $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
+        $label = $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
+        if ($remainingDays > 0) {
+            $label .= ' ' . number_format($remainingDays) . ' Day' . ($remainingDays === 1 ? '' : 's');
+        }
+        return $label;
     }
 
     $years = (int)floor($months / 12);

@@ -897,3 +897,67 @@ body.modal-open{overflow:hidden}
 /* Human-readable aging period labels */
 .aging-period{white-space:nowrap;font-weight:600;color:#344054}
 .aging-period.text-danger{color:var(--danger)}
+
+/* Dashboard welcome emphasis + normal division selector text */
+.dashboard-clean-head{
+    align-items:center;
+    gap:18px;
+}
+.dashboard-clean-title{
+    gap:16px;
+}
+.dashboard-welcome-title{
+    min-height:42px;
+    padding:9px 16px;
+    border:1px solid #efb7bd;
+    border-radius:14px;
+    background:linear-gradient(135deg,#fff 0%,#fff5f6 100%);
+    color:#7a0f15;
+    font-size:17px;
+    line-height:1.25;
+    font-weight:800;
+    letter-spacing:-.01em;
+    box-shadow:0 6px 18px rgba(167,26,34,.08);
+}
+.dashboard-division-form select{
+    font-weight:500;
+    color:#344054;
+}
+.division-selector-content strong{
+    font-weight:600;
+}
+@media(max-width:1366px){
+    .dashboard-welcome-title{
+        font-size:16px;
+        min-height:39px;
+        padding:8px 14px;
+    }
+    .dashboard-division-form select{
+        font-size:13px;
+        font-weight:500;
+    }
+}
+@media(max-width:900px){
+    .dashboard-clean-title{
+        display:flex;
+        align-items:flex-start;
+        gap:9px;
+    }
+    .dashboard-welcome-title{
+        width:auto;
+        max-width:100%;
+        font-size:15px;
+        min-height:38px;
+        padding:8px 12px;
+        border-radius:12px;
+    }
+}
+@media(max-width:520px){
+    .dashboard-clean-title{
+        display:grid;
+    }
+    .dashboard-welcome-title{
+        font-size:14px;
+        line-height:1.35;
+    }
+}
