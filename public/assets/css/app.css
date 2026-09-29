@@ -961,3 +961,48 @@ body.modal-open{overflow:hidden}
         line-height:1.35;
     }
 }
+
+/* Dashboard summary icon polish */
+.dashboard-summary-card .summary-icon svg{width:20px;height:20px;display:block}
+.dashboard-summary-card:nth-child(1) .summary-icon{background:#fff4eb;color:#b54708}
+.dashboard-summary-card:nth-child(2) .summary-icon{background:#eff4ff;color:#3538cd}
+.dashboard-summary-card:nth-child(3) .summary-icon{background:#eef4ff;color:#344054}
+.dashboard-summary-card:nth-child(4) .summary-icon{background:#f2f4f7;color:#344054}
+
+
+/* CSV new-batch-only import mode */
+.csv-import-mode{
+    padding:14px;
+    border:1px solid #e6e9ef;
+    border-radius:12px;
+    background:#f8fafc;
+}
+.csv-import-mode span{
+    font-weight:800;
+    color:#344054;
+}
+.csv-import-mode small{
+    color:#667085;
+    line-height:1.45;
+}
+.import-stats.import-stats-four{
+    grid-template-columns:repeat(4,minmax(0,1fr));
+}
+.import-stats .skipped strong{
+    color:#475467;
+}
+@media(max-width:900px){
+    .import-stats.import-stats-four{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:520px){
+    .import-stats.import-stats-four{grid-template-columns:1fr}
+}
+
+
+/* Market Return summary card icon refresh */
+.market-return-summary-cards .dashboard-summary-card .summary-icon{width:44px;height:44px;border-radius:12px}
+.market-return-summary-cards .dashboard-summary-card .summary-icon svg{width:21px;height:21px}
+.market-return-summary-cards .market-return-total-card .summary-icon{background:#fff3e8;color:#b54708}
+.market-return-summary-cards .market-return-value-card .summary-icon{background:#eef2ff;color:#4338ca}
+.market-return-summary-cards .market-return-category-card .summary-icon{background:#eef6ff;color:#175cd3}
+.market-return-summary-cards .market-return-expired-card .summary-icon{background:#fff1f0;color:#d92d20}

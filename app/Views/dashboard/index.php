@@ -32,33 +32,42 @@ $dashboardNumber = static function ($value): string {
 $dashboardPlainNumber = static function ($value): string {
     return number_format((int)round((float)$value));
 };
-$dashboardAgingPeriod = static function ($value): string {
-    $days = (int)round((float)$value);
-    $sign = $days < 0 ? '-' : '';
-    $absDays = abs($days);
-
-    if ($absDays < 30) {
-        return $sign . number_format($absDays) . ' Day' . ($absDays === 1 ? '' : 's');
+$dashboardActualMoney = static function ($value): string {
+    return 'Rs/ ' . number_format((int)round((float)$value));
+};
+$dashboardCalendarAgingPeriod = static function ($startDate, $endDate): string {
+    try {
+        $start = new \DateTimeImmutable((string)$startDate);
+        $end = new \DateTimeImmutable((string)$endDate);
+    } catch (\Throwable $e) {
+        return '—';
     }
 
-    $months = (int)floor($absDays / 30);
-    $remainingDays = $absDays % 30;
-    if ($months <= 12) {
-        $label = $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
-        if ($remainingDays > 0) {
-            $label .= ' ' . number_format($remainingDays) . ' Day' . ($remainingDays === 1 ? '' : 's');
+    $interval = $start->diff($end);
+    $sign = $interval->invert ? '-' : '';
+    $years = (int)$interval->y;
+    $months = (int)$interval->m;
+    $days = (int)$interval->d;
+
+    if ($years > 0) {
+        $label = $sign . number_format($years) . ' Year' . ($years === 1 ? '' : 's');
+        if ($months > 0) {
+            $label .= ' ' . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
         }
         return $label;
     }
 
-    $years = (int)floor($months / 12);
-    $remainingMonths = $months % 12;
-    $label = $sign . number_format($years) . ' Year' . ($years === 1 ? '' : 's');
-    if ($remainingMonths > 0) {
-        $label .= ' ' . number_format($remainingMonths) . ' Month' . ($remainingMonths === 1 ? '' : 's');
+    if ($months > 0) {
+        $label = $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
+        if ($days > 0) {
+            $label .= ' ' . number_format($days) . ' Day' . ($days === 1 ? '' : 's');
+        }
+        return $label;
     }
-    return $label;
+
+    return $sign . number_format($days) . ' Day' . ($days === 1 ? '' : 's');
 };
+$dashboardAgingReferenceDate = (new \DateTimeImmutable('today'))->format('Y-m-d');
 $uomTotals = $metrics['uoms'] ?? [];
 $gradeSeries = [
     ['key' => 'A+', 'label' => 'A+', 'class' => 'grade-aplus', 'legend_class' => 'blue', 'color' => '#0b2f6b', 'qty' => (float)($metrics['grades']['A+']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A+']['value'] ?? 0), 'batches' => (int)($metrics['grades']['A+']['batches'] ?? 0), 'uoms' => $metrics['grades']['A+']['uoms'] ?? []],
@@ -135,15 +144,19 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
 
 <div class="dashboard-summary-grid">
     <div class="dashboard-summary-card">
-        <span class="summary-icon">📦</span>
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="m4.5 7 7.5-4 7.5 4-7.5 4-7.5-4Zm0 0v10l7.5 4 7.5-4V7M4.5 12l7.5 4 7.5-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
         <div>
-            <small>Total Items</small>
+            <small>Total Batches</small>
             <strong><?= $dashboardPlainNumber($metrics['batches']) ?></strong>
-            <p>Total batches</p>
+            <p>Total active stock batches</p>
         </div>
     </div>
     <div class="dashboard-summary-card">
-        <span class="summary-icon">▣</span>
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 5h5v5H5V5Zm9 0h5v5h-5V5ZM5 14h5v5H5v-5Zm9 0h5v5h-5v-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        </span>
         <div>
             <small>UoM Types</small>
             <strong><?= $dashboardPlainNumber(count($uomTotals)) ?></strong>
@@ -151,15 +164,19 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </div>
     </div>
     <div class="dashboard-summary-card">
-        <span class="summary-icon">₨</span>
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v9H4v-9Zm3 4.5h.01M17 12h.01M12 9.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
         <div>
-            <small>Retail Stock Value (Rs/)</small>
-            <strong><?= $dashboardNumber($metrics['stock_value']) ?></strong>
+            <small>Retail Stock Value</small>
+            <strong>Rs/ <?= $dashboardNumber($metrics['stock_value']) ?></strong>
             <p>Total inventory value</p>
         </div>
     </div>
     <div class="dashboard-summary-card">
-        <span class="summary-icon">⚑</span>
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 20V5m0 1h10l-2 3 2 3H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
         <div>
             <small>Active Grade Groups</small>
             <strong><?= $dashboardPlainNumber($activeGradeGroups) ?></strong>
@@ -369,12 +386,12 @@ ksort($modalLocations);
                         <td><?= e($r['material_description']) ?></td>
                         <td class="num"><?= $dashboardNumber((float)$r['current_qty']) ?></td>
                         <td><?= e($r['uom'] ?? '') ?></td>
-                        <td class="num">Rs/ <?= $dashboardNumber((float)($r['stock_value'] ?? 0)) ?></td>
+                        <td class="num"><?= $dashboardActualMoney($r['stock_value'] ?? 0) ?></td>
                         <td><?= e($r['batch_no']) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
-                        <td class="num aging-period"><?= e($dashboardAgingPeriod($r['aging_days'])) ?></td>
-                        <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($dashboardAgingPeriod($r['remaining_days'])) ?></td>
+                        <td class="num aging-period"><?= e($dashboardCalendarAgingPeriod($r['manufacture_date'], $dashboardAgingReferenceDate)) ?></td>
+                        <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($dashboardCalendarAgingPeriod($dashboardAgingReferenceDate, $r['expiry_date'])) ?></td>
                         <td><?= e($r['receiving_store'] ?? '') ?></td>
                         <td><span class="grade-bar <?= e($r['grade']['color_class']) ?>"></span></td>
                     </tr>

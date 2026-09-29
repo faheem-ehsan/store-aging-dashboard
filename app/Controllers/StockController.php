@@ -251,7 +251,12 @@ class StockController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
 
-        $result = ['inserted' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
+        $result = ['inserted' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => []];
+        $importMode = trim((string)($_POST['import_mode'] ?? 'new_only'));
+        if (!in_array($importMode, ['new_only', 'update_existing'], true)) {
+            $importMode = 'new_only';
+        }
+
         $divisionModel = new Division();
         $targetDivisionId = $user['role'] === 'super_admin'
             ? (int)($_POST['target_division_id'] ?? 0)
@@ -398,6 +403,21 @@ class StockController
 
                 $error = $this->validate($data);
                 if ($error) throw new \RuntimeException($error);
+
+                if ($importMode === 'new_only') {
+                    $existing = $stockModel->findByNaturalKey(
+                        (int)$data['division_id'],
+                        (string)$data['material_code'],
+                        (string)$data['batch_no']
+                    );
+                    if ($existing) {
+                        // Preserve the previously imported batch exactly as it is.
+                        // Only a genuinely new Batch No. for this Division + Product is inserted.
+                        $result['skipped']++;
+                        continue;
+                    }
+                }
+
                 $mode = $stockModel->upsertImport($data, $user);
                 $result[$mode]++;
             } catch (\Throwable $e) {
@@ -446,9 +466,10 @@ class StockController
         AuditLogger::log(
             'CSV_IMPORT',
             sprintf(
-                'CSV import completed: %d inserted, %d updated, %d failed.',
+                'CSV import completed: %d inserted, %d updated, %d skipped existing, %d failed.',
                 (int)($result['inserted'] ?? 0),
                 (int)($result['updated'] ?? 0),
+                (int)($result['skipped'] ?? 0),
                 (int)($result['failed'] ?? 0)
             ),
             'csv_import',
@@ -456,8 +477,10 @@ class StockController
             [
                 'file_name' => $fileName ?: null,
                 'target_division' => $targetDivision['code'] ?? ($targetDivisionId === 0 ? 'From CSV rows' : null),
+                'import_mode' => trim((string)($_POST['import_mode'] ?? 'new_only')),
                 'inserted' => (int)($result['inserted'] ?? 0),
                 'updated' => (int)($result['updated'] ?? 0),
+                'skipped_existing' => (int)($result['skipped'] ?? 0),
                 'failed' => (int)($result['failed'] ?? 0),
                 'errors' => array_slice((array)($result['errors'] ?? []), 0, 10),
             ],

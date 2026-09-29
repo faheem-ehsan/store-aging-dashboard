@@ -207,36 +207,44 @@ ksort($modalUnits);
 
 <?php if ($databaseReady): ?>
 <div class="dashboard-summary-grid market-return-summary-cards">
-    <div class="dashboard-summary-card">
-        <span class="summary-icon">📦</span>
+    <div class="dashboard-summary-card market-return-total-card">
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5ZM4 7.5V17l8 3 8-3V7.5M8 13H4m0 0 2-2m-2 2 2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
         <div>
-            <small>Visible Items</small>
+            <small>Total Return Goods</small>
             <strong><?= $formatInt($metrics['lines']) ?></strong>
             <p><?= $formatQty($metrics['qty']) ?> total quantity</p>
         </div>
     </div>
-    <div class="dashboard-summary-card">
-        <span class="summary-icon">₨</span>
+    <div class="dashboard-summary-card market-return-value-card">
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3 5 6v5c0 4.8 2.8 8.1 7 10 4.2-1.9 7-5.2 7-10V6l-7-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 9h4a2 2 0 1 1 0 4H9m3-6v8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
         <div>
-            <small>Visible Retail Stock Value</small>
+            <small>Return Retail Stock Value</small>
             <strong><?= $formatMoney($metrics['value']) ?></strong>
             <p><?= $formatInt($metrics['unvalued']) ?> item(s) without known value</p>
         </div>
     </div>
-    <div class="dashboard-summary-card">
-        <span class="summary-icon">◫</span>
+    <div class="dashboard-summary-card market-return-category-card">
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="14" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+        </span>
         <div>
-            <small>Source Categories</small>
+            <small>Returns Categories</small>
             <strong><?= $formatInt($visibleCategoryCount) ?></strong>
-            <p>Workbook categories in the current view</p>
+            <p>Return categories in the current view</p>
         </div>
     </div>
-    <div class="dashboard-summary-card">
-        <span class="summary-icon">⚑</span>
+    <div class="dashboard-summary-card market-return-expired-card">
+        <span class="summary-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 7v5l3 2M20 12a8 8 0 1 1-8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 4.5h3v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
         <div>
-            <small>Active Expiry Groups</small>
-            <strong><?= $formatInt($activeExpiryGroups) ?></strong>
-            <p>A, B, C, Expired and Other / No Expiry</p>
+            <small>Expired Return Goods</small>
+            <strong><?= $formatInt($expiryMetrics['expired']['lines'] ?? 0) ?></strong>
+            <p><?= $formatQty($expiryMetrics['expired']['qty'] ?? 0) ?> expired quantity</p>
         </div>
     </div>
 </div>

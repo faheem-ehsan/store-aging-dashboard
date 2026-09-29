@@ -3,12 +3,14 @@
         <div class="card-head">
             <div>
                 <h2>Import Stock Batches from CSV</h2>
-                <p>Use one CSV file to add or update batches. Matching Division + Product Code + Batch No. rows are updated instead of duplicated.</p>
+                <p>Use one CSV file to add new stock batches. By default, an already-imported Division + Product Code + Batch No. is kept unchanged and skipped. A different Batch No. is inserted as a new batch.</p>
             </div>
             <a class="btn ghost" href="<?= e(url('/stocks/import-template')) ?>">Download CSV Template</a>
         </div>
 
         <div class="import-notes">
+            <strong>Import matching rule</strong>
+            <p><b>Default: Add New Batches Only.</b> Same Division + Product Code + Batch No. = <b>skip existing record</b>. Different Batch No. = <b>insert a new batch</b>, even when the Product Code is the same.</p>
             <strong>Required CSV headings</strong>
             <div class="csv-columns">
                 <span>Division</span><span>Product Code</span><span>Product Name</span><span>Current Stock</span><span>UoM</span><span>Retail Stock Value</span><span>Batch No</span><span>Manufacturing Date</span><span>Expiry Date</span><span>Aging (Days)</span><span>Aging Remaining (Days)</span><span>Stock Location</span>
@@ -23,6 +25,15 @@
 
         <form method="post" action="<?= e(url('/stocks/import')) ?>" enctype="multipart/form-data" class="csv-upload-form">
             <?= csrf_field() ?>
+
+            <label class="csv-target-division csv-import-mode">
+                <span>Import Mode</span>
+                <select name="import_mode">
+                    <option value="new_only" <?= ($_POST['import_mode'] ?? 'new_only') === 'new_only' ? 'selected' : '' ?>>Add New Batches Only (Recommended)</option>
+                    <option value="update_existing" <?= ($_POST['import_mode'] ?? '') === 'update_existing' ? 'selected' : '' ?>>Update Existing Batches + Add New</option>
+                </select>
+                <small>Use “Add New Batches Only” to preserve previously imported stock. Existing Batch Nos. are skipped; only new Batch Nos. are added.</small>
+            </label>
 
             <?php if ($user['role'] === 'super_admin'): ?>
             <label class="csv-target-division">
@@ -57,9 +68,10 @@
     <?php if ($result): ?>
     <div class="card import-result-card">
         <div class="card-head"><div><h2>Import Result</h2><p>CSV processing has completed.</p></div></div>
-        <div class="import-stats">
-            <div><span>Inserted</span><strong><?= number_format((int)$result['inserted']) ?></strong></div>
+        <div class="import-stats import-stats-four">
+            <div><span>New Batches Added</span><strong><?= number_format((int)$result['inserted']) ?></strong></div>
             <div><span>Updated</span><strong><?= number_format((int)$result['updated']) ?></strong></div>
+            <div class="skipped"><span>Existing Batches Skipped</span><strong><?= number_format((int)($result['skipped'] ?? 0)) ?></strong></div>
             <div class="failed"><span>Failed</span><strong><?= number_format((int)$result['failed']) ?></strong></div>
         </div>
         <?php if (!empty($result['errors'])): ?>
@@ -70,7 +82,9 @@
                 </ul>
             </div>
         <?php else: ?>
-            <div class="flash success">All CSV rows were imported successfully.</div>
+            <div class="flash success">
+                Import completed. New Batch Nos. were added and existing Batch Nos. were preserved according to the selected import mode.
+            </div>
         <?php endif; ?>
         <a class="btn primary" href="<?= e(url('/stocks')) ?>">View Imported Stock</a>
     </div>

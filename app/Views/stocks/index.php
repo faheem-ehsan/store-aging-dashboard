@@ -9,33 +9,42 @@ $stockValueNumber = static function ($value): string {
     }
     return 'Rs/ ' . number_format((int)round($number));
 };
-$agingPeriod = static function ($value): string {
-    $days = (int)round((float)$value);
-    $sign = $days < 0 ? '-' : '';
-    $absDays = abs($days);
-
-    if ($absDays < 30) {
-        return $sign . number_format($absDays) . ' Day' . ($absDays === 1 ? '' : 's');
+$stockValueActual = static function ($value): string {
+    return 'Rs/ ' . number_format((int)round((float)$value));
+};
+$calendarAgingPeriod = static function ($startDate, $endDate): string {
+    try {
+        $start = new \DateTimeImmutable((string)$startDate);
+        $end = new \DateTimeImmutable((string)$endDate);
+    } catch (\Throwable $e) {
+        return '—';
     }
 
-    $months = (int)floor($absDays / 30);
-    $remainingDays = $absDays % 30;
-    if ($months <= 12) {
-        $label = $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
-        if ($remainingDays > 0) {
-            $label .= ' ' . number_format($remainingDays) . ' Day' . ($remainingDays === 1 ? '' : 's');
+    $interval = $start->diff($end);
+    $sign = $interval->invert ? '-' : '';
+    $years = (int)$interval->y;
+    $months = (int)$interval->m;
+    $days = (int)$interval->d;
+
+    if ($years > 0) {
+        $label = $sign . number_format($years) . ' Year' . ($years === 1 ? '' : 's');
+        if ($months > 0) {
+            $label .= ' ' . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
         }
         return $label;
     }
 
-    $years = (int)floor($months / 12);
-    $remainingMonths = $months % 12;
-    $label = $sign . number_format($years) . ' Year' . ($years === 1 ? '' : 's');
-    if ($remainingMonths > 0) {
-        $label .= ' ' . number_format($remainingMonths) . ' Month' . ($remainingMonths === 1 ? '' : 's');
+    if ($months > 0) {
+        $label = $sign . number_format($months) . ' Month' . ($months === 1 ? '' : 's');
+        if ($days > 0) {
+            $label .= ' ' . number_format($days) . ' Day' . ($days === 1 ? '' : 's');
+        }
+        return $label;
     }
-    return $label;
+
+    return $sign . number_format($days) . ' Day' . ($days === 1 ? '' : 's');
 };
+$agingReferenceDate = (new \DateTimeImmutable('today'))->format('Y-m-d');
 $gradeOptions = [
     'A+' => 'A+ · Dark Blue',
     'A' => 'A · Green',
@@ -149,12 +158,12 @@ $gradeOptions = [
     <td><?= e($r['material_description']) ?></td>
     <td class="num"><?= $stockQtyNumber($r['current_qty']) ?></td>
     <td><?= e($r['uom'] ?? '') ?></td>
-    <td class="num"><?= $stockValueNumber($r['stock_value'] ?? 0) ?></td>
+    <td class="num"><?= $stockValueActual($r['stock_value'] ?? 0) ?></td>
     <td><?= e($r['batch_no']) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
     <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
-    <td class="num aging-period"><?= e($agingPeriod($r['aging_days'])) ?></td>
-    <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($agingPeriod($r['remaining_days'])) ?></td>
+    <td class="num aging-period"><?= e($calendarAgingPeriod($r['manufacture_date'], $agingReferenceDate)) ?></td>
+    <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($calendarAgingPeriod($agingReferenceDate, $r['expiry_date'])) ?></td>
     <td><?= e($r['receiving_store'] ?? '') ?></td>
     <td>
         <span class="grade-bar-wrap" title="<?= e($r['grade']['grade_code']) ?> · <?= e($r['grade']['criteria_text']) ?>">

@@ -54,8 +54,12 @@ class StockBatch
 
     public function findByNaturalKey(int $divisionId, string $materialCode, string $batchNo): ?array
     {
+        // A stock row is unique by Division + Product/Material + Batch No.
+        // Material code alone must never be treated as an existing batch during CSV import.
+        // BINARY keeps the batch comparison exact so a genuinely different batch number
+        // cannot accidentally select an older record for update.
         $stmt = Database::connection()->prepare(
-            $this->baseSelect() . ' WHERE sb.division_id=? AND m.material_code=? AND sb.batch_no=? LIMIT 1'
+            $this->baseSelect() . ' WHERE sb.division_id=? AND m.material_code=? AND BINARY sb.batch_no=BINARY ? LIMIT 1'
         );
         $stmt->execute([$divisionId, trim($materialCode), trim($batchNo)]);
         return $stmt->fetch() ?: null;
@@ -116,12 +120,33 @@ class StockBatch
     public function upsertImport(array $data, array $user): string
     {
         $divisionId = $user['role'] === 'super_admin' ? (int)$data['division_id'] : (int)$user['division_id'];
-        $existing = $this->findByNaturalKey($divisionId, $data['material_code'], $data['batch_no']);
+        $materialCode = trim((string)$data['material_code']);
+        $batchNo = trim((string)$data['batch_no']);
+
+        // Import rule:
+        //   same Division + Product Code + Batch No. => update that exact batch
+        //   different Batch No.                      => always insert a new stock batch
+        $existing = $this->findByNaturalKey($divisionId, $materialCode, $batchNo);
         if ($existing) {
             $this->save($data, $user, (int)$existing['id']);
             return 'updated';
         }
-        $this->save($data, $user);
+
+        try {
+            $this->save($data, $user);
+        } catch (\PDOException $e) {
+            // Older installations may still have a legacy UNIQUE key on
+            // (division_id, material_id), which wrongly prevents multiple batches
+            // for one product. Give an actionable message instead of allowing the
+            // import behavior to be mistaken for a material-level replacement.
+            $message = strtolower($e->getMessage());
+            if (str_contains($message, 'duplicate') || str_contains($message, 'unique')) {
+                throw new \RuntimeException(
+                    'A different Batch No. exists for this Product Code, but the database still has a legacy material-level unique key. Run database/migrations/009_fix_stock_batch_import_key.sql once, then import again.'
+                );
+            }
+            throw $e;
+        }
         return 'inserted';
     }
 
