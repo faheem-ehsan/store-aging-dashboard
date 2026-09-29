@@ -1771,3 +1771,405 @@ body.modal-open{overflow:hidden}
         width:100%;
     }
 }
+
+
+/* Dashboard Variant - Executive Panel Layout */
+.dashboard-variant-overview{
+    margin-bottom:20px;
+    padding:18px;
+    border:1px solid #dde3ea;
+    border-radius:22px;
+    background:linear-gradient(135deg,#ffffff 0%,#f8fafc 100%);
+    box-shadow:0 14px 34px rgba(16,24,40,.055);
+}
+.dashboard-variant-overview .dashboard-clean-head{
+    margin:0 0 16px;
+    padding:0 0 16px;
+    border-bottom:1px solid #e8edf2;
+}
+.dashboard-variant-overview .dashboard-clean-head h1{
+    font-size:26px;
+}
+.dashboard-variant-overview .dashboard-welcome-title{
+    border:0;
+    background:#f8e9eb;
+    box-shadow:none;
+    color:#7a0f15;
+    min-height:38px;
+    padding:8px 16px;
+}
+.dashboard-variant-overview .dashboard-division-selector{
+    background:#fff;
+    box-shadow:none;
+    border-color:#e2e7ed;
+}
+.dashboard-variant-overview .dashboard-summary-grid{
+    margin:0;
+    gap:14px;
+}
+.dashboard-variant-overview .dashboard-summary-card{
+    min-height:112px;
+    border:1px solid #e0e6ed;
+    box-shadow:none;
+    background:#fff;
+    position:relative;
+    overflow:hidden;
+}
+.dashboard-variant-overview .dashboard-summary-card::after{
+    content:"";
+    position:absolute;
+    left:0;
+    right:0;
+    bottom:0;
+    height:3px;
+    background:linear-gradient(90deg,#ef1c25 0%,#8f1117 100%);
+    opacity:.78;
+}
+.dashboard-variant-overview .dashboard-summary-card .summary-icon{
+    width:46px;
+    height:46px;
+    border-radius:14px;
+}
+.dashboard-variant-overview .dashboard-summary-card strong{
+    font-size:24px;
+    line-height:1.15;
+}
+.dashboard-variant-overview .dashboard-summary-card p{
+    margin-top:5px;
+}
+
+.dashboard-variant-grade-shell{
+    padding:18px;
+    border:1px solid #dde3ea;
+    border-radius:22px;
+    background:#fff;
+    box-shadow:0 14px 34px rgba(16,24,40,.055);
+}
+.dashboard-variant-grade-shell .dashboard-grade-section-head{
+    margin:0 0 14px;
+    padding:0 0 12px;
+    border-bottom:1px solid #edf0f4;
+}
+.dashboard-variant-grade-shell .dashboard-grade-section-head h2{
+    margin:0;
+    font-size:20px;
+    color:#101828;
+}
+.dashboard-variant-grade-shell .grade-summary-table-cards{
+    display:grid;
+    grid-template-columns:repeat(6,minmax(0,1fr)) !important;
+    gap:14px !important;
+    margin:0 0 16px;
+}
+.dashboard-variant-grade-shell .grade-summary-table-cards .grade-detail-card{
+    grid-column:span 2;
+    min-height:310px;
+    border-radius:16px;
+    box-shadow:none;
+}
+.dashboard-variant-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(4){
+    grid-column:2 / span 2;
+}
+.dashboard-variant-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(5){
+    grid-column:4 / span 2;
+}
+.dashboard-variant-grade-shell .grade-unit-table{
+    min-height:150px;
+}
+.dashboard-variant-grade-shell .grade-unit-table-body{
+    max-height:170px;
+}
+.dashboard-variant-grade-shell .grade-legend{
+    margin:0;
+    padding-top:14px;
+    border-top:1px solid #edf0f4;
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.dashboard-variant-grade-shell .grade-legend>span{
+    background:#f8fafc;
+    border-color:#e3e8ef;
+}
+.dashboard-variant-grade-shell .grade-criteria-link{
+    margin-left:auto;
+}
+
+@media(max-width:1400px){
+    .dashboard-variant-grade-shell .grade-summary-table-cards{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+    .dashboard-variant-grade-shell .grade-summary-table-cards .grade-detail-card,
+    .dashboard-variant-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(4),
+    .dashboard-variant-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(5){
+        grid-column:auto;
+    }
+}
+@media(max-width:900px){
+    .dashboard-variant-overview{
+        padding:14px;
+        border-radius:18px;
+    }
+    .dashboard-variant-grade-shell{
+        padding:14px;
+        border-radius:18px;
+    }
+    .dashboard-variant-overview .dashboard-summary-grid{
+        grid-template-columns:1fr;
+    }
+    .dashboard-variant-grade-shell .grade-summary-table-cards{
+        grid-template-columns:1fr !important;
+    }
+    .dashboard-variant-grade-shell .grade-criteria-link{
+        width:100%;
+        margin-left:0;
+        justify-content:center;
+    }
+}
+@media(max-width:640px){
+    .dashboard-variant-overview .dashboard-clean-head h1{
+        font-size:22px;
+    }
+    .dashboard-variant-overview .dashboard-welcome-title{
+        width:100%;
+        justify-content:flex-start;
+        font-size:14px;
+    }
+    .dashboard-variant-grade-shell{
+        padding:12px;
+    }
+}
+
+
+/* Dashboard Variant 2 - Split Command Center Layout */
+.dashboard-variant2-overview{
+    display:grid;
+    grid-template-columns:minmax(0,1.35fr) minmax(360px,.65fr);
+    gap:18px;
+    margin-bottom:20px;
+}
+.dashboard-variant2-overview .dashboard-clean-head{
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns:auto minmax(0,1fr) auto;
+    align-items:center;
+    gap:18px;
+    margin:0;
+    padding:18px 20px;
+    border:1px solid #dde3ea;
+    border-radius:20px;
+    background:#fff;
+    box-shadow:0 10px 28px rgba(16,24,40,.05);
+}
+.dashboard-variant2-overview .dashboard-welcome-center{
+    justify-content:center;
+}
+.dashboard-variant2-overview .dashboard-welcome-title{
+    background:#f9fafb;
+    border-color:#e4e7ec;
+    box-shadow:none;
+    font-size:15px;
+    font-weight:700;
+    color:#7a0f15;
+}
+.dashboard-variant2-overview .dashboard-division-selector{
+    min-width:300px;
+    background:#fbfcfd;
+    border-color:#e3e7ed;
+    box-shadow:none;
+}
+.dashboard-variant2-overview .dashboard-summary-grid{
+    grid-column:1/-1;
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    margin:0;
+}
+.dashboard-variant2-overview .dashboard-summary-card{
+    min-height:132px;
+    padding:20px 22px;
+    border-radius:20px;
+    border:1px solid #dfe5ec;
+    box-shadow:0 10px 26px rgba(16,24,40,.045);
+    background:linear-gradient(180deg,#fff 0%,#fbfcfd 100%);
+}
+.dashboard-variant2-overview .dashboard-summary-card:first-child{
+    border-left:5px solid #ef1c25;
+}
+.dashboard-variant2-overview .dashboard-summary-card:last-child{
+    border-left:5px solid #3b5bdb;
+}
+.dashboard-variant2-overview .summary-icon{
+    width:48px;
+    height:48px;
+    border-radius:14px;
+}
+.dashboard-variant2-overview .dashboard-summary-card small{
+    font-size:12px;
+}
+.dashboard-variant2-overview .dashboard-summary-card strong{
+    font-size:25px;
+    line-height:1.15;
+}
+.dashboard-variant2-overview .dashboard-summary-card p{
+    font-size:11px;
+}
+
+.dashboard-variant2-grade-shell{
+    position:relative;
+    padding:20px;
+    border:1px solid #dde3ea;
+    border-radius:22px;
+    background:linear-gradient(180deg,#ffffff 0%,#fafbfc 100%);
+    box-shadow:0 12px 32px rgba(16,24,40,.05);
+}
+.dashboard-variant2-grade-shell .dashboard-grade-section-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin:0 0 16px;
+    padding:0 0 12px;
+    border-bottom:1px solid #e9edf2;
+}
+.dashboard-variant2-grade-shell .dashboard-grade-section-head h2{
+    margin:0;
+    font-size:20px;
+}
+.dashboard-variant2-grade-shell .grade-summary-table-cards{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    gap:12px !important;
+    margin:0 0 14px;
+}
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card,
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(4),
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(5){
+    grid-column:auto !important;
+    min-height:300px;
+    border-radius:18px;
+    box-shadow:0 8px 18px rgba(16,24,40,.055);
+}
+.dashboard-variant2-grade-shell .grade-detail-card{
+    padding:15px 14px !important;
+}
+.dashboard-variant2-grade-shell .grade-card-topline{
+    margin-bottom:10px;
+}
+.dashboard-variant2-grade-shell .grade-unit-table{
+    min-height:145px;
+    max-height:none;
+}
+.dashboard-variant2-grade-shell .grade-unit-table-body{
+    max-height:155px;
+}
+.dashboard-variant2-grade-shell .grade-card-totals{
+    margin-top:10px;
+    padding-top:10px;
+}
+.dashboard-variant2-grade-shell .grade-legend{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:8px;
+    margin:0;
+    padding:12px 0 0;
+    border-top:1px solid #e9edf2;
+}
+.dashboard-variant2-grade-shell .grade-legend>span{
+    min-width:0;
+    justify-content:flex-start;
+    border-radius:10px;
+    background:#fff;
+    border-color:#e2e7ed;
+}
+.dashboard-variant2-grade-shell .grade-legend small{
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.dashboard-variant2-grade-shell .grade-criteria-link{
+    grid-column:1/-1;
+    justify-self:end;
+    margin:4px 0 0;
+}
+
+@media(max-width:1450px){
+    .dashboard-variant2-grade-shell .grade-summary-table-cards{
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    }
+    .dashboard-variant2-grade-shell .grade-legend{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+}
+@media(max-width:1100px){
+    .dashboard-variant2-overview{
+        grid-template-columns:1fr;
+    }
+    .dashboard-variant2-overview .dashboard-clean-head{
+        grid-template-columns:1fr;
+        align-items:flex-start;
+    }
+    .dashboard-variant2-overview .dashboard-welcome-center{
+        justify-content:flex-start;
+    }
+    .dashboard-variant2-overview .dashboard-division-selector{
+        min-width:0;
+        width:100%;
+    }
+    .dashboard-variant2-grade-shell .grade-summary-table-cards{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+    .dashboard-variant2-grade-shell .grade-legend{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+@media(max-width:720px){
+    .dashboard-variant2-overview .dashboard-summary-grid{
+        grid-template-columns:1fr;
+    }
+    .dashboard-variant2-grade-shell{
+        padding:14px;
+        border-radius:18px;
+    }
+    .dashboard-variant2-grade-shell .grade-summary-table-cards,
+    .dashboard-variant2-grade-shell .grade-legend{
+        grid-template-columns:1fr !important;
+    }
+    .dashboard-variant2-grade-shell .grade-criteria-link{
+        width:100%;
+        justify-self:stretch;
+        justify-content:center;
+    }
+}
+
+
+/* Dynamic system title in Dashboard heading position */
+.dashboard-variant2-overview .dashboard-title-only-head{
+    grid-template-columns:minmax(0,1fr) auto;
+}
+.dashboard-variant2-overview .dashboard-title-only-head h1{
+    margin:0;
+    font-size:28px;
+    line-height:1.15;
+    font-weight:700;
+    letter-spacing:-.02em;
+    color:#7a0f15;
+    white-space:normal;
+}
+@media(max-width:1100px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:1fr;
+    }
+}
+@media(max-width:640px){
+    .dashboard-variant2-overview .dashboard-title-only-head h1{
+        font-size:22px;
+    }
+}
+
+
+/* Remove KPI left accent borders */
+.dashboard-variant2-overview .dashboard-summary-card:first-child,
+.dashboard-variant2-overview .dashboard-summary-card:last-child{
+    border-left:1px solid #dfe5ec !important;
+}

@@ -114,12 +114,9 @@ foreach ($distributionStops as $stop) {
 $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gradientParts) . ')' : 'conic-gradient(#e5e7eb 0 100%)';
 ?>
 
-<div class="dashboard-clean-head">
-    <h1>Dashboard</h1>
-
-    <div class="dashboard-welcome-center">
-        <span class="dashboard-welcome-title"><?= e($dashboardWelcomeText) ?></span>
-    </div>
+<section class="dashboard-variant2-overview">
+<div class="dashboard-clean-head dashboard-title-only-head">
+    <h1><?= e($dashboardWelcomeText) ?></h1>
 
     <div class="dashboard-division-selector">
         <span class="division-selector-icon" aria-hidden="true">
@@ -165,11 +162,9 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </div>
     </div>
 </div>
+</section>
 
-
-
-
-
+<section class="dashboard-variant2-grade-shell">
 <div class="dashboard-grade-section-head">
     <div>
         <h2>Grade Summary</h2>
@@ -232,7 +227,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         <a class="btn ghost grade-criteria-link" href="<?= e(url('/grade-criteria')) ?>">Manage Division Criteria</a>
     <?php endif; ?>
 </div>
-
+</section>
 
 <?php
 $modalDivisions = [];
