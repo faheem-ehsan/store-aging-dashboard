@@ -114,8 +114,8 @@ ksort($modalDivisions);
 ksort($modalCategories);
 ksort($modalUnits);
 
-// Market Return table pagination: 10 rows per page.
-$rowsPerPage = 10;
+// Market Return table pagination: 5 rows per page.
+$rowsPerPage = 5;
 $totalTableRows = count($rows ?? []);
 $totalPages = max(1, (int)ceil($totalTableRows / $rowsPerPage));
 $currentPage = max(1, (int)($_GET['page'] ?? 1));
@@ -139,7 +139,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 };
 ?>
 
-<section class="stock-control-panel market-return-control-panel" aria-label="Market Return filters and actions">
+<section class="stock-control-panel market-return-control-panel market-return-dashboard-filter" aria-label="Market Return filters and actions">
     <div class="stock-control-head">
         <div class="stock-control-heading">
             <span class="stock-control-kicker">Market Return View</span>
@@ -230,7 +230,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 </section>
 
 <?php if ($databaseReady): ?>
-<div class="dashboard-summary-grid market-return-summary-cards">
+<div class="dashboard-summary-grid market-return-summary-cards market-return-dashboard-kpis">
     <div class="dashboard-summary-card market-return-total-card">
         <span class="summary-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5ZM4 7.5V17l8 3 8-3V7.5M8 13H4m0 0 2-2m-2 2 2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -263,6 +263,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     </div>
 </div>
 
+<section class="market-return-dashboard-grade-shell">
 <div class="dashboard-grade-section-head market-return-grade-head">
     <div>
         <h2>Expiry Group Summary</h2>
@@ -304,8 +305,9 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         </span>
     <?php endforeach; ?>
 </div>
+</section>
 
-<div class="card market-return-table-card">
+<div class="card market-return-table-card market-return-dashboard-table">
     <div class="card-head">
         <div>
             <h2>
