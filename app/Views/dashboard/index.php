@@ -89,7 +89,7 @@ $selectedDivisionLabel = !empty($pageDivision) ? (($pageDivision['code'] ?? '') 
 $dashboardWelcomeName = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Division';
-$dashboardWelcomeText = 'Welcome to ' . $dashboardWelcomeName . ' Finish Goods Aging System';
+$dashboardWelcomeText = $dashboardWelcomeName . ' Finish Goods Stock Aging System';
 $displayRows = array_slice($rows ?? [], 0, 10);
 $cumulativePct = 0;
 $distributionStops = [];
@@ -115,8 +115,9 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
 ?>
 
 <div class="dashboard-clean-head">
-    <div class="dashboard-clean-title">
-        <h1>Dashboard</h1>
+    <h1>Dashboard</h1>
+
+    <div class="dashboard-welcome-center">
         <span class="dashboard-welcome-title"><?= e($dashboardWelcomeText) ?></span>
     </div>
 
@@ -158,90 +159,16 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v9H4v-9Zm3 4.5h.01M17 12h.01M12 9.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
         <div>
-            <small>Retail Stock Value</small>
+            <small>Stock Retail Value</small>
             <strong>Rs/ <?= $dashboardNumber($metrics['stock_value']) ?></strong>
             <p>Total inventory value</p>
         </div>
     </div>
 </div>
 
-<div class="dashboard-uom-section">
-    <div class="dashboard-uom-head">
-        <div>
-            <h2>Stock Quantity by Unit</h2>
-            <p>Each unit of measure is shown separately so unlike units are never combined.</p>
-        </div>
-        <span class="uom-count-badge"><?= number_format(count($uomTotals)) ?> UoM<?= count($uomTotals) === 1 ? '' : 's' ?></span>
-    </div>
-    <div class="dashboard-uom-grid">
-        <?php if (empty($uomTotals)): ?>
-            <div class="dashboard-uom-empty">No stock quantity is available for the selected division.</div>
-        <?php endif; ?>
-        <?php foreach ($uomTotals as $uomCode => $uomMetric): ?>
-            <div class="dashboard-uom-card">
-                <div class="uom-card-top">
-                    <span class="uom-code"><?= e($uomCode) ?></span>
-                    <span class="uom-lines"><?= number_format((int)$uomMetric['batches']) ?> batch<?= (int)$uomMetric['batches'] === 1 ? '' : 'es' ?></span>
-                </div>
-                <strong><?= $dashboardNumber($uomMetric['qty']) ?></strong>
-                <small>Quantity</small>
-                <div class="uom-card-value">Rs/ <?= $dashboardNumber($uomMetric['value']) ?></div>
-            </div>
-        <?php endforeach; ?>
-    </div>
-</div>
 
-<div class="dashboard-analytics-grid">
-    <div class="card dashboard-analytics-card">
-        <div class="card-head analytics-head">
-            <div>
-                <h2>Batches by Aging Group</h2>
-            </div>
-            <span class="analytics-badge">Batches</span>
-        </div>
-        <div class="aging-bars-panel">
-            <?php foreach ($gradeSeries as $gs):
-                $height = max(14, (int)round(($gs['batches'] / $maxBatches) * 100));
-            ?>
-                <div class="aging-bar-col">
-                    <span class="bar-value"><?= number_format($gs['batches']) ?></span>
-                    <div class="aging-bar-track">
-                        <div class="aging-bar-fill <?= e($gs['class']) ?>" style="height: <?= $height ?>%;"></div>
-                    </div>
-                    <strong><?= e($gs['label']) ?></strong>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
 
-    <div class="card dashboard-analytics-card">
-        <div class="card-head analytics-head">
-            <div>
-                <h2>Aging Group Distribution</h2>
-            </div>
-        </div>
-        <div class="distribution-panel">
-            <div class="distribution-donut" style="background: <?= e($donutGradient) ?>;">
-                <div class="distribution-donut-hole">
-                    <strong><?= number_format($totalBatches) ?></strong>
-                    <span>Total Batches</span>
-                </div>
-            </div>
-            <div class="distribution-list">
-                <?php foreach ($distributionStops as $stop): ?>
-                    <div class="distribution-item">
-                        <span class="distribution-swatch <?= e($stop['class']) ?>"></span>
-                        <div class="distribution-copy">
-                            <strong><?= e($stop['label']) ?></strong>
-                            <small><?= number_format($stop['batches']) ?> batch<?= $stop['batches'] === 1 ? '' : 'es' ?></small>
-                        </div>
-                        <b><?= number_format($stop['pct'], 0) ?>%</b>
-                    </div>
-                <?php endforeach; ?>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 <div class="dashboard-grade-section-head">
     <div>
@@ -249,26 +176,46 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     </div>
 </div>
 
-<div class="metric-grid dashboard-grade-metrics dashboard-grade-metrics-refreshed">
+<div class="metric-grid dashboard-grade-metrics dashboard-grade-metrics-refreshed grade-summary-table-cards">
     <?php foreach ($gradeSeries as $gs): ?>
-        <div class="metric <?= e($gs['class']) ?> grade-click-card" role="button" tabindex="0" data-grade="<?= e($gs['key']) ?>" data-grade-label="<?= e($gs['label']) ?>" aria-label="Open <?= e($gs['label']) ?> grade stock details">
+        <div class="metric <?= e($gs['class']) ?> grade-click-card grade-detail-card" role="button" tabindex="0" data-grade="<?= e($gs['key']) ?>" data-grade-label="<?= e($gs['label']) ?>" aria-label="Open <?= e($gs['label']) ?> grade stock details">
             <div class="grade-card-topline">
                 <span class="grade-card-title"><?= e($gs['label']) ?></span>
-                <span class="grade-uom-count"><?= number_format(count($gs['uoms'])) ?> UoM</span>
+                <span class="grade-uom-count"><?= number_format(count($gs['uoms'])) ?> Unit<?= count($gs['uoms']) === 1 ? '' : 's' ?></span>
             </div>
-            <div class="grade-uom-list">
-                <?php if (empty($gs['uoms'])): ?>
-                    <div class="grade-uom-empty">No stock</div>
-                <?php else: ?>
-                    <?php foreach ($gs['uoms'] as $uomCode => $uomMetric): ?>
-                        <div class="grade-uom-row">
-                            <span><?= e($uomCode) ?></span>
-                            <strong><?= $dashboardNumber($uomMetric['qty']) ?></strong>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+
+            <div class="grade-unit-table" role="table" aria-label="<?= e($gs['label']) ?> unit summary">
+                <div class="grade-unit-table-head" role="row">
+                    <span role="columnheader">Units</span>
+                    <span role="columnheader">Quantity</span>
+                    <span role="columnheader">Stock Retail Value</span>
+                </div>
+
+                <div class="grade-unit-table-body">
+                    <?php if (empty($gs['uoms'])): ?>
+                        <div class="grade-unit-empty">No stock available</div>
+                    <?php else: ?>
+                        <?php foreach ($gs['uoms'] as $uomCode => $uomMetric): ?>
+                            <div class="grade-unit-table-row" role="row">
+                                <span class="grade-unit-code" role="cell"><?= e($uomCode) ?></span>
+                                <strong role="cell"><?= $dashboardPlainNumber($uomMetric['qty']) ?></strong>
+                                <span class="grade-unit-value" role="cell">Rs/ <?= $dashboardNumber($uomMetric['value']) ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="grade-value-line"><span class="grade-currency-label">Rs/</span><span class="grade-stock-value"><?= $dashboardNumber($gs['value']) ?></span></div>
+
+            <div class="grade-card-totals">
+                <div>
+                    <span>Total Qty</span>
+                    <strong><?= $dashboardPlainNumber($gs['qty']) ?></strong>
+                </div>
+                <div>
+                    <span>Total Stock Retail Value</span>
+                    <strong>Rs/ <?= $dashboardNumber($gs['value']) ?></strong>
+                </div>
+            </div>
         </div>
     <?php endforeach; ?>
 </div>
@@ -314,7 +261,7 @@ ksort($modalLocations);
         <div class="grade-modal-summary">
             <div><span>No. of Batches</span><strong id="gradeModalBatchCount">0</strong></div>
             <div><span>UoM Types</span><strong id="gradeModalQty">0</strong></div>
-            <div><span>Retail Stock Value</span><strong id="gradeModalValue">Rs/ 0</strong></div>
+            <div><span>Stock Retail Value</span><strong id="gradeModalValue">Rs/ 0</strong></div>
         </div>
         <div class="grade-modal-uoms" id="gradeModalUoms"></div>
 

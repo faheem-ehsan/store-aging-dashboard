@@ -113,6 +113,30 @@ foreach ($modalRows as $modalRow) {
 ksort($modalDivisions);
 ksort($modalCategories);
 ksort($modalUnits);
+
+// Market Return table pagination: 10 rows per page.
+$rowsPerPage = 10;
+$totalTableRows = count($rows ?? []);
+$totalPages = max(1, (int)ceil($totalTableRows / $rowsPerPage));
+$currentPage = max(1, (int)($_GET['page'] ?? 1));
+if ($currentPage > $totalPages) $currentPage = $totalPages;
+$pageOffset = ($currentPage - 1) * $rowsPerPage;
+$tableRows = array_slice($rows ?? [], $pageOffset, $rowsPerPage);
+$showingFrom = $totalTableRows > 0 ? $pageOffset + 1 : 0;
+$showingTo = min($pageOffset + $rowsPerPage, $totalTableRows);
+$paginationParams = [
+    'q' => $filters['q'] ?? '',
+    'division_id' => $filters['division_id'] ?? '',
+    'category' => $filters['category'] ?? '',
+    'expiry_bucket' => $filters['expiry_bucket'] ?? '',
+    'value_status' => $filters['value_status'] ?? '',
+];
+$paginationParams = array_filter($paginationParams, static fn($value): bool => $value !== '' && $value !== null);
+$paginationUrl = static function (int $page) use ($paginationParams): string {
+    $params = $paginationParams;
+    $params['page'] = $page;
+    return url('/market-return') . '?' . http_build_query($params);
+};
 ?>
 
 <section class="stock-control-panel market-return-control-panel" aria-label="Market Return filters and actions">
@@ -227,16 +251,6 @@ ksort($modalUnits);
             <p><?= $formatInt($metrics['unvalued']) ?> item(s) without known value</p>
         </div>
     </div>
-    <div class="dashboard-summary-card market-return-category-card">
-        <span class="summary-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="4" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="4" y="14" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
-        </span>
-        <div>
-            <small>Returns Categories</small>
-            <strong><?= $formatInt($visibleCategoryCount) ?></strong>
-            <p>Return categories in the current view</p>
-        </div>
-    </div>
     <div class="dashboard-summary-card market-return-expired-card">
         <span class="summary-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 7v5l3 2M20 12a8 8 0 1 1-8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 4.5h3v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -245,54 +259,6 @@ ksort($modalUnits);
             <small>Expired Return Goods</small>
             <strong><?= $formatInt($expiryMetrics['expired']['lines'] ?? 0) ?></strong>
             <p><?= $formatQty($expiryMetrics['expired']['qty'] ?? 0) ?> expired quantity</p>
-        </div>
-    </div>
-</div>
-
-<div class="dashboard-analytics-grid market-return-analytics-grid">
-    <div class="card dashboard-analytics-card">
-        <div class="card-head analytics-head">
-            <div><h2>Items by Expiry Group</h2></div>
-            <span class="analytics-badge">Items</span>
-        </div>
-        <div class="aging-bars-panel">
-            <?php foreach ($distributionStops as $stop):
-                $height = max(14, (int)round(($stop['lines'] / $maxExpiryLines) * 100));
-            ?>
-                <div class="aging-bar-col">
-                    <span class="bar-value"><?= $formatInt($stop['lines']) ?></span>
-                    <div class="aging-bar-track">
-                        <div class="aging-bar-fill <?= e($stop['class']) ?>" style="height: <?= $height ?>%;"></div>
-                    </div>
-                    <strong><?= e($stop['short']) ?></strong>
-                </div>
-            <?php endforeach; ?>
-        </div>
-    </div>
-
-    <div class="card dashboard-analytics-card">
-        <div class="card-head analytics-head">
-            <div><h2>Expiry Group Distribution</h2></div>
-        </div>
-        <div class="distribution-panel">
-            <div class="distribution-donut" style="background: <?= e($donutGradient) ?>;">
-                <div class="distribution-donut-hole">
-                    <strong><?= $formatInt($totalExpiryLines) ?></strong>
-                    <span>Total Items</span>
-                </div>
-            </div>
-            <div class="distribution-list">
-                <?php foreach ($distributionStops as $stop): ?>
-                    <div class="distribution-item">
-                        <span class="distribution-swatch <?= e($stop['class']) ?>"></span>
-                        <div class="distribution-copy">
-                            <strong><?= e($stop['short']) ?></strong>
-                            <small><?= $formatInt($stop['lines']) ?> item(s)</small>
-                        </div>
-                        <b><?= number_format($stop['pct'], 0) ?>%</b>
-                    </div>
-                <?php endforeach; ?>
-            </div>
         </div>
     </div>
 </div>
@@ -352,7 +318,7 @@ ksort($modalUnits);
                 <?php endif; ?>
             </h2>
         </div>
-        <div class="market-return-table-count"><?= $formatInt(count($rows)) ?> row(s)</div>
+        <div class="market-return-table-count"><?= $formatInt($totalTableRows) ?> row(s)</div>
     </div>
     <div class="table-wrap">
         <table class="market-return-table">
@@ -375,10 +341,10 @@ ksort($modalUnits);
                 </tr>
             </thead>
             <tbody>
-            <?php if (!$rows): ?>
+            <?php if (!$tableRows): ?>
                 <tr><td colspan="14" class="empty">No Market Return Store records found for the selected filters.</td></tr>
             <?php endif; ?>
-            <?php foreach ($rows as $row):
+            <?php foreach ($tableRows as $row):
                 $meta = $categories[$row['category_code']] ?? ['label' => $row['category_code'], 'class' => 'default'];
                 $expiryCode = $row['expiry_bucket'] ?? 'no_expiry';
                 $expiryMeta = $expiryBuckets[$expiryCode] ?? $expiryBuckets['no_expiry'];
@@ -411,6 +377,39 @@ ksort($modalUnits);
             </tbody>
         </table>
     </div>
+
+    <?php if ($totalTableRows > 0): ?>
+    <div class="market-return-pagination" aria-label="Market Return Store Items pagination">
+        <div class="market-return-pagination-info">
+            Showing <strong><?= number_format($showingFrom) ?>–<?= number_format($showingTo) ?></strong> of <strong><?= number_format($totalTableRows) ?></strong> items
+        </div>
+
+        <?php if ($totalPages > 1): ?>
+        <nav class="pagination-controls" aria-label="Pagination">
+            <a class="pagination-btn<?= $currentPage <= 1 ? ' is-disabled' : '' ?>" href="<?= $currentPage > 1 ? e($paginationUrl($currentPage - 1)) : '#' ?>" aria-label="Previous page"<?= $currentPage <= 1 ? ' aria-disabled="true" tabindex="-1"' : '' ?>>Previous</a>
+
+            <?php
+            $pageStart = max(1, $currentPage - 2);
+            $pageEnd = min($totalPages, $currentPage + 2);
+            if ($pageStart > 1): ?>
+                <a class="pagination-page" href="<?= e($paginationUrl(1)) ?>">1</a>
+                <?php if ($pageStart > 2): ?><span class="pagination-ellipsis">…</span><?php endif; ?>
+            <?php endif; ?>
+
+            <?php for ($page = $pageStart; $page <= $pageEnd; $page++): ?>
+                <a class="pagination-page<?= $page === $currentPage ? ' is-active' : '' ?>" href="<?= e($paginationUrl($page)) ?>"<?= $page === $currentPage ? ' aria-current="page"' : '' ?>><?= $page ?></a>
+            <?php endfor; ?>
+
+            <?php if ($pageEnd < $totalPages): ?>
+                <?php if ($pageEnd < $totalPages - 1): ?><span class="pagination-ellipsis">…</span><?php endif; ?>
+                <a class="pagination-page" href="<?= e($paginationUrl($totalPages)) ?>"><?= $totalPages ?></a>
+            <?php endif; ?>
+
+            <a class="pagination-btn<?= $currentPage >= $totalPages ? ' is-disabled' : '' ?>" href="<?= $currentPage < $totalPages ? e($paginationUrl($currentPage + 1)) : '#' ?>" aria-label="Next page"<?= $currentPage >= $totalPages ? ' aria-disabled="true" tabindex="-1"' : '' ?>>Next</a>
+        </nav>
+        <?php endif; ?>
+    </div>
+    <?php endif; ?>
 </div>
 
 <div class="grade-modal" id="marketReturnModal" aria-hidden="true">

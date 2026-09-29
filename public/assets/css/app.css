@@ -405,8 +405,8 @@ body.modal-open{overflow:hidden}
 
 /* Dashboard clean heading + prominent division selector */
 .dashboard-main{padding-top:24px}
-.dashboard-clean-head{display:flex;align-items:center;justify-content:space-between;gap:18px;margin:0 0 18px}
-.dashboard-clean-title h1{margin:0;font-size:28px;line-height:1.15;color:#7a0f15;letter-spacing:-.02em}
+.dashboard-clean-head{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;margin:0 0 18px}
+.dashboard-clean-head h1{margin:0;font-size:28px;line-height:1.15;color:#7a0f15;letter-spacing:-.02em}
 .dashboard-division-selector{display:flex;align-items:center;gap:12px;min-width:340px;padding:11px 14px;border:1px solid #f0b9bf;border-radius:15px;background:linear-gradient(135deg,#fff 0%,#fff6f7 100%);box-shadow:0 8px 24px rgba(167,26,34,.08)}
 .division-selector-icon{display:grid;place-items:center;width:40px;height:40px;flex:0 0 auto;border-radius:12px;background:#feecee;color:#d51e2a;box-shadow:inset 0 0 0 1px #f8cbd0}
 .division-selector-icon svg{width:20px;height:20px;display:block}
@@ -423,7 +423,7 @@ body.modal-open{overflow:hidden}
 @media(max-width:900px){.dashboard-clean-head{align-items:stretch;flex-direction:column}.dashboard-division-selector{min-width:0;width:100%}.dashboard-division-form select{min-width:0}.dashboard-clean-title h1{font-size:25px}}
 
 /* Dynamic division welcome title */
-.dashboard-clean-title{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-width:0}.dashboard-welcome-title{display:inline-flex;align-items:center;min-height:34px;padding:7px 12px;border:1px solid #f0d1d4;border-radius:999px;background:#fff;color:#7a0f15;font-size:14px;line-height:1.25;font-weight:700;box-shadow:0 4px 14px rgba(167,26,34,.06)}@media(max-width:900px){.dashboard-clean-title{align-items:flex-start;gap:8px}.dashboard-welcome-title{font-size:13px;border-radius:12px;width:fit-content;max-width:100%}}
+.dashboard-clean-title{display:flex;align-items:center;gap:14px;flex-wrap:wrap;min-width:0}.dashboard-welcome-center{display:flex;justify-content:center}.dashboard-welcome-title{display:inline-flex;align-items:center;justify-content:center;min-height:40px;padding:9px 18px;border:1px solid #f0d1d4;border-radius:999px;background:#fff;color:#7a0f15;font-size:16px;line-height:1.3;font-weight:800;text-align:center;box-shadow:0 4px 14px rgba(167,26,34,.06)}@media(max-width:1100px){.dashboard-clean-head{grid-template-columns:1fr;align-items:flex-start}.dashboard-welcome-center{justify-content:flex-start}.dashboard-welcome-title{font-size:15px;border-radius:14px;max-width:100%}.dashboard-division-selector{width:100%;min-width:0}}
 
 /* UoM-aware dashboard quantity design */
 .dashboard-uom-section{margin:0 0 18px;padding:18px;border:1px solid var(--line);border-radius:18px;background:#fff;box-shadow:var(--shadow)}
@@ -1130,4 +1130,644 @@ body.modal-open{overflow:hidden}
 }
 @media(max-width:720px){
     .dashboard-summary-grid{grid-template-columns:1fr}
+}
+
+
+/* Taller grade summary cards with UoM/value table */
+.grade-summary-table-cards{
+    align-items:stretch;
+}
+.grade-summary-table-cards .grade-detail-card{
+    min-height:330px;
+    display:flex;
+    flex-direction:column;
+    padding:16px;
+}
+.grade-detail-card .grade-card-topline{
+    margin-bottom:14px;
+}
+.grade-unit-table{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 auto;
+    min-height:170px;
+    border-radius:10px;
+    overflow:hidden;
+    background:rgba(255,255,255,.10);
+}
+.grade-unit-table-head,
+.grade-unit-table-row{
+    display:grid;
+    grid-template-columns:minmax(58px,.65fr) minmax(95px,1fr) minmax(125px,1.35fr);
+    gap:10px;
+    align-items:center;
+}
+.grade-unit-table-head{
+    padding:9px 10px;
+    border-bottom:1px solid rgba(255,255,255,.22);
+    font-size:9px;
+    line-height:1.25;
+    font-weight:900;
+    letter-spacing:.045em;
+    text-transform:uppercase;
+    opacity:.9;
+}
+.grade-unit-table-head span:nth-child(2),
+.grade-unit-table-head span:nth-child(3){
+    text-align:right;
+}
+.grade-unit-table-body{
+    display:flex;
+    flex-direction:column;
+    gap:0;
+    max-height:190px;
+    overflow:auto;
+}
+.grade-unit-table-row{
+    padding:10px;
+    border-bottom:1px solid rgba(255,255,255,.14);
+    font-size:12px;
+}
+.grade-unit-table-row:last-child{
+    border-bottom:0;
+}
+.grade-unit-table-row strong,
+.grade-unit-value{
+    text-align:right;
+    font-variant-numeric:tabular-nums;
+}
+.grade-unit-code{
+    font-weight:900;
+    letter-spacing:.02em;
+}
+.grade-unit-value{
+    font-weight:700;
+    white-space:nowrap;
+}
+.grade-unit-empty{
+    display:grid;
+    place-items:center;
+    min-height:115px;
+    padding:18px;
+    text-align:center;
+    font-size:12px;
+    opacity:.82;
+}
+.grade-card-totals{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:10px;
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid rgba(255,255,255,.25);
+}
+.grade-card-totals>div{
+    min-width:0;
+}
+.grade-card-totals span{
+    display:block;
+    margin-bottom:4px;
+    font-size:9px;
+    font-weight:900;
+    letter-spacing:.045em;
+    text-transform:uppercase;
+    opacity:.82;
+}
+.grade-card-totals strong{
+    display:block;
+    font-size:15px;
+    line-height:1.2;
+    font-weight:900;
+    font-variant-numeric:tabular-nums;
+    overflow-wrap:anywhere;
+}
+.grade-detail-card.grade-a .grade-unit-table,
+.grade-detail-card.grade-b .grade-unit-table{
+    background:rgba(255,255,255,.24);
+}
+.grade-detail-card.grade-a .grade-unit-table-head,
+.grade-detail-card.grade-a .grade-unit-table-row,
+.grade-detail-card.grade-a .grade-card-totals,
+.grade-detail-card.grade-b .grade-unit-table-head,
+.grade-detail-card.grade-b .grade-unit-table-row,
+.grade-detail-card.grade-b .grade-card-totals{
+    border-color:rgba(16,24,40,.14);
+}
+@media(max-width:1500px){
+    .grade-summary-table-cards{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+}
+@media(max-width:1050px){
+    .grade-summary-table-cards{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+@media(max-width:680px){
+    .grade-summary-table-cards{
+        grid-template-columns:1fr;
+    }
+    .grade-summary-table-cards .grade-detail-card{
+        min-height:300px;
+    }
+    .grade-unit-table-head,
+    .grade-unit-table-row{
+        grid-template-columns:70px 1fr 1.25fr;
+    }
+}
+
+
+/* Grade card readability refinement */
+.grade-summary-table-cards .grade-detail-card{
+    min-height:350px;
+    padding:16px 16px 15px;
+    border-radius:14px;
+}
+.grade-detail-card .grade-card-topline{
+    align-items:center;
+    margin-bottom:12px;
+}
+.grade-detail-card .grade-card-title{
+    font-size:15px;
+    font-weight:900;
+    letter-spacing:.01em;
+}
+.grade-detail-card .grade-uom-count{
+    min-height:24px;
+    padding:4px 8px;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:0;
+    text-transform:none;
+}
+.grade-unit-table{
+    min-height:188px;
+    border-radius:11px;
+}
+.grade-unit-table-head,
+.grade-unit-table-row{
+    grid-template-columns:minmax(52px,.65fr) minmax(88px,1fr) minmax(112px,1.2fr);
+    gap:8px;
+}
+.grade-unit-table-head{
+    padding:10px 10px 9px;
+    font-size:9px;
+    line-height:1.15;
+    font-weight:800;
+    letter-spacing:.035em;
+    opacity:.86;
+}
+.grade-unit-table-head span{
+    white-space:nowrap;
+}
+.grade-unit-table-row{
+    min-height:48px;
+    padding:10px;
+    font-size:12px;
+}
+.grade-unit-code{
+    font-size:11px;
+    font-weight:900;
+}
+.grade-unit-table-row strong{
+    font-size:15px;
+    line-height:1.15;
+    font-weight:900;
+}
+.grade-unit-value{
+    font-size:11px;
+    line-height:1.2;
+    font-weight:800;
+}
+.grade-unit-empty{
+    min-height:138px;
+    font-size:12px;
+    font-weight:600;
+    opacity:.86;
+}
+.grade-card-totals{
+    gap:14px;
+    margin-top:13px;
+    padding-top:12px;
+}
+.grade-card-totals span{
+    margin-bottom:5px;
+    font-size:9px;
+    line-height:1.15;
+    font-weight:800;
+    letter-spacing:.035em;
+    opacity:.78;
+}
+.grade-card-totals strong{
+    font-size:17px;
+    line-height:1.18;
+    font-weight:900;
+}
+.grade-detail-card.grade-aplus .grade-unit-table,
+.grade-detail-card.grade-c .grade-unit-table,
+.grade-detail-card.grade-ex .grade-unit-table{
+    background:rgba(255,255,255,.09);
+}
+.grade-detail-card.grade-a .grade-unit-table,
+.grade-detail-card.grade-b .grade-unit-table{
+    background:rgba(255,255,255,.28);
+}
+.grade-detail-card.grade-a .grade-unit-table-head,
+.grade-detail-card.grade-b .grade-unit-table-head{
+    color:rgba(16,24,40,.80);
+}
+.grade-detail-card.grade-a .grade-unit-code,
+.grade-detail-card.grade-a .grade-unit-value,
+.grade-detail-card.grade-a .grade-unit-table-row strong,
+.grade-detail-card.grade-b .grade-unit-code,
+.grade-detail-card.grade-b .grade-unit-value,
+.grade-detail-card.grade-b .grade-unit-table-row strong{
+    color:#172033;
+}
+@media(max-width:1500px){
+    .grade-summary-table-cards .grade-detail-card{min-height:330px}
+}
+@media(max-width:680px){
+    .grade-summary-table-cards .grade-detail-card{min-height:310px}
+    .grade-unit-table-head,.grade-unit-table-row{grid-template-columns:60px 1fr 1.15fr}
+    .grade-unit-table-head{font-size:8.5px}
+    .grade-card-totals strong{font-size:16px}
+}
+
+
+/* Smaller grade card total typography */
+.grade-card-totals span{
+    font-size:8px;
+    letter-spacing:.035em;
+}
+.grade-card-totals strong{
+    font-size:13px;
+    line-height:1.2;
+}
+@media(max-width:680px){
+    .grade-card-totals strong{
+        font-size:12px;
+    }
+}
+
+
+/* Sleek grade card typography */
+.grade-summary-table-cards .grade-detail-card{
+    font-weight:400;
+}
+.grade-detail-card .grade-card-title{
+    font-size:14px !important;
+    font-weight:700 !important;
+    letter-spacing:0;
+}
+.grade-detail-card .grade-uom-count{
+    font-size:9px;
+    font-weight:600;
+    letter-spacing:0;
+}
+.grade-unit-table-head{
+    font-size:8.5px;
+    font-weight:600;
+    letter-spacing:0;
+    text-transform:none;
+    opacity:.82;
+}
+.grade-unit-code{
+    font-size:11px;
+    font-weight:600;
+    letter-spacing:0;
+}
+.grade-unit-table-row strong{
+    font-size:14px;
+    font-weight:700;
+    letter-spacing:0;
+}
+.grade-unit-value{
+    font-size:10.5px;
+    font-weight:500;
+    letter-spacing:0;
+}
+.grade-unit-empty{
+    font-size:11px;
+    font-weight:400;
+}
+.grade-card-totals span{
+    font-size:8px;
+    font-weight:500;
+    letter-spacing:0;
+    text-transform:none;
+    opacity:.82;
+}
+.grade-card-totals strong{
+    font-size:13px;
+    font-weight:700;
+    letter-spacing:0;
+}
+.grade-legend b{
+    font-weight:600;
+}
+.grade-legend small{
+    font-weight:400;
+}
+@media(max-width:680px){
+    .grade-detail-card .grade-card-title{font-size:13px !important}
+    .grade-unit-table-row strong{font-size:13px}
+    .grade-card-totals strong{font-size:12px}
+}
+
+
+/* Grade cards font-size cap */
+.grade-summary-table-cards .grade-detail-card,
+.grade-summary-table-cards .grade-detail-card *{
+    font-size:inherit;
+}
+.grade-detail-card .grade-card-title{
+    font-size:16px !important;
+    font-weight:600 !important;
+}
+.grade-detail-card .grade-uom-count{
+    font-size:10px !important;
+    font-weight:500 !important;
+}
+.grade-unit-table-head{
+    font-size:10px !important;
+    font-weight:500 !important;
+}
+.grade-unit-code{
+    font-size:12px !important;
+    font-weight:500 !important;
+}
+.grade-unit-table-row strong{
+    font-size:16px !important;
+    font-weight:600 !important;
+}
+.grade-unit-value{
+    font-size:12px !important;
+    font-weight:500 !important;
+}
+.grade-unit-empty{
+    font-size:12px !important;
+    font-weight:400 !important;
+}
+.grade-card-totals span{
+    font-size:10px !important;
+    font-weight:500 !important;
+}
+.grade-card-totals strong{
+    font-size:16px !important;
+    line-height:1.25 !important;
+    font-weight:600 !important;
+}
+.grade-legend b{
+    font-size:12px !important;
+    font-weight:500 !important;
+}
+.grade-legend small{
+    font-size:10px !important;
+    font-weight:400 !important;
+}
+
+/* Safety cap: no grade-card text exceeds 18px */
+.grade-summary-table-cards .grade-detail-card{
+    font-size:14px;
+}
+.grade-summary-table-cards .grade-detail-card h1,
+.grade-summary-table-cards .grade-detail-card h2,
+.grade-summary-table-cards .grade-detail-card h3,
+.grade-summary-table-cards .grade-detail-card strong,
+.grade-summary-table-cards .grade-detail-card span,
+.grade-summary-table-cards .grade-detail-card b,
+.grade-summary-table-cards .grade-detail-card em{
+}
+@media(max-width:680px){
+    .grade-detail-card .grade-card-title{font-size:15px !important}
+    .grade-unit-table-row strong{font-size:15px !important}
+    .grade-card-totals strong{font-size:15px !important}
+}
+
+
+/* Grade card alignment and inner spacing refinement */
+.grade-summary-table-cards .grade-detail-card{
+    padding:18px 16px !important;
+}
+.grade-detail-card .grade-card-topline{
+    padding:0 2px;
+    margin-bottom:12px;
+    text-align:left;
+}
+.grade-detail-card .grade-card-title{
+    text-align:left !important;
+    margin:0;
+}
+.grade-detail-card .grade-uom-count{
+    margin-left:auto;
+}
+
+.grade-unit-table{
+    margin:0 2px;
+    border-radius:10px;
+}
+.grade-unit-table-head,
+.grade-unit-table-row{
+    padding-left:14px !important;
+    padding-right:14px !important;
+}
+.grade-unit-table-head span{
+    text-align:left !important;
+}
+.grade-unit-table-head span:nth-child(2),
+.grade-unit-table-head span:nth-child(3){
+    text-align:left !important;
+}
+.grade-unit-table-row{
+    column-gap:14px;
+}
+.grade-unit-code{
+    text-align:left !important;
+}
+.grade-unit-table-row strong,
+.grade-unit-value{
+    text-align:left !important;
+}
+.grade-unit-empty{
+    padding-left:16px;
+    padding-right:16px;
+}
+
+.grade-card-totals{
+    padding-left:2px;
+    padding-right:2px;
+    column-gap:18px;
+}
+.grade-card-totals>div{
+    text-align:left;
+}
+.grade-card-totals span,
+.grade-card-totals strong{
+    text-align:left !important;
+}
+
+@media(max-width:680px){
+    .grade-summary-table-cards .grade-detail-card{
+        padding:16px 14px !important;
+    }
+    .grade-unit-table-head,
+    .grade-unit-table-row{
+        padding-left:12px !important;
+        padding-right:12px !important;
+    }
+}
+
+
+/* Grade card horizontal-scroll removal */
+.grade-unit-table{
+    overflow:hidden !important;
+}
+.grade-unit-table-body{
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+    scrollbar-width:thin;
+}
+.grade-unit-table-head,
+.grade-unit-table-row{
+    grid-template-columns:minmax(44px,.55fr) minmax(72px,.8fr) minmax(92px,1.1fr) !important;
+    column-gap:6px !important;
+    padding-left:10px !important;
+    padding-right:10px !important;
+}
+.grade-unit-table-head{
+    font-size:8px !important;
+}
+.grade-unit-code{
+    font-size:10.5px !important;
+}
+.grade-unit-table-row strong{
+    font-size:14px !important;
+}
+.grade-unit-value{
+    font-size:10px !important;
+    white-space:normal !important;
+    overflow-wrap:anywhere;
+}
+.grade-card-totals{
+    column-gap:10px !important;
+}
+.grade-card-totals>div{
+    min-width:0;
+}
+.grade-card-totals strong{
+    overflow-wrap:anywhere;
+}
+@media(max-width:1200px){
+    .grade-unit-table-head,
+    .grade-unit-table-row{
+        grid-template-columns:minmax(42px,.5fr) minmax(68px,.75fr) minmax(86px,1fr) !important;
+        column-gap:5px !important;
+        padding-left:8px !important;
+        padding-right:8px !important;
+    }
+}
+@media(max-width:680px){
+    .grade-unit-table-head,
+    .grade-unit-table-row{
+        grid-template-columns:52px minmax(70px,.8fr) minmax(90px,1fr) !important;
+        column-gap:6px !important;
+    }
+}
+
+
+/* Simplified Market Return dashboard */
+.market-return-summary-cards{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:14px;
+}
+@media(max-width:1100px){
+    .market-return-summary-cards{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+}
+@media(max-width:700px){
+    .market-return-summary-cards{
+        grid-template-columns:1fr !important;
+    }
+}
+
+
+/* Market Return table pagination */
+.market-return-pagination{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    flex-wrap:wrap;
+    padding:14px 16px 16px;
+    border-top:1px solid #edf0f4;
+    background:#fff;
+}
+.market-return-pagination-info{
+    font-size:12px;
+    color:#667085;
+}
+.market-return-pagination-info strong{
+    color:#344054;
+    font-weight:600;
+}
+.pagination-controls{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    flex-wrap:wrap;
+}
+.pagination-btn,
+.pagination-page{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    min-width:34px;
+    height:34px;
+    padding:0 10px;
+    border:1px solid #d8dee7;
+    border-radius:9px;
+    background:#fff;
+    color:#344054;
+    font-size:12px;
+    font-weight:500;
+    text-decoration:none;
+    transition:background .15s ease,border-color .15s ease,color .15s ease,box-shadow .15s ease;
+}
+.pagination-page{
+    padding:0 9px;
+}
+.pagination-btn:hover,
+.pagination-page:hover{
+    background:#fff5f6;
+    border-color:#efb6bc;
+    color:#b8121a;
+}
+.pagination-page.is-active{
+    background:#ef1c25;
+    border-color:#ef1c25;
+    color:#fff;
+    box-shadow:0 4px 12px rgba(239,28,37,.18);
+}
+.pagination-btn.is-disabled{
+    opacity:.45;
+    pointer-events:none;
+}
+.pagination-ellipsis{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    width:24px;
+    color:#98a2b3;
+    font-size:12px;
+}
+@media(max-width:700px){
+    .market-return-pagination{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+    .pagination-controls{
+        width:100%;
+    }
 }
