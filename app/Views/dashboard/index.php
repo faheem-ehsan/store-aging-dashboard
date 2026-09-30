@@ -130,7 +130,7 @@ $selectedDivisionLabel = !empty($pageDivision) ? (($pageDivision['code'] ?? '') 
 $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Divisions';
-$dashboardWelcomeText = 'Finish Goods Stock Aging System | ' . $dashboardDivisionTitle;
+$dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
 $displayRows = array_slice($rows ?? [], 0, 10);
 $cumulativePct = 0;
 $distributionStops = [];
