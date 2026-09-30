@@ -154,6 +154,11 @@ CREATE TABLE division_grade_settings (
     a_days INT UNSIGNED NOT NULL DEFAULT 365,
     b_days INT UNSIGNED NOT NULL DEFAULT 180,
     c_days INT UNSIGNED NOT NULL DEFAULT 90,
+    -- Product-aware shelf-life grading thresholds: maximum % of shelf life used.
+    a_plus_used_pct DECIMAL(5,2) NOT NULL DEFAULT 25.00,
+    a_used_pct DECIMAL(5,2) NOT NULL DEFAULT 50.00,
+    b_used_pct DECIMAL(5,2) NOT NULL DEFAULT 75.00,
+    c_used_pct DECIMAL(5,2) NOT NULL DEFAULT 100.00,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     CONSTRAINT fk_grade_settings_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE CASCADE,
@@ -225,8 +230,8 @@ INSERT INTO grade_rules (division_id,grade_code,grade_name,min_days,max_days,col
 -- Default expiry remaining-day criteria for every division.
 -- A+, A, B and C values are stored independently and can be changed by Super Admin per division.
 -- Expired always remains tied to the actual Expiry Date.
-INSERT INTO division_grade_settings (division_id,a_plus_months,a_months,b_months,a_plus_days,a_days,b_days,c_days)
-SELECT id,1,2,3,366,365,180,90 FROM divisions;
+INSERT INTO division_grade_settings (division_id,a_plus_months,a_months,b_months,a_plus_days,a_days,b_days,c_days,a_plus_used_pct,a_used_pct,b_used_pct,c_used_pct)
+SELECT id,1,2,3,366,365,180,90,25.00,50.00,75.00,100.00 FROM divisions;
 
 -- Initial Super Admin. Change password after first login.
 -- email: admin@example.com  password: Admin@123

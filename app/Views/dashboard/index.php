@@ -1,27 +1,22 @@
 <?php
-if (!empty($selectedCriteria)) {
-    $aPlusDays = (int)$selectedCriteria['a_plus_days'];
-    $aDays = (int)$selectedCriteria['a_days'];
-    $bDays = (int)$selectedCriteria['b_days'];
-    $cDays = (int)$selectedCriteria['c_days'];
+if (!empty($gradeCriteria)) {
     $legendItems = [
-        ['class' => 'blue', 'label' => 'A+', 'range' => $aPlusDays . '+ days remaining'],
-        ['class' => 'green', 'label' => 'A', 'range' => $aDays . '–' . ($aPlusDays - 1) . ' days remaining'],
-        ['class' => 'yellow', 'label' => 'B', 'range' => $bDays . '–' . ($aDays - 1) . ' days remaining'],
-        ['class' => 'red', 'label' => 'C', 'range' => '1–' . ($bDays - 1) . ' days remaining · C ref ' . $cDays . 'd'],
-        ['class' => 'black', 'label' => 'Expired', 'range' => 'Expiry Date and after'],
+        ['class' => 'blue', 'label' => 'A+', 'range' => $gradeCriteria['A+']],
+        ['class' => 'green', 'label' => 'A', 'range' => $gradeCriteria['A']],
+        ['class' => 'yellow', 'label' => 'B', 'range' => $gradeCriteria['B']],
+        ['class' => 'red', 'label' => 'C', 'range' => $gradeCriteria['C']],
+        ['class' => 'black', 'label' => 'Expired', 'range' => $gradeCriteria['EX']],
     ];
 } else {
     $legendItems = [
-        ['class' => 'blue', 'label' => 'A+', 'range' => 'Division-specific expiry remaining-day range'],
-        ['class' => 'green', 'label' => 'A', 'range' => 'Division-specific expiry remaining-day range'],
-        ['class' => 'yellow', 'label' => 'B', 'range' => 'Division-specific expiry remaining-day range'],
-        ['class' => 'red', 'label' => 'C', 'range' => 'Division-specific expiry remaining-day range'],
+        ['class' => 'blue', 'label' => 'A+', 'range' => 'Division-specific shelf-life-used range'],
+        ['class' => 'green', 'label' => 'A', 'range' => 'Division-specific shelf-life-used range'],
+        ['class' => 'yellow', 'label' => 'B', 'range' => 'Division-specific shelf-life-used range'],
+        ['class' => 'red', 'label' => 'C', 'range' => 'Division-specific shelf-life-used range until Expiry'],
         ['class' => 'black', 'label' => 'Expired', 'range' => 'Expiry Date and after'],
     ];
 }
-?>
-<?php
+
 $dashboardNumber = static function ($value): string {
     $number = (float)$value;
     if (abs($number) >= 1000000) {
@@ -29,6 +24,7 @@ $dashboardNumber = static function ($value): string {
     }
     return number_format((int)round($number));
 };
+
 $dashboardPlainNumber = static function ($value): string {
     return number_format((int)round((float)$value));
 };
@@ -265,7 +261,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </span>
     <?php endforeach; ?>
     <?php if ($user['role'] === 'super_admin'): ?>
-        <a class="btn ghost grade-criteria-link" href="<?= e(url('/grade-criteria')) ?>">Manage Division Criteria</a>
+        <a class="btn ghost grade-criteria-link" href="<?= e(url('/grade-criteria')) ?>">View Grading Criteria</a>
     <?php endif; ?>
 </div>
 </section>

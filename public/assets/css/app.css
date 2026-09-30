@@ -2760,3 +2760,319 @@ body.modal-open{overflow:hidden}
         margin-left:0;
     }
 }
+
+/* Dashboard grade summary cards - rounded top border design */
+.dashboard-variant2-grade-shell .grade-summary-table-cards{
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    gap:14px !important;
+    align-items:stretch;
+}
+
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card,
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(4),
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(5){
+    grid-column:auto !important;
+    min-height:300px;
+    padding:16px 14px 14px !important;
+    background:#ffffff !important;
+    color:#101828 !important;
+    border:1px solid #dbe3ec !important;
+    border-top-width:8px !important;
+    border-radius:20px !important;
+    box-shadow:0 8px 20px rgba(16,24,40,.05) !important;
+    overflow:hidden;
+}
+
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus{border-top-color:#0b2f6b !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a{border-top-color:#92d050 !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b{border-top-color:#e6d900 !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c{border-top-color:#ff0000 !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex{border-top-color:#000000 !important;}
+
+.dashboard-variant2-grade-shell .grade-detail-card .grade-card-topline{
+    align-items:center;
+    gap:10px;
+    margin-bottom:12px;
+}
+
+.dashboard-variant2-grade-shell .grade-detail-card .grade-card-title{
+    margin:0 !important;
+    font-size:16px !important;
+    font-weight:800 !important;
+    line-height:1.25;
+}
+
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus .grade-card-title{color:#0b2f6b !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-card-title{color:#365314 !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-card-title{color:#8a6d00 !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c .grade-card-title{color:#c1121f !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex .grade-card-title{color:#111111 !important;}
+
+.dashboard-variant2-grade-shell .grade-detail-card .grade-uom-count{
+    margin-left:auto;
+    padding:5px 10px;
+    border-radius:999px;
+    font-size:11px;
+    font-weight:700;
+    border:1px solid transparent;
+    white-space:nowrap;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus .grade-uom-count{
+    background:#eef4ff;
+    color:#0b2f6b;
+    border-color:#cddcf7;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-uom-count{
+    background:#f2fae8;
+    color:#365314;
+    border-color:#d7eab4;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-uom-count{
+    background:#fffce1;
+    color:#7a6200;
+    border-color:#efe28b;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c .grade-uom-count{
+    background:#fff1f1;
+    color:#c1121f;
+    border-color:#ffcccc;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex .grade-uom-count{
+    background:#f3f4f6;
+    color:#111827;
+    border-color:#d1d5db;
+}
+
+.dashboard-variant2-grade-shell .grade-unit-table{
+    min-height:145px;
+    max-height:none;
+    border-radius:12px;
+    border:1px solid #e5eaf0;
+    background:#fafbfc !important;
+    overflow:hidden;
+}
+
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus .grade-unit-table{
+    background:#f5f8fd !important;
+    border-color:#d4dff0;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-unit-table{
+    background:#f6fbef !important;
+    border-color:#d8eab5;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-unit-table{
+    background:#fffde8 !important;
+    border-color:#efe18b;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c .grade-unit-table{
+    background:#fff4f4 !important;
+    border-color:#ffd1d1;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex .grade-unit-table{
+    background:#f7f7f7 !important;
+    border-color:#dddddd;
+}
+
+.dashboard-variant2-grade-shell .grade-unit-table-head{
+    background:transparent;
+    border-bottom:1px solid #e5eaf0 !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-table-row{
+    border-bottom:1px solid #e8edf3 !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-table-head span,
+.dashboard-variant2-grade-shell .grade-unit-table-row span,
+.dashboard-variant2-grade-shell .grade-unit-table-row strong{
+    color:#344054 !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-code{
+    font-weight:700;
+}
+.dashboard-variant2-grade-shell .grade-unit-empty{
+    color:#475467 !important;
+    opacity:1;
+}
+.dashboard-variant2-grade-shell .grade-card-totals{
+    margin-top:12px;
+    padding-top:12px;
+    border-top:1px solid #e5eaf0 !important;
+}
+.dashboard-variant2-grade-shell .grade-card-totals span{
+    color:#667085 !important;
+    opacity:1;
+}
+.dashboard-variant2-grade-shell .grade-card-totals strong{
+    color:#101828 !important;
+}
+
+@media (max-width: 1500px){
+    .dashboard-variant2-grade-shell .grade-summary-table-cards{
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    }
+}
+@media (max-width: 1100px){
+    .dashboard-variant2-grade-shell .grade-summary-table-cards{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+}
+@media (max-width: 760px){
+    .dashboard-variant2-grade-shell .grade-summary-table-cards{
+        grid-template-columns:1fr !important;
+    }
+}
+
+
+/* Grade summary cards: colored header band design */
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card{
+    border-top-width:1px !important;
+    padding:16px 14px 14px !important;
+    background:#ffffff !important;
+}
+.dashboard-variant2-grade-shell .grade-detail-card .grade-card-topline{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    min-height:48px !important;
+    margin:-16px -14px 14px !important;
+    padding:10px 14px !important;
+    border-radius:20px 20px 0 0 !important;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus .grade-card-topline{background:#153b7c !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-card-topline{background:#8fce4c !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-card-topline{background:#f2e600 !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c .grade-card-topline{background:#ff1a1a !important;}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex .grade-card-topline{background:#000000 !important;}
+
+.dashboard-variant2-grade-shell .grade-detail-card .grade-card-title{
+    color:#ffffff !important;
+    font-size:14px !important;
+    font-weight:800 !important;
+    letter-spacing:.01em;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-card-title,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-card-title{color:#102a12 !important;}
+
+.dashboard-variant2-grade-shell .grade-detail-card .grade-uom-count{
+    padding:4px 10px !important;
+    border-radius:999px !important;
+    font-size:11px !important;
+    font-weight:700 !important;
+    background:rgba(255,255,255,.22) !important;
+    color:#ffffff !important;
+    border:1px solid rgba(255,255,255,.25) !important;
+    backdrop-filter:blur(2px);
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-uom-count,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-uom-count{
+    background:rgba(255,255,255,.48) !important;
+    color:#243b12 !important;
+    border-color:rgba(255,255,255,.55) !important;
+}
+
+/* keep body clean beneath the colored header */
+.dashboard-variant2-grade-shell .grade-detail-card .grade-unit-table,
+.dashboard-variant2-grade-shell .grade-detail-card .grade-card-totals{
+    margin-left:2px;
+    margin-right:2px;
+}
+
+
+/* Grade Summary refinement: white header text, borderless cards, clearer column headings */
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card,
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(4),
+.dashboard-variant2-grade-shell .grade-summary-table-cards .grade-detail-card:nth-child(5){
+    border:0 !important;
+    box-shadow:0 8px 22px rgba(16,24,40,.08) !important;
+    background:#fff !important;
+}
+
+/* Header band text is white for all five grades */
+.dashboard-variant2-grade-shell .grade-detail-card .grade-card-title,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus .grade-card-title,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-card-title,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-card-title,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c .grade-card-title,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex .grade-card-title{
+    color:#fff !important;
+    text-shadow:0 1px 1px rgba(0,0,0,.18);
+}
+
+/* Unit badge also follows a clean white-on-grade header treatment */
+.dashboard-variant2-grade-shell .grade-detail-card .grade-uom-count,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-uom-count,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-uom-count{
+    color:#fff !important;
+    background:rgba(255,255,255,.18) !important;
+    border:1px solid rgba(255,255,255,.32) !important;
+    text-shadow:0 1px 1px rgba(0,0,0,.12);
+}
+
+/* Remove heavy inner borders; keep only subtle row separation */
+.dashboard-variant2-grade-shell .grade-unit-table{
+    border:0 !important;
+    box-shadow:inset 0 0 0 1px rgba(16,24,40,.06);
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus .grade-unit-table,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a .grade-unit-table,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-unit-table,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c .grade-unit-table,
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex .grade-unit-table{
+    border:0 !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-table-head,
+.dashboard-variant2-grade-shell .grade-unit-table-row{
+    border-color:rgba(16,24,40,.08) !important;
+}
+
+/* Make Units / Quantity / Stock Retail Value easy to read */
+.dashboard-variant2-grade-shell .grade-unit-table-head{
+    padding-top:10px !important;
+    padding-bottom:10px !important;
+    font-size:10.5px !important;
+    line-height:1.25 !important;
+    font-weight:700 !important;
+    letter-spacing:0 !important;
+    text-transform:none !important;
+    opacity:1 !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-table-head span{
+    color:#344054 !important;
+    font-size:10.5px !important;
+    font-weight:700 !important;
+}
+
+/* Slightly smaller body text than the headings */
+.dashboard-variant2-grade-shell .grade-unit-table-row{
+    font-size:10px !important;
+    padding-top:9px !important;
+    padding-bottom:9px !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-code{
+    font-size:10px !important;
+    font-weight:600 !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-table-row strong{
+    font-size:12px !important;
+    font-weight:650 !important;
+}
+.dashboard-variant2-grade-shell .grade-unit-value{
+    font-size:9.5px !important;
+    font-weight:500 !important;
+}
+
+/* Keep the total area visually light and consistent */
+.dashboard-variant2-grade-shell .grade-card-totals{
+    border-top:1px solid #edf0f4 !important;
+}
+.dashboard-variant2-grade-shell .grade-card-totals span{
+    font-size:9px !important;
+    font-weight:500 !important;
+}
+.dashboard-variant2-grade-shell .grade-card-totals strong{
+    font-size:14px !important;
+    font-weight:650 !important;
+}
+
+/* Product shelf-life grading criteria */
+.shelf-life-reference-table{min-width:760px}
+.shelf-life-reference-table td,.shelf-life-reference-table th{text-align:left}

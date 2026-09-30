@@ -81,8 +81,6 @@ class DashboardController
             12
         );
 
-        $selectedCriteria = $divisionId ? $grader->settingsForDivision((int)$divisionId) : null;
-
         $divisionModel = new Division();
         $divisions = $divisionModel->all(true);
         $pageDivision = null;
@@ -98,6 +96,8 @@ class DashboardController
             }
         }
 
+        $gradeCriteria = $divisionId ? $grader->criteriaForDivision((int)$divisionId) : null;
+
         View::render('dashboard/index', [
             'title' => 'Dashboard',
             'user' => $user,
@@ -107,7 +107,7 @@ class DashboardController
             'metrics' => $metrics,
             'rows' => $tableRows,
             'alerts' => $alerts,
-            'selectedCriteria' => $selectedCriteria,
+            'gradeCriteria' => $gradeCriteria,
         ]);
     }
 }

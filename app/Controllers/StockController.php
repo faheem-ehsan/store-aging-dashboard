@@ -61,10 +61,9 @@ class StockController
             ? ($gradeLabels[$filters['grade']] ?? $filters['grade'])
             : 'All Grades';
 
-        $criteriaDivisionId = $user['role'] !== 'super_admin'
-            ? (int)$user['division_id']
-            : (int)($filters['division_id'] ?? 0);
-        $selectedCriteria = $criteriaDivisionId > 0 ? $grader->settingsForDivision($criteriaDivisionId) : null;
+        $gradeCriteria = !empty($filters['division_id'])
+            ? $grader->criteriaForDivision((int)$filters['division_id'])
+            : null;
 
         View::render('stocks/index', [
             'title' => 'Stock Aging Dashboard',
@@ -76,7 +75,7 @@ class StockController
             'summary' => $summary,
             'selectedDivisionLabel' => $selectedDivisionLabel,
             'selectedGradeLabel' => $selectedGradeLabel,
-            'selectedCriteria' => $selectedCriteria,
+            'gradeCriteria' => $gradeCriteria,
         ]);
     }
 

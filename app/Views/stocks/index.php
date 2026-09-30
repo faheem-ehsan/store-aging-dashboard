@@ -127,7 +127,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     <div class="stock-context-strip" aria-label="Current filter context">
         <span><small>Division</small><strong><?= e($selectedDivisionLabel ?? 'All Divisions') ?></strong></span>
         <span><small>Grade</small><strong><?= e($selectedGradeLabel ?? 'All Grades') ?></strong></span>
-        <span class="criteria"><small>Criteria</small><strong><?php if (!empty($selectedCriteria)): ?>A+ <?= (int)$selectedCriteria['a_plus_days'] ?>d+ · A <?= (int)$selectedCriteria['a_days'] ?>–<?= ((int)$selectedCriteria['a_plus_days'] - 1) ?>d · B <?= (int)$selectedCriteria['b_days'] ?>–<?= ((int)$selectedCriteria['a_days'] - 1) ?>d · C 1–<?= ((int)$selectedCriteria['b_days'] - 1) ?>d<?php else: ?>Varies by division<?php endif; ?></strong></span>
+        <span class="criteria"><small>Criteria</small><strong><?php if (!empty($gradeCriteria)): ?>A+ <?= e($gradeCriteria['A+']) ?> · A <?= e($gradeCriteria['A']) ?> · B <?= e($gradeCriteria['B']) ?> · C <?= e($gradeCriteria['C']) ?><?php else: ?>Varies by division · based on each batch's own shelf life<?php endif; ?></strong></span>
     </div>
 </section>
 
