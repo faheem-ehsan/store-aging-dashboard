@@ -3076,3 +3076,433 @@ body.modal-open{overflow:hidden}
 /* Product shelf-life grading criteria */
 .shelf-life-reference-table{min-width:760px}
 .shelf-life-reference-table td,.shelf-life-reference-table th{text-align:left}
+
+
+/* Market Return grading summary cards styled like Dashboard cards */
+.market-return-dashboard-grade-shell .market-return-grade-cards{
+    grid-template-columns:repeat(5,minmax(0,1fr)) !important;
+    gap:14px !important;
+    align-items:stretch !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card{
+    position:relative;
+    background:#ffffff !important;
+    color:#172033 !important;
+    border:1px solid #d9e2ec !important;
+    border-top-width:1px !important;
+    border-radius:18px !important;
+    box-shadow:0 10px 24px rgba(16,24,40,.06) !important;
+    padding:0 !important;
+    min-height:360px !important;
+    overflow:hidden;
+    display:flex !important;
+    flex-direction:column !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-card-topline{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    min-height:48px;
+    padding:0 16px;
+    margin:0 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-card-title{
+    margin:0 !important;
+    font-size:14px !important;
+    font-weight:900 !important;
+    color:inherit !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-uom-count{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    padding:5px 9px;
+    border-radius:999px;
+    font-size:10px;
+    font-weight:800;
+    white-space:nowrap;
+    border:1px solid rgba(255,255,255,.26);
+    background:rgba(255,255,255,.18);
+    color:inherit;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-a .grade-card-topline{
+    background:#92d050;
+    color:#10210a;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-b .grade-card-topline{
+    background:#fff200;
+    color:#171700;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-c .grade-card-topline{
+    background:#ff1a1a;
+    color:#ffffff;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-ex .grade-card-topline{
+    background:#000000;
+    color:#ffffff;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-no-expiry .grade-card-topline{
+    background:#98a2b3;
+    color:#ffffff;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-a .grade-uom-count,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-b .grade-uom-count{
+    background:rgba(255,255,255,.58);
+    border-color:rgba(255,255,255,.72);
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-grid{
+    display:flex;
+    flex-direction:column;
+    flex:1 1 auto;
+    min-width:0;
+    padding:14px 16px 0;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head,
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-row{
+    display:grid !important;
+    grid-template-columns:minmax(62px,.7fr) minmax(78px,.8fr) minmax(120px,1.2fr) !important;
+    column-gap:10px !important;
+    align-items:center;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head{
+    padding:0 8px 10px;
+    margin:0 0 8px;
+    border-bottom:1px solid #e4e7ec !important;
+    font-size:11px;
+    line-height:1.25;
+    font-weight:800;
+    color:#667085;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head span:nth-child(2),
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head span:nth-child(3),
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-qty,
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-value{
+    text-align:right;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-uom-values{
+    max-height:none !important;
+    height:auto !important;
+    overflow:visible !important;
+    gap:8px !important;
+    margin-bottom:0 !important;
+    padding-right:0 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-row{
+    padding:10px 10px !important;
+    border-radius:10px;
+    border:1px solid transparent;
+    min-width:0;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-code{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:13px;
+    font-weight:800;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-qty{
+    min-width:0;
+    font-size:14px !important;
+    font-weight:800 !important;
+    white-space:nowrap;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-value{
+    min-width:0;
+    font-size:13px;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-empty{
+    display:grid;
+    place-items:center;
+    min-height:150px;
+    padding:18px;
+    border-radius:12px;
+    border:1px solid transparent;
+    text-align:center;
+    font-size:14px;
+    font-weight:600;
+    grid-column:1 / -1;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-a .market-return-unit-row,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-a .market-return-unit-empty{
+    background:#eff8e2;
+    border-color:#cfe6a7;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-b .market-return-unit-row,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-b .market-return-unit-empty{
+    background:#fffcd7;
+    border-color:#efe45b;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-c .market-return-unit-row,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-c .market-return-unit-empty{
+    background:#fff1f1;
+    border-color:#ffb7b7;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-ex .market-return-unit-row,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-ex .market-return-unit-empty{
+    background:#171717;
+    border-color:#2f2f2f;
+    color:#ffffff;
+}
+.market-return-dashboard-grade-shell .market-return-click-card.grade-no-expiry .market-return-unit-row,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-no-expiry .market-return-unit-empty{
+    background:#f5f7fa;
+    border-color:#d6dde6;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-value-line{
+    margin-top:auto !important;
+    display:flex;
+    align-items:flex-end;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 16px 16px;
+    border-top:1px solid #e4e7ec;
+    color:#172033 !important;
+    background:#ffffff;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-currency-label{
+    font-size:10px !important;
+    font-weight:800 !important;
+    line-height:1.3;
+    color:#667085 !important;
+    text-transform:none;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-stock-value{
+    font-size:15px !important;
+    font-weight:900 !important;
+    line-height:1.2;
+    color:#101828 !important;
+    white-space:nowrap;
+}
+@media(max-width:1550px){
+    .market-return-dashboard-grade-shell .market-return-grade-cards{
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    }
+}
+@media(max-width:1100px){
+    .market-return-dashboard-grade-shell .market-return-grade-cards{
+        grid-template-columns:repeat(2,minmax(0,1fr)) !important;
+    }
+}
+@media(max-width:720px){
+    .market-return-dashboard-grade-shell .market-return-grade-cards{
+        grid-template-columns:1fr !important;
+    }
+}
+
+
+/* Market Return grading cards - professional typography and compact data rows */
+.market-return-dashboard-grade-shell .market-return-click-card{
+    min-height:330px !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-card-topline{
+    min-height:46px !important;
+    padding:0 14px !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-card-title{
+    font-size:14px !important;
+    line-height:1.2 !important;
+    font-weight:700 !important;
+    letter-spacing:0 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-uom-count{
+    padding:4px 8px !important;
+    font-size:9px !important;
+    line-height:1.2 !important;
+    font-weight:600 !important;
+}
+
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-grid{
+    padding:12px 12px 0 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head,
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-row{
+    grid-template-columns:minmax(68px,.9fr) minmax(60px,.7fr) minmax(100px,1.25fr) !important;
+    column-gap:7px !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head{
+    padding:0 7px 8px !important;
+    margin-bottom:7px !important;
+    font-size:10px !important;
+    line-height:1.2 !important;
+    font-weight:600 !important;
+    letter-spacing:0 !important;
+    color:#475467 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head span{
+    font-size:10px !important;
+    font-weight:600 !important;
+    white-space:nowrap;
+}
+
+/* Keep each unit row compact instead of stretching to fill the whole card. */
+.market-return-dashboard-grade-shell .market-return-click-card .grade-uom-list.market-return-uom-values{
+    display:grid !important;
+    grid-auto-rows:minmax(40px,auto) !important;
+    flex:0 0 auto !important;
+    gap:6px !important;
+    max-height:none !important;
+    height:auto !important;
+    overflow:visible !important;
+    margin:0 !important;
+    padding:0 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-row{
+    min-height:40px !important;
+    padding:7px 8px !important;
+    border-radius:8px !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-code{
+    font-size:10.5px !important;
+    line-height:1.2 !important;
+    font-weight:600 !important;
+    letter-spacing:0 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-qty{
+    font-size:11.5px !important;
+    line-height:1.2 !important;
+    font-weight:700 !important;
+    font-variant-numeric:tabular-nums;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-value{
+    font-size:9.5px !important;
+    line-height:1.25 !important;
+    font-weight:600 !important;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap !important;
+    overflow:hidden !important;
+    text-overflow:ellipsis !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-empty{
+    min-height:135px !important;
+    font-size:11px !important;
+    line-height:1.35 !important;
+    font-weight:500 !important;
+}
+
+.market-return-dashboard-grade-shell .market-return-click-card .grade-value-line{
+    padding:11px 13px 13px !important;
+    gap:8px !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-currency-label{
+    font-size:9px !important;
+    line-height:1.25 !important;
+    font-weight:500 !important;
+    letter-spacing:0 !important;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-stock-value{
+    font-size:14px !important;
+    line-height:1.2 !important;
+    font-weight:700 !important;
+    letter-spacing:-.01em;
+}
+
+/* Keep dark card data readable without over-bold typography. */
+.market-return-dashboard-grade-shell .market-return-click-card.grade-ex .market-return-unit-code,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-ex .market-return-unit-qty,
+.market-return-dashboard-grade-shell .market-return-click-card.grade-ex .market-return-unit-value{
+    color:#fff !important;
+}
+
+@media(max-width:1450px){
+    .market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head,
+    .market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-row{
+        grid-template-columns:minmax(58px,.85fr) minmax(52px,.65fr) minmax(84px,1.2fr) !important;
+        column-gap:5px !important;
+    }
+    .market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head,
+    .market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-head span{
+        font-size:9px !important;
+    }
+    .market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-code{
+        font-size:10px !important;
+    }
+    .market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-qty{
+        font-size:11px !important;
+    }
+    .market-return-dashboard-grade-shell .market-return-click-card .market-return-unit-value{
+        font-size:9px !important;
+    }
+}
+
+
+/* Finish Goods detail-table sorting and page-size controls */
+.dispatch-stock-table .stock-sortable-th{
+    padding:0 !important;
+}
+.dispatch-stock-table .stock-sort-link{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:7px;
+    width:100%;
+    min-height:40px;
+    padding:10px 11px;
+    color:inherit;
+    text-decoration:none;
+    white-space:nowrap;
+}
+.dispatch-stock-table .stock-sort-link:hover{
+    background:#fdeff0;
+    color:#8f1015;
+}
+.dispatch-stock-table .stock-sort-link b{
+    flex:0 0 auto;
+    font-size:12px;
+    line-height:1;
+    font-weight:700;
+    color:#98a2b3;
+}
+.dispatch-stock-table th[aria-sort="ascending"] .stock-sort-link b,
+.dispatch-stock-table th[aria-sort="descending"] .stock-sort-link b{
+    color:#e31b23;
+}
+.dispatch-stock-table th[aria-sort="ascending"] .stock-sort-link,
+.dispatch-stock-table th[aria-sort="descending"] .stock-sort-link{
+    color:#8f1015;
+    background:#fff5f5;
+}
+.stock-pagination-summary{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    flex-wrap:wrap;
+}
+.stock-page-size-form{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    color:#667085;
+    font-size:12px;
+}
+.stock-page-size-form label{
+    white-space:nowrap;
+}
+.stock-page-size-form select{
+    height:34px;
+    min-width:70px;
+    padding:5px 28px 5px 10px;
+    border:1px solid #d0d5dd;
+    border-radius:8px;
+    background:#fff;
+    color:#172033;
+    font:inherit;
+    font-weight:600;
+    cursor:pointer;
+}
+.stock-page-size-form select:focus{
+    outline:none;
+    border-color:#ef1c25;
+    box-shadow:0 0 0 3px rgba(239,28,37,.08);
+}
+@media(max-width:760px){
+    .stock-pagination-summary{
+        width:100%;
+        justify-content:space-between;
+    }
+}

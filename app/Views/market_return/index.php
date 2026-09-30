@@ -153,8 +153,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 <section class="stock-control-panel market-return-control-panel market-return-dashboard-filter" aria-label="Market Return filters and actions">
     <div class="stock-control-head">
         <div class="stock-control-heading">
-            <span class="stock-control-kicker">Market Return View</span>
-            <strong>Filter Market Return Goods</strong>
+            <strong>Market Return Goods</strong>
         </div>
         <?php if ($canManage && $databaseReady): ?>
             <div class="stock-actions stock-control-actions">
@@ -345,7 +344,6 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
                 <tr>
                     <th>Division</th>
                     <th>Source Category</th>
-                    <th>S. No.</th>
                     <th>Product / Description</th>
                     <th>Quantity</th>
                     <th>Unit</th>
@@ -361,7 +359,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             </thead>
             <tbody>
             <?php if (!$tableRows): ?>
-                <tr><td colspan="14" class="empty">No Market Return Store records found for the selected filters.</td></tr>
+                <tr><td colspan="13" class="empty">No Market Return Store records found for the selected filters.</td></tr>
             <?php endif; ?>
             <?php foreach ($tableRows as $row):
                 $meta = $categories[$row['category_code']] ?? ['label' => $row['category_code'], 'class' => 'default'];
@@ -371,7 +369,6 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
                 <tr>
                     <td><span class="division-tag"><?= e($row['division_code']) ?></span></td>
                     <td><span class="market-return-category-tag <?= e($meta['class']) ?>"><?= e($meta['label']) ?></span></td>
-                    <td><?= e($row['serial_no'] ?? '') ?></td>
                     <td class="market-return-product"><?= e($row['product_name']) ?></td>
                     <td class="num"><?= $formatQty($row['quantity']) ?></td>
                     <td><?= e($row['unit']) ?></td>

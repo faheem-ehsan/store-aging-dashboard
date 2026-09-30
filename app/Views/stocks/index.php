@@ -53,34 +53,113 @@ $gradeOptions = [
     'EX' => 'Expired · Black',
 ];
 
-// Finish Goods Aging detail-table pagination: 100 rows per page by default.
-$rowsPerPage = 50;
-$totalTableRows = count($rows ?? []);
+// Finish Goods Aging detail-table sorting + pagination.
+// Default page size is 50, with 25 / 50 / 100 row presets.
+$allowedPageSizes = [25, 50, 100];
+$requestedPageSize = (int)($_GET['per_page'] ?? 50);
+$rowsPerPage = in_array($requestedPageSize, $allowedPageSizes, true) ? $requestedPageSize : 50;
+
+$sortKey = trim((string)($_GET['sort'] ?? ''));
+$sortDir = strtolower(trim((string)($_GET['dir'] ?? 'asc')));
+$sortDir = $sortDir === 'desc' ? 'desc' : 'asc';
+
+$sortDefinitions = [
+    'division' => ['type' => 'string', 'value' => static fn(array $row) => (string)($row['division_code'] ?? '')],
+    'product_code' => ['type' => 'string', 'value' => static fn(array $row) => (string)($row['material_code'] ?? '')],
+    'product_name' => ['type' => 'string', 'value' => static fn(array $row) => (string)($row['material_description'] ?? '')],
+    'current_stock' => ['type' => 'number', 'value' => static fn(array $row) => (float)($row['current_qty'] ?? 0)],
+    'uom' => ['type' => 'string', 'value' => static fn(array $row) => (string)($row['uom'] ?? '')],
+    'stock_value' => ['type' => 'number', 'value' => static fn(array $row) => (float)($row['stock_value'] ?? 0)],
+    'batch_no' => ['type' => 'string', 'value' => static fn(array $row) => (string)($row['batch_no'] ?? '')],
+    'manufacturing_date' => ['type' => 'date', 'value' => static fn(array $row) => (string)($row['manufacture_date'] ?? '')],
+    'expiry_date' => ['type' => 'date', 'value' => static fn(array $row) => (string)($row['expiry_date'] ?? '')],
+    'aging' => ['type' => 'number', 'value' => static function (array $row) use ($agingReferenceDate): float {
+        $manufactureTs = strtotime((string)($row['manufacture_date'] ?? ''));
+        $referenceTs = strtotime($agingReferenceDate);
+        return ($manufactureTs !== false && $referenceTs !== false) ? (float)(($referenceTs - $manufactureTs) / 86400) : 0.0;
+    }],
+    'expiry_remaining' => ['type' => 'number', 'value' => static fn(array $row) => (float)($row['remaining_days'] ?? 0)],
+    'stock_location' => ['type' => 'string', 'value' => static fn(array $row) => (string)($row['receiving_store'] ?? '')],
+    'grade' => ['type' => 'grade', 'value' => static fn(array $row) => (string)($row['grade']['grade_code'] ?? '')],
+];
+
+$sortedRows = array_values($rows ?? []);
+if ($sortKey !== '' && isset($sortDefinitions[$sortKey])) {
+    $definition = $sortDefinitions[$sortKey];
+    $direction = $sortDir === 'desc' ? -1 : 1;
+    $gradeOrder = ['A+' => 1, 'A' => 2, 'B' => 3, 'C' => 4, 'EX' => 5];
+
+    usort($sortedRows, static function (array $left, array $right) use ($definition, $direction, $gradeOrder): int {
+        $leftValue = ($definition['value'])($left);
+        $rightValue = ($definition['value'])($right);
+
+        if ($definition['type'] === 'number') {
+            $comparison = (float)$leftValue <=> (float)$rightValue;
+        } elseif ($definition['type'] === 'date') {
+            $leftTs = strtotime((string)$leftValue);
+            $rightTs = strtotime((string)$rightValue);
+            $comparison = (($leftTs === false ? 0 : $leftTs) <=> ($rightTs === false ? 0 : $rightTs));
+        } elseif ($definition['type'] === 'grade') {
+            $comparison = (($gradeOrder[(string)$leftValue] ?? 99) <=> ($gradeOrder[(string)$rightValue] ?? 99));
+        } else {
+            $comparison = strnatcasecmp((string)$leftValue, (string)$rightValue);
+        }
+
+        if ($comparison === 0) {
+            $comparison = ((int)($left['id'] ?? 0)) <=> ((int)($right['id'] ?? 0));
+        }
+
+        return $comparison * $direction;
+    });
+}
+
+$totalTableRows = count($sortedRows);
 $totalPages = max(1, (int)ceil($totalTableRows / $rowsPerPage));
 $currentPage = max(1, (int)($_GET['page'] ?? 1));
 if ($currentPage > $totalPages) $currentPage = $totalPages;
 $pageOffset = ($currentPage - 1) * $rowsPerPage;
-$tableRows = array_slice($rows ?? [], $pageOffset, $rowsPerPage);
+$tableRows = array_slice($sortedRows, $pageOffset, $rowsPerPage);
 $showingFrom = $totalTableRows > 0 ? $pageOffset + 1 : 0;
 $showingTo = min($pageOffset + $rowsPerPage, $totalTableRows);
 
-$paginationParams = [
+$baseTableParams = [
     'q' => $filters['q'] ?? '',
     'division_id' => $filters['division_id'] ?? '',
     'grade' => $filters['grade'] ?? '',
+    'sort' => $sortKey,
+    'dir' => $sortKey !== '' ? $sortDir : '',
+    'per_page' => $rowsPerPage,
 ];
-$paginationParams = array_filter($paginationParams, static fn($value): bool => $value !== '' && $value !== null);
-$paginationUrl = static function (int $page) use ($paginationParams): string {
-    $params = $paginationParams;
+$baseTableParams = array_filter($baseTableParams, static fn($value): bool => $value !== '' && $value !== null);
+
+$paginationUrl = static function (int $page) use ($baseTableParams): string {
+    $params = $baseTableParams;
     $params['page'] = $page;
     return url('/stocks') . '?' . http_build_query($params);
+};
+
+$sortUrl = static function (string $column) use ($baseTableParams, $sortKey, $sortDir): string {
+    $params = $baseTableParams;
+    $params['sort'] = $column;
+    $params['dir'] = ($sortKey === $column && $sortDir === 'asc') ? 'desc' : 'asc';
+    unset($params['page']);
+    return url('/stocks') . '?' . http_build_query($params);
+};
+
+$sortIndicator = static function (string $column) use ($sortKey, $sortDir): string {
+    if ($sortKey !== $column) return '↕';
+    return $sortDir === 'asc' ? '↑' : '↓';
+};
+
+$sortAria = static function (string $column) use ($sortKey, $sortDir): string {
+    if ($sortKey !== $column) return 'none';
+    return $sortDir === 'asc' ? 'ascending' : 'descending';
 };
 ?>
 <section class="stock-control-panel" aria-label="Stock filters and actions">
     <div class="stock-control-head">
         <div class="stock-control-heading">
-            <span class="stock-control-kicker">Stock View</span>
-            <strong>Filter Finish Goods Aging</strong>
+            <strong>Search Finish Goods</strong>
         </div>
         <?php if ($canManage): ?>
             <div class="stock-actions stock-control-actions">
@@ -91,6 +170,9 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     </div>
 
     <form method="get" action="<?= e(url('/stocks')) ?>" class="stock-filter-grid stock-filter-grid-refined">
+        <?php if ($sortKey !== ''): ?><input type="hidden" name="sort" value="<?= e($sortKey) ?>"><?php endif; ?>
+        <?php if ($sortKey !== ''): ?><input type="hidden" name="dir" value="<?= e($sortDir) ?>"><?php endif; ?>
+        <input type="hidden" name="per_page" value="<?= (int)$rowsPerPage ?>">
         <div class="stock-filter-field stock-filter-search-wrap">
             <label for="stockSearch">Search</label>
             <input id="stockSearch" class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, product name or batch no...">
@@ -164,19 +246,19 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 <div class="table-wrap">
 <table class="aging-table dispatch-stock-table">
 <thead><tr>
-    <th>Division</th>
-    <th>Product Code</th>
-    <th>Product Name</th>
-    <th>Current Stock</th>
-    <th>UoM</th>
-    <th>Retail Stock Value</th>
-    <th>Batch No</th>
-    <th>Manufacturing Date</th>
-    <th>Expiry Date</th>
-    <th>Aging</th>
-    <th>Expiry Remaining</th>
-    <th>Stock Location</th>
-    <th>Grade</th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('division')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('division')) ?>"><span>Division</span><b><?= e($sortIndicator('division')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_code')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_code')) ?>"><span>Product Code</span><b><?= e($sortIndicator('product_code')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_name')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_name')) ?>"><span>Product Name</span><b><?= e($sortIndicator('product_name')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('current_stock')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('current_stock')) ?>"><span>Current Stock</span><b><?= e($sortIndicator('current_stock')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('uom')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('uom')) ?>"><span>UoM</span><b><?= e($sortIndicator('uom')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('stock_value')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('stock_value')) ?>"><span>Retail Stock Value</span><b><?= e($sortIndicator('stock_value')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('batch_no')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('batch_no')) ?>"><span>Batch No</span><b><?= e($sortIndicator('batch_no')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('manufacturing_date')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('manufacturing_date')) ?>"><span>Manufacturing Date</span><b><?= e($sortIndicator('manufacturing_date')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('expiry_date')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('expiry_date')) ?>"><span>Expiry Date</span><b><?= e($sortIndicator('expiry_date')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('aging')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('aging')) ?>"><span>Aging</span><b><?= e($sortIndicator('aging')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('expiry_remaining')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('expiry_remaining')) ?>"><span>Expiry Remaining</span><b><?= e($sortIndicator('expiry_remaining')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('stock_location')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('stock_location')) ?>"><span>Stock Location</span><b><?= e($sortIndicator('stock_location')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('grade')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('grade')) ?>"><span>Grade</span><b><?= e($sortIndicator('grade')) ?></b></a></th>
     <?php if ($canManage): ?><th>Action</th><?php endif; ?>
 </tr></thead>
 <tbody>
@@ -213,9 +295,24 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 
 <?php if ($totalTableRows > 0): ?>
 <div class="market-return-pagination stock-table-pagination" aria-label="Finish Goods Aging pagination">
-    <div class="market-return-pagination-info">
-        Showing <strong><?= number_format($showingFrom) ?>–<?= number_format($showingTo) ?></strong>
-        of <strong><?= number_format($totalTableRows) ?></strong> batches · 100 rows per page
+    <div class="stock-pagination-summary">
+        <div class="market-return-pagination-info">
+            Showing <strong><?= number_format($showingFrom) ?>–<?= number_format($showingTo) ?></strong>
+            of <strong><?= number_format($totalTableRows) ?></strong> batches
+        </div>
+
+        <form method="get" action="<?= e(url('/stocks')) ?>" class="stock-page-size-form" aria-label="Rows per page">
+            <?php if (($filters['q'] ?? '') !== ''): ?><input type="hidden" name="q" value="<?= e($filters['q']) ?>"><?php endif; ?>
+            <?php if (($filters['division_id'] ?? '') !== ''): ?><input type="hidden" name="division_id" value="<?= e((string)$filters['division_id']) ?>"><?php endif; ?>
+            <?php if (($filters['grade'] ?? '') !== ''): ?><input type="hidden" name="grade" value="<?= e($filters['grade']) ?>"><?php endif; ?>
+            <?php if ($sortKey !== ''): ?><input type="hidden" name="sort" value="<?= e($sortKey) ?>"><input type="hidden" name="dir" value="<?= e($sortDir) ?>"><?php endif; ?>
+            <label for="stockRowsPerPage">Rows per page</label>
+            <select id="stockRowsPerPage" name="per_page" onchange="this.form.submit()">
+                <?php foreach ($allowedPageSizes as $pageSize): ?>
+                    <option value="<?= (int)$pageSize ?>" <?= $rowsPerPage === $pageSize ? 'selected' : '' ?>><?= (int)$pageSize ?></option>
+                <?php endforeach; ?>
+            </select>
+        </form>
     </div>
 
     <?php if ($totalPages > 1): ?>
