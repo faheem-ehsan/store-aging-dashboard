@@ -216,7 +216,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
     <?php foreach ($gradeSeries as $gs): ?>
         <div class="metric <?= e($gs['class']) ?> grade-click-card grade-detail-card" role="button" tabindex="0" data-grade="<?= e($gs['key']) ?>" data-grade-label="<?= e($gs['label']) ?>" aria-label="Open <?= e($gs['label']) ?> grade stock details">
             <div class="grade-card-topline">
-                <span class="grade-card-title"><?= e($gs['label']) ?></span>
+                <span class="grade-card-title"><?= e($gs['label']) ?><?= $gs['key'] !== 'EX' ? ' Grade' : '' ?></span>
                 <span class="grade-uom-count"><?= number_format(count($gs['uoms'])) ?> Unit<?= count($gs['uoms']) === 1 ? '' : 's' ?></span>
             </div>
 
