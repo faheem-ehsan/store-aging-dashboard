@@ -127,10 +127,10 @@ foreach ($gradeSeries as $gs) {
     }
 }
 $selectedDivisionLabel = !empty($pageDivision) ? (($pageDivision['code'] ?? '') . ' — ' . ($pageDivision['name'] ?? '')) : 'All divisions';
-$dashboardWelcomeName = !empty($pageDivision) && !empty($pageDivision['name'])
+$dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
-    : 'All Division';
-$dashboardWelcomeText = $dashboardWelcomeName . ' Finish Goods Stock Aging System';
+    : 'All Divisions';
+$dashboardWelcomeText = 'Finish Goods Stock Aging System | ' . $dashboardDivisionTitle;
 $displayRows = array_slice($rows ?? [], 0, 10);
 $cumulativePct = 0;
 $distributionStops = [];
