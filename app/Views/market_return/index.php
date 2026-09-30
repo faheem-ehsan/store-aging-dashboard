@@ -45,11 +45,22 @@ $expiryUomTotals = [];
 foreach (($baseRows ?? []) as $uomRow) {
     $bucketCode = $uomRow['expiry_bucket'] ?? 'no_expiry';
     if (!isset($expiryBuckets[$bucketCode])) $bucketCode = 'no_expiry';
+
     $unitCode = strtoupper(trim((string)($uomRow['unit'] ?? '')));
     if ($unitCode === '') $unitCode = 'UNSPECIFIED';
+
     if (!isset($expiryUomTotals[$bucketCode])) $expiryUomTotals[$bucketCode] = [];
-    if (!isset($expiryUomTotals[$bucketCode][$unitCode])) $expiryUomTotals[$bucketCode][$unitCode] = 0.0;
-    $expiryUomTotals[$bucketCode][$unitCode] += (float)($uomRow['quantity'] ?? 0);
+    if (!isset($expiryUomTotals[$bucketCode][$unitCode])) {
+        $expiryUomTotals[$bucketCode][$unitCode] = [
+            'qty' => 0.0,
+            'value' => 0.0,
+        ];
+    }
+
+    $expiryUomTotals[$bucketCode][$unitCode]['qty'] += (float)($uomRow['quantity'] ?? 0);
+    if ($uomRow['total_amount'] !== null) {
+        $expiryUomTotals[$bucketCode][$unitCode]['value'] += (float)$uomRow['total_amount'];
+    }
 }
 foreach ($expiryUomTotals as &$uomGroup) {
     ksort($uomGroup);
@@ -143,7 +154,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     <div class="stock-control-head">
         <div class="stock-control-heading">
             <span class="stock-control-kicker">Market Return View</span>
-            <strong>Filter Market Return Store</strong>
+            <strong>Filter Market Return Goods</strong>
         </div>
         <?php if ($canManage && $databaseReady): ?>
             <div class="stock-actions stock-control-actions">
@@ -236,9 +247,8 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5 12 4l8 3.5-8 3.5-8-3.5ZM4 7.5V17l8 3 8-3V7.5M8 13H4m0 0 2-2m-2 2 2 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
         <div>
-            <small>Total Return Goods</small>
-            <strong><?= $formatInt($metrics['lines']) ?></strong>
-            <p><?= $formatQty($metrics['qty']) ?> total quantity</p>
+            <small>Total Quantity Goods</small>
+            <strong><?= $formatQty($metrics['qty']) ?></strong>
         </div>
     </div>
     <div class="dashboard-summary-card market-return-value-card">
@@ -248,7 +258,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         <div>
             <small>Return Retail Stock Value</small>
             <strong><?= $formatMoney($metrics['value']) ?></strong>
-            <p><?= $formatInt($metrics['unvalued']) ?> item(s) without known value</p>
+            
         </div>
     </div>
     <div class="dashboard-summary-card market-return-expired-card">
@@ -256,9 +266,8 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 7v5l3 2M20 12a8 8 0 1 1-8-8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M16.5 4.5h3v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </span>
         <div>
-            <small>Expired Return Goods</small>
-            <strong><?= $formatInt($expiryMetrics['expired']['lines'] ?? 0) ?></strong>
-            <p><?= $formatQty($expiryMetrics['expired']['qty'] ?? 0) ?> expired quantity</p>
+            <small>Total Expired Quantity</small>
+            <strong><?= $formatQty($expiryMetrics['expired']['qty'] ?? 0) ?></strong>
         </div>
     </div>
 </div>
@@ -266,7 +275,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 <section class="market-return-dashboard-grade-shell">
 <div class="dashboard-grade-section-head market-return-grade-head">
     <div>
-        <h2>Expiry Group Summary</h2>
+        <h2>Grading Summary</h2>
     </div>
 </div>
 
@@ -277,20 +286,28 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
                 <span class="grade-card-title"><?= e($stop['label']) ?></span>
                 <span class="grade-uom-count"><?= $formatInt($stop['lines']) ?> item(s)</span>
             </div>
-            <div class="grade-uom-list">
-                <?php if (empty($stop['uoms'])): ?>
-                    <div class="grade-uom-empty">No stock</div>
-                <?php else: ?>
-                    <?php foreach ($stop['uoms'] as $uomCode => $uomQty): ?>
-                        <div class="grade-uom-row">
-                            <span><?= e($uomCode) ?></span>
-                            <strong><?= $formatQty($uomQty) ?></strong>
-                        </div>
-                    <?php endforeach; ?>
-                <?php endif; ?>
+            <div class="market-return-unit-grid">
+                <div class="market-return-unit-head" aria-hidden="true">
+                    <span>Unit</span>
+                    <span>Quantity</span>
+                    <span>Stock Retail Value</span>
+                </div>
+
+                <div class="grade-uom-list market-return-uom-values">
+                    <?php if (empty($stop['uoms'])): ?>
+                        <div class="grade-uom-empty market-return-unit-empty">No stock</div>
+                    <?php else: ?>
+                        <?php foreach ($stop['uoms'] as $uomCode => $uomMetric): ?>
+                            <div class="grade-uom-row market-return-unit-row">
+                                <span class="market-return-unit-code"><?= e($uomCode) ?></span>
+                                <strong class="market-return-unit-qty"><?= $formatQty($uomMetric['qty'] ?? 0) ?></strong>
+                                <span class="market-return-unit-value"><?= e($formatMoney($uomMetric['value'] ?? 0)) ?></span>
+                            </div>
+                        <?php endforeach; ?>
+                    <?php endif; ?>
+                </div>
             </div>
-            <div class="grade-value-line"><span class="grade-currency-label">Retail Value</span><span class="grade-stock-value"><?= e($formatMoney($stop['value'])) ?></span></div>
-            <?php if ($stop['unvalued'] > 0): ?><em><?= $formatInt($stop['unvalued']) ?> unvalued item(s)</em><?php endif; ?>
+            <div class="grade-value-line"><span class="grade-currency-label">Stock Retail Value</span><span class="grade-stock-value"><?= e($formatMoney($stop['value'])) ?></span></div>
         </div>
     <?php endforeach; ?>
 </div>

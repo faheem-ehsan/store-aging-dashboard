@@ -111,21 +111,28 @@ $gradeOptions = [
 <section class="stock-overview-grid" aria-label="Filtered stock summary">
     <article class="stock-overview-card qty">
         <div class="stock-overview-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none"><path d="m4 7 8-4 8 4-8 4-8-4Zm0 0v10l8 4 8-4V7M4 12l8 4 8-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M5 7.5 12 4l7 3.5-7 3.5-7-3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                <path d="M5 7.5V12l7 3.5 7-3.5V7.5M5 12v4.5L12 20l7-3.5V12" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            </svg>
         </div>
         <div class="stock-overview-copy">
-            <span>Current Stock</span>
+            <span>Stock Quantity</span>
             <strong><?= $stockQtyNumber($summary['current_qty'] ?? 0) ?></strong>
-            <small><?= number_format((int)($summary['batch_count'] ?? 0)) ?> filtered batch<?= (int)($summary['batch_count'] ?? 0) === 1 ? '' : 'es' ?></small>
         </div>
     </article>
 
     <article class="stock-overview-card value">
-        <div class="stock-overview-icon" aria-hidden="true">Rs</div>
+        <div class="stock-overview-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+                <rect x="3.5" y="6" width="17" height="12" rx="2.5" stroke="currentColor" stroke-width="1.8"/>
+                <path d="M7 9.5h.01M17 14.5h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/>
+                <circle cx="12" cy="12" r="2.4" stroke="currentColor" stroke-width="1.7"/>
+            </svg>
+        </div>
         <div class="stock-overview-copy">
             <span>Current Retail Stock Value</span>
             <strong><?= $stockValueNumber($summary['stock_value'] ?? 0) ?></strong>
-            <small>Selected division and grade</small>
         </div>
     </article>
 </section>
@@ -144,7 +151,7 @@ $gradeOptions = [
     <th>Manufacturing Date</th>
     <th>Expiry Date</th>
     <th>Aging</th>
-    <th>Aging Remaining</th>
+    <th>Expiry Remaining</th>
     <th>Stock Location</th>
     <th>Grade</th>
     <?php if ($canManage): ?><th>Action</th><?php endif; ?>

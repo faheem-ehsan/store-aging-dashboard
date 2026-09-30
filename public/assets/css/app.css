@@ -2543,3 +2543,206 @@ body.modal-open{overflow:hidden}
         min-height:220px !important;
     }
 }
+
+
+/* Grade popup UOM full-form labels */
+.grade-modal-uom-chip-full{
+    min-width:145px;
+    gap:10px;
+}
+.grade-modal-uom-chip-full span{
+    white-space:nowrap;
+    font-weight:600;
+}
+.grade-modal-unit-cell{
+    white-space:nowrap;
+}
+@media(max-width:700px){
+    .grade-modal-uom-chip-full{
+        min-width:0;
+        width:100%;
+    }
+}
+
+
+/* Finish Goods summary card icon refinement */
+.stock-overview-icon svg{
+    width:22px;
+    height:22px;
+    display:block;
+}
+.stock-overview-card .stock-overview-copy{
+    justify-content:center;
+}
+.stock-overview-card .stock-overview-copy strong{
+    margin-top:4px;
+}
+
+
+/* Market Return KPI quantity-first cleanup */
+.market-return-summary-cards .dashboard-summary-card{
+    align-items:center;
+}
+.market-return-summary-cards .dashboard-summary-card>div:last-child{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+}
+.market-return-summary-cards .dashboard-summary-card strong{
+    margin-top:4px;
+}
+
+
+/* Market Return Stock Retail Value label refinement */
+.market-return-dashboard-grade-shell .market-return-click-card .grade-currency-label{
+    font-size:10px !important; /* +2px from previous 8px */
+    font-weight:500 !important;
+    line-height:1.25;
+}
+
+
+/* Market Return Grading Summary unit value columns */
+.market-return-dashboard-grade-shell .market-return-click-card{
+    min-height:275px !important;
+    height:auto !important;
+    display:flex !important;
+    flex-direction:column !important;
+}
+.market-return-unit-grid{
+    display:flex;
+    flex-direction:column;
+    flex:1 0 auto;
+    min-width:0;
+}
+.market-return-unit-head,
+.market-return-unit-row{
+    display:grid !important;
+    grid-template-columns:minmax(54px,.7fr) minmax(66px,.75fr) minmax(96px,1.2fr) !important;
+    column-gap:7px !important;
+    align-items:center;
+}
+.market-return-unit-head{
+    padding:6px 7px 7px;
+    margin-bottom:4px;
+    border-bottom:1px solid rgba(255,255,255,.22);
+    font-size:8px;
+    line-height:1.2;
+    font-weight:500;
+}
+.market-return-click-card.grade-a .market-return-unit-head,
+.market-return-click-card.grade-b .market-return-unit-head,
+.market-return-click-card.grade-no-expiry .market-return-unit-head{
+    border-bottom-color:rgba(16,24,40,.14);
+}
+.market-return-unit-head span{
+    min-width:0;
+}
+.market-return-unit-head span:nth-child(2),
+.market-return-unit-head span:nth-child(3){
+    text-align:right;
+}
+.market-return-uom-values{
+    max-height:none !important;
+    height:auto !important;
+    overflow:visible !important;
+    gap:4px !important;
+    margin-bottom:8px !important;
+}
+.market-return-unit-row{
+    padding:6px 7px !important;
+    min-width:0;
+}
+.market-return-unit-code{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-size:10px;
+    font-weight:600;
+}
+.market-return-unit-qty{
+    min-width:0;
+    text-align:right;
+    font-size:11px !important;
+    font-weight:600 !important;
+    white-space:nowrap;
+}
+.market-return-unit-value{
+    min-width:0;
+    text-align:right;
+    font-size:9px;
+    font-weight:500;
+    white-space:normal;
+    overflow-wrap:anywhere;
+}
+.market-return-unit-empty{
+    grid-column:1/-1;
+}
+.market-return-dashboard-grade-shell .market-return-click-card .grade-value-line{
+    margin-top:auto !important;
+}
+
+/* Make room for the new third column without introducing card scrollbars. */
+.market-return-dashboard-grade-shell .market-return-grade-cards{
+    align-items:stretch !important;
+}
+@media(max-width:1450px){
+    .market-return-unit-head,
+    .market-return-unit-row{
+        grid-template-columns:minmax(48px,.6fr) minmax(60px,.7fr) minmax(88px,1.15fr) !important;
+        column-gap:5px !important;
+        padding-left:6px !important;
+        padding-right:6px !important;
+    }
+    .market-return-unit-head{font-size:7.5px}
+    .market-return-unit-value{font-size:8.5px}
+}
+@media(max-width:980px){
+    .market-return-unit-head,
+    .market-return-unit-row{
+        grid-template-columns:minmax(58px,.7fr) minmax(72px,.8fr) minmax(105px,1.2fr) !important;
+        column-gap:8px !important;
+    }
+}
+
+
+/* Finish Goods detail table left alignment */
+.dispatch-stock-table th,
+.dispatch-stock-table td{
+    text-align:left !important;
+}
+.dispatch-stock-table td.num,
+.dispatch-stock-table th.num,
+.dispatch-stock-table td.aging-period{
+    text-align:left !important;
+}
+.dispatch-stock-table td:last-child,
+.dispatch-stock-table th:last-child{
+    text-align:left !important;
+}
+
+
+/* Popup detail tables left alignment - Dashboard + Market Returns */
+.grade-modal-table th,
+.grade-modal-table td,
+.market-return-modal-table th,
+.market-return-modal-table td{
+    text-align:left !important;
+}
+
+/* Override any numeric/right-alignment helpers inside popup detail tables only */
+.grade-modal-table th.num,
+.grade-modal-table td.num,
+.grade-modal-table td.aging-period,
+.market-return-modal-table th.num,
+.market-return-modal-table td.num{
+    text-align:left !important;
+}
+
+/* Keep popup action/grade/location cells aligned with their headings */
+.grade-modal-table th:last-child,
+.grade-modal-table td:last-child,
+.market-return-modal-table th:last-child,
+.market-return-modal-table td:last-child{
+    text-align:left !important;
+}

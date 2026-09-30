@@ -69,6 +69,47 @@ $dashboardCalendarAgingPeriod = static function ($startDate, $endDate): string {
 };
 $dashboardAgingReferenceDate = (new \DateTimeImmutable('today'))->format('Y-m-d');
 $uomTotals = $metrics['uoms'] ?? [];
+
+/*
+ * Unit of Measure display names used in the Dashboard Grade Details popup.
+ * Add or adjust codes here if another stock/SAP unit is introduced later.
+ */
+$uomFullForms = [
+    'CAR' => 'Carton',
+    'CTN' => 'Carton',
+    'CTN.' => 'Carton',
+    'CD' => 'Card',
+    'EA' => 'Each',
+    'PAC' => 'Pack',
+    'PACK' => 'Pack',
+    'PK' => 'Pack',
+    'CS' => 'Case',
+    'CASE' => 'Case',
+    'PCS' => 'Pieces',
+    'PC' => 'Piece',
+    'BTL' => 'Bottle',
+    'BTLS' => 'Bottles',
+    'BTLS.' => 'Bottles',
+    'BOX' => 'Box',
+    'BOXES' => 'Boxes',
+    'JAR' => 'Jar',
+    'JARS' => 'Jars',
+    'NOS' => 'Numbers',
+    'NO' => 'Number',
+    'STRIP' => 'Strip',
+    'STRIPS' => 'Strips',
+    'TAB' => 'Tablet',
+    'TABLET' => 'Tablet',
+    'TABLETS' => 'Tablets',
+];
+
+$formatUomFull = static function ($code) use ($uomFullForms): string {
+    $raw = trim((string)$code);
+    if ($raw === '') return 'Unspecified';
+    $key = strtoupper($raw);
+    $full = $uomFullForms[$key] ?? null;
+    return $full ? ($raw . ' (' . $full . ')') : $raw;
+};
 $gradeSeries = [
     ['key' => 'A+', 'label' => 'A+', 'class' => 'grade-aplus', 'legend_class' => 'blue', 'color' => '#0b2f6b', 'qty' => (float)($metrics['grades']['A+']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A+']['value'] ?? 0), 'batches' => (int)($metrics['grades']['A+']['batches'] ?? 0), 'uoms' => $metrics['grades']['A+']['uoms'] ?? []],
     ['key' => 'A', 'label' => 'A', 'class' => 'grade-a', 'legend_class' => 'green', 'color' => '#92d050', 'qty' => (float)($metrics['grades']['A']['qty'] ?? 0), 'value' => (float)($metrics['grades']['A']['value'] ?? 0), 'batches' => (int)($metrics['grades']['A']['batches'] ?? 0), 'uoms' => $metrics['grades']['A']['uoms'] ?? []],
@@ -148,7 +189,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         <div>
             <small>Total Batches</small>
             <strong><?= $dashboardPlainNumber($metrics['batches']) ?></strong>
-            <p>Total active stock batches</p>
+            
         </div>
     </div>
     <div class="dashboard-summary-card">
@@ -158,7 +199,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         <div>
             <small>Stock Retail Value</small>
             <strong>Rs/ <?= $dashboardNumber($metrics['stock_value']) ?></strong>
-            <p>Total inventory value</p>
+            
         </div>
     </div>
 </div>
@@ -255,7 +296,7 @@ ksort($modalLocations);
 
         <div class="grade-modal-summary">
             <div><span>No. of Batches</span><strong id="gradeModalBatchCount">0</strong></div>
-            <div><span>UoM Types</span><strong id="gradeModalQty">0</strong></div>
+            <div><span>Total Quantity</span><strong id="gradeModalQty">0</strong></div>
             <div><span>Stock Retail Value</span><strong id="gradeModalValue">Rs/ 0</strong></div>
         </div>
         <div class="grade-modal-uoms" id="gradeModalUoms"></div>
@@ -302,12 +343,13 @@ ksort($modalLocations);
                         data-search="<?= e($searchText) ?>"
                         data-qty="<?= e((string)(float)$r['current_qty']) ?>"
                         data-uom="<?= e(strtoupper(trim((string)($r['uom'] ?? ''))) ?: 'UNSPECIFIED') ?>"
+                        data-uom-label="<?= e($formatUomFull($r['uom'] ?? '')) ?>"
                         data-value="<?= e((string)(float)($r['stock_value'] ?? 0)) ?>">
                         <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
                         <td><?= e($r['material_code']) ?></td>
                         <td><?= e($r['material_description']) ?></td>
                         <td class="num"><?= $dashboardNumber((float)$r['current_qty']) ?></td>
-                        <td><?= e($r['uom'] ?? '') ?></td>
+                        <td class="grade-modal-unit-cell"><?= e($formatUomFull($r['uom'] ?? '')) ?></td>
                         <td class="num"><?= $dashboardActualMoney($r['stock_value'] ?? 0) ?></td>
                         <td><?= e($r['batch_no']) ?></td>
                         <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
@@ -362,7 +404,7 @@ ksort($modalLocations);
         const q = search.value.trim().toLowerCase();
         const d = division.value;
         const l = location.value;
-        let count = 0, value = 0;
+        let count = 0, value = 0, totalQty = 0;
         const uomTotals = {};
 
         rows.forEach(function (row) {
@@ -374,20 +416,28 @@ ksort($modalLocations);
             if (visible) {
                 count += 1;
                 const uom = row.dataset.uom || 'UNSPECIFIED';
-                uomTotals[uom] = (uomTotals[uom] || 0) + parseFloat(row.dataset.qty || '0');
+                if (!uomTotals[uom]) {
+                    uomTotals[uom] = {
+                        qty: 0,
+                        label: row.dataset.uomLabel || uom
+                    };
+                }
+                const rowQty = parseFloat(row.dataset.qty || '0');
+                uomTotals[uom].qty += rowQty;
+                totalQty += rowQty;
                 value += parseFloat(row.dataset.value || '0');
             }
         });
 
         empty.hidden = count !== 0;
         countEl.textContent = count.toLocaleString();
-        qtyEl.textContent = Object.keys(uomTotals).length.toLocaleString();
+        qtyEl.textContent = Math.round(totalQty).toLocaleString();
         valueEl.textContent = 'Rs/ ' + dashboardNumber(value);
         uomsEl.innerHTML = '';
         Object.keys(uomTotals).sort().forEach(function (uom) {
             const chip = document.createElement('div');
-            chip.className = 'grade-modal-uom-chip';
-            chip.innerHTML = '<span>' + uom + '</span><strong>' + dashboardNumber(uomTotals[uom]) + '</strong>';
+            chip.className = 'grade-modal-uom-chip grade-modal-uom-chip-full';
+            chip.innerHTML = '<span>' + uomTotals[uom].label + '</span><strong>' + dashboardNumber(uomTotals[uom].qty) + '</strong>';
             uomsEl.appendChild(chip);
         });
         resultText.textContent = 'Showing ' + count.toLocaleString() + ' batch' + (count === 1 ? '' : 'es');
