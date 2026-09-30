@@ -2746,3 +2746,17 @@ body.modal-open{overflow:hidden}
 .market-return-modal-table td:last-child{
     text-align:left !important;
 }
+
+
+/* Finish Goods Aging 100-row pagination */
+.stock-table-pagination{
+    border-radius:0 0 12px 12px;
+}
+.stock-table-pagination .pagination-controls{
+    margin-left:auto;
+}
+@media(max-width:700px){
+    .stock-table-pagination .pagination-controls{
+        margin-left:0;
+    }
+}

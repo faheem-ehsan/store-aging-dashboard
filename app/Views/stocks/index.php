@@ -52,6 +52,29 @@ $gradeOptions = [
     'C' => 'C · Red',
     'EX' => 'Expired · Black',
 ];
+
+// Finish Goods Aging detail-table pagination: 100 rows per page by default.
+$rowsPerPage = 50;
+$totalTableRows = count($rows ?? []);
+$totalPages = max(1, (int)ceil($totalTableRows / $rowsPerPage));
+$currentPage = max(1, (int)($_GET['page'] ?? 1));
+if ($currentPage > $totalPages) $currentPage = $totalPages;
+$pageOffset = ($currentPage - 1) * $rowsPerPage;
+$tableRows = array_slice($rows ?? [], $pageOffset, $rowsPerPage);
+$showingFrom = $totalTableRows > 0 ? $pageOffset + 1 : 0;
+$showingTo = min($pageOffset + $rowsPerPage, $totalTableRows);
+
+$paginationParams = [
+    'q' => $filters['q'] ?? '',
+    'division_id' => $filters['division_id'] ?? '',
+    'grade' => $filters['grade'] ?? '',
+];
+$paginationParams = array_filter($paginationParams, static fn($value): bool => $value !== '' && $value !== null);
+$paginationUrl = static function (int $page) use ($paginationParams): string {
+    $params = $paginationParams;
+    $params['page'] = $page;
+    return url('/stocks') . '?' . http_build_query($params);
+};
 ?>
 <section class="stock-control-panel" aria-label="Stock filters and actions">
     <div class="stock-control-head">
@@ -157,8 +180,8 @@ $gradeOptions = [
     <?php if ($canManage): ?><th>Action</th><?php endif; ?>
 </tr></thead>
 <tbody>
-<?php if (!$rows): ?><tr><td colspan="14" class="empty">No stock batches found.</td></tr><?php endif; ?>
-<?php foreach ($rows as $r): ?>
+<?php if (!$tableRows): ?><tr><td colspan="14" class="empty">No stock batches found.</td></tr><?php endif; ?>
+<?php foreach ($tableRows as $r): ?>
 <tr>
     <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
     <td><?= e($r['material_code']) ?></td>
@@ -187,4 +210,38 @@ $gradeOptions = [
 </tbody>
 </table>
 </div>
+
+<?php if ($totalTableRows > 0): ?>
+<div class="market-return-pagination stock-table-pagination" aria-label="Finish Goods Aging pagination">
+    <div class="market-return-pagination-info">
+        Showing <strong><?= number_format($showingFrom) ?>–<?= number_format($showingTo) ?></strong>
+        of <strong><?= number_format($totalTableRows) ?></strong> batches · 100 rows per page
+    </div>
+
+    <?php if ($totalPages > 1): ?>
+    <nav class="pagination-controls" aria-label="Detail table pages">
+        <a class="pagination-btn <?= $currentPage <= 1 ? 'is-disabled' : '' ?>" href="<?= $currentPage > 1 ? e($paginationUrl($currentPage - 1)) : '#' ?>" aria-label="Previous page">Previous</a>
+
+        <?php
+        $pageNumbers = [1, $totalPages];
+        for ($p = max(1, $currentPage - 2); $p <= min($totalPages, $currentPage + 2); $p++) {
+            $pageNumbers[] = $p;
+        }
+        $pageNumbers = array_values(array_unique($pageNumbers));
+        sort($pageNumbers);
+        $previousPrinted = null;
+        ?>
+        <?php foreach ($pageNumbers as $pageNumber): ?>
+            <?php if ($previousPrinted !== null && $pageNumber > $previousPrinted + 1): ?>
+                <span class="pagination-ellipsis" aria-hidden="true">…</span>
+            <?php endif; ?>
+            <a class="pagination-page <?= $pageNumber === $currentPage ? 'is-active' : '' ?>" href="<?= e($paginationUrl($pageNumber)) ?>" <?= $pageNumber === $currentPage ? 'aria-current="page"' : '' ?>><?= number_format($pageNumber) ?></a>
+            <?php $previousPrinted = $pageNumber; ?>
+        <?php endforeach; ?>
+
+        <a class="pagination-btn <?= $currentPage >= $totalPages ? 'is-disabled' : '' ?>" href="<?= $currentPage < $totalPages ? e($paginationUrl($currentPage + 1)) : '#' ?>" aria-label="Next page">Next</a>
+    </nav>
+    <?php endif; ?>
+</div>
+<?php endif; ?>
 </div>
