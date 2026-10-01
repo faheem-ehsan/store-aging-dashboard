@@ -5,12 +5,17 @@ $stockQtyNumber = static function ($value): string {
 $stockValueNumber = static function ($value): string {
     $number = (float)$value;
     if (abs($number) >= 100000) {
-        return 'Rs/ ' . number_format((int)round($number / 1000000)) . ' Million';
+        $millions = $number / 1000000;
+        $formatted = rtrim(rtrim(number_format($millions, 8, '.', ','), '0'), '.');
+        return 'Rs/ ' . $formatted . ' Million';
     }
-    return 'Rs/ ' . number_format((int)round($number));
+    $formatted = rtrim(rtrim(number_format($number, 2, '.', ','), '0'), '.');
+    return 'Rs/ ' . $formatted;
 };
 $stockValueActual = static function ($value): string {
-    return 'Rs/ ' . number_format((int)round((float)$value));
+    $number = (float)$value;
+    $formatted = rtrim(rtrim(number_format($number, 2, '.', ','), '0'), '.');
+    return 'Rs/ ' . $formatted;
 };
 $calendarAgingPeriod = static function ($startDate, $endDate): string {
     try {

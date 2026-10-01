@@ -13,16 +13,20 @@ $formatQty = static function ($value): string {
 $formatMoney = static function ($value): string {
     $number = (float)$value;
     if (abs($number) >= 1000000) {
-        return 'Rs/ ' . number_format((int)round($number / 1000000)) . ' Million';
+        $millions = $number / 1000000;
+        $formatted = rtrim(rtrim(number_format($millions, 8, '.', ','), '0'), '.');
+        return 'Rs/ ' . $formatted . ' Million';
     }
-    return 'Rs/ ' . number_format((int)round($number));
+    $formatted = rtrim(rtrim(number_format($number, 2, '.', ','), '0'), '.');
+    return 'Rs/ ' . $formatted;
 };
 $formatStockValue = static function ($value): string {
     $number = (float)$value;
     if (abs($number) >= 1000000) {
-        return number_format((int)round($number / 1000000)) . ' Million';
+        $millions = $number / 1000000;
+        return rtrim(rtrim(number_format($millions, 8, '.', ','), '0'), '.') . ' Million';
     }
-    return number_format((int)round($number));
+    return rtrim(rtrim(number_format($number, 2, '.', ','), '0'), '.');
 };
 $formatInt = static function ($value): string {
     return number_format((int)$value);
@@ -124,6 +128,12 @@ foreach ($modalRows as $modalRow) {
 ksort($modalDivisions);
 ksort($modalCategories);
 ksort($modalUnits);
+$marketReturnDivisionBars = array_map(static function (array $division): array {
+    return [
+        'code' => (string)($division['code'] ?? ''),
+        'name' => (string)($division['name'] ?? ''),
+    ];
+}, $divisions ?? []);
 
 // Market Return table pagination: 5 rows per page.
 $rowsPerPage = 5;
@@ -294,7 +304,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 
                 <div class="grade-uom-list market-return-uom-values">
                     <?php if (empty($stop['uoms'])): ?>
-                        <div class="grade-uom-empty market-return-unit-empty">No stock</div>
+                        <div class="grade-uom-empty market-return-unit-empty">0</div>
                     <?php else: ?>
                         <?php foreach ($stop['uoms'] as $uomCode => $uomMetric): ?>
                             <div class="grade-uom-row market-return-unit-row">
@@ -446,6 +456,14 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             <div><span>Retail Stock Value</span><strong id="marketReturnModalValue">Rs/ 0</strong></div>
         </div>
 
+        <div class="grade-division-bars" id="marketReturnDivisionBars" <?= !empty($filters['division_id']) ? 'hidden' : '' ?>>
+            <div class="grade-division-bars-head">
+                <strong>Quantity by Division</strong>
+                <span>Selected grading group</span>
+            </div>
+            <div class="grade-division-bars-list" id="marketReturnDivisionBarsList"></div>
+        </div>
+
         <div class="grade-modal-filters market-return-modal-filters">
             <label>
                 Search
@@ -485,16 +503,16 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             <table class="market-return-table grade-modal-table market-return-modal-table">
                 <thead>
                     <tr>
-                        <th>Division</th>
-                        <th>Source Category</th>
-                        <th>Product / Description</th>
-                        <th>Quantity</th>
-                        <th>Unit</th>
-                        <th>Expiry</th>
-                        <th>Retail Price</th>
-                        <th>Total Amount</th>
-                        <th>Section</th>
-                        <th>Remarks</th>
+                        <th class="popup-sortable-th" data-sort-index="0" data-sort-type="text"><button type="button" class="popup-sort-btn">Division <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="1" data-sort-type="text"><button type="button" class="popup-sort-btn">Source Category <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="2" data-sort-type="text"><button type="button" class="popup-sort-btn">Product / Description <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="3" data-sort-type="number"><button type="button" class="popup-sort-btn">Quantity <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="4" data-sort-type="text"><button type="button" class="popup-sort-btn">Unit <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="5" data-sort-type="date"><button type="button" class="popup-sort-btn">Expiry <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="6" data-sort-type="number"><button type="button" class="popup-sort-btn">Retail Price <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="7" data-sort-type="number"><button type="button" class="popup-sort-btn">Total Amount <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="8" data-sort-type="text"><button type="button" class="popup-sort-btn">Section <i>↕</i></button></th>
+                        <th class="popup-sortable-th" data-sort-index="9" data-sort-type="text"><button type="button" class="popup-sort-btn">Remarks <i>↕</i></button></th>
                     </tr>
                 </thead>
                 <tbody id="marketReturnModalRows">
@@ -562,7 +580,15 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     const qtyEl = document.getElementById('marketReturnModalQty');
     const valueEl = document.getElementById('marketReturnModalValue');
     const resultText = document.getElementById('marketReturnModalResultText');
+    const divisionBars = document.getElementById('marketReturnDivisionBars');
+    const divisionBarsList = document.getElementById('marketReturnDivisionBarsList');
+    const divisionDefinitions = <?= json_encode($marketReturnDivisionBars, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const showDivisionBars = <?= empty($filters['division_id']) ? 'true' : 'false' ?>;
+    const popupBody = document.getElementById('marketReturnModalRows');
+    const popupHeaders = Array.from(modal.querySelectorAll('.popup-sortable-th'));
     let activeGroup = '';
+    let popupSortIndex = -1;
+    let popupSortDirection = 'asc';
 
     function formatQty(value) {
         return Math.round(Number(value || 0)).toLocaleString();
@@ -570,10 +596,76 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     function formatMoney(value) {
         const number = Number(value || 0);
         if (Math.abs(number) >= 1000000) {
-            return 'Rs/ ' + Math.round(number / 1000000).toLocaleString() + ' Million';
+            return 'Rs/ ' + (number / 1000000).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 8
+            }) + ' Million';
         }
-        return 'Rs/ ' + Math.round(number).toLocaleString();
+        return 'Rs/ ' + number.toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        });
     }
+
+    function renderDivisionBars(divisionQty) {
+        if (!divisionBars || !divisionBarsList) return;
+        divisionBars.hidden = !showDivisionBars;
+        if (!showDivisionBars) return;
+
+        const maxQty = Math.max(1, ...divisionDefinitions.map(function (divisionDef) {
+            return Number(divisionQty[divisionDef.code.toLowerCase()] || 0);
+        }));
+
+        divisionBarsList.innerHTML = '';
+        divisionDefinitions.forEach(function (divisionDef) {
+            const key = divisionDef.code.toLowerCase();
+            const qty = Number(divisionQty[key] || 0);
+            const pct = qty <= 0 ? 0 : (qty / maxQty) * 100;
+            const item = document.createElement('div');
+            item.className = 'grade-division-bar-item';
+            item.innerHTML =
+                '<div class="grade-division-bar-label"><span><b>' + divisionDef.code + '</b> — ' + divisionDef.name + '</span><strong>' +
+                Math.round(qty).toLocaleString() + '</strong></div>' +
+                '<div class="grade-division-bar-track"><i style="width:' + pct.toFixed(2) + '%"></i></div>';
+            divisionBarsList.appendChild(item);
+        });
+    }
+
+    function marketPopupSortNumber(value) {
+        const text=String(value||'').toLowerCase();
+        const multiplier=text.includes('million')?1000000:1;
+        const number=parseFloat(text.replace(/[^0-9.\-]/g,''));
+        return Number.isFinite(number)?number*multiplier:0;
+    }
+    function marketPopupSortDate(value) {
+        const m=String(value||'').trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+        return m?new Date(+m[3],+m[2]-1,+m[1]).getTime():0;
+    }
+    function sortPopupRows(index,type,direction){
+        const factor=direction==='desc'?-1:1;
+        rows.sort(function(a,b){
+            let av=a.cells[index]?a.cells[index].textContent.trim():'', bv=b.cells[index]?b.cells[index].textContent.trim():'';
+            if(type==='number'){ av=marketPopupSortNumber(av); bv=marketPopupSortNumber(bv); }
+            else if(type==='date'){ av=marketPopupSortDate(av); bv=marketPopupSortDate(bv); }
+            const result=(typeof av==='number'&&typeof bv==='number')?av-bv:String(av).localeCompare(String(bv),undefined,{numeric:true,sensitivity:'base'});
+            return result*factor;
+        });
+        rows.forEach(function(row){ popupBody.insertBefore(row,empty); });
+    }
+    function resetPopupSort(){
+        popupHeaders.forEach(function(h){ h.removeAttribute('aria-sort'); const i=h.querySelector('i'); if(i)i.textContent='↕'; });
+    }
+    popupHeaders.forEach(function(header){
+        const button=header.querySelector('.popup-sort-btn'); if(!button)return;
+        button.addEventListener('click',function(){
+            const index=Number(header.dataset.sortIndex||0), type=header.dataset.sortType||'text';
+            if(popupSortIndex===index) popupSortDirection=popupSortDirection==='asc'?'desc':'asc';
+            else { popupSortIndex=index; popupSortDirection='asc'; }
+            resetPopupSort(); header.setAttribute('aria-sort',popupSortDirection==='asc'?'ascending':'descending');
+            const i=header.querySelector('i'); if(i)i.textContent=popupSortDirection==='asc'?'↑':'↓';
+            sortPopupRows(index,type,popupSortDirection);
+        });
+    });
 
     function updateModal() {
         const q = (search.value || '').trim().toLowerCase();
@@ -583,6 +675,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         let visibleCount = 0;
         let visibleQty = 0;
         let visibleValue = 0;
+        const divisionQty = {};
 
         rows.forEach(function (row) {
             const matchGroup = row.dataset.expiryGroup === activeGroup;
@@ -594,8 +687,11 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             row.hidden = !show;
             if (show) {
                 visibleCount++;
-                visibleQty += Number(row.dataset.qty || 0);
+                const rowQty = Number(row.dataset.qty || 0);
+                visibleQty += rowQty;
                 visibleValue += Number(row.dataset.value || 0);
+                const divisionCode = row.dataset.division || '';
+                if (divisionCode) divisionQty[divisionCode] = (divisionQty[divisionCode] || 0) + rowQty;
             }
         });
 
@@ -604,11 +700,13 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         qtyEl.textContent = formatQty(visibleQty);
         valueEl.textContent = formatMoney(visibleValue);
         resultText.textContent = 'Showing ' + visibleCount.toLocaleString() + ' item(s)';
+        renderDivisionBars(divisionQty);
     }
 
     function openModal(card) {
         activeGroup = card.dataset.expiryGroup || '';
         title.textContent = card.dataset.expiryLabel || 'Expiry Group';
+        popupSortIndex = -1; popupSortDirection = 'asc'; resetPopupSort();
         search.value = '';
         division.value = '';
         category.value = '';

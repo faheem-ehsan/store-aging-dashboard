@@ -17,7 +17,9 @@ class DashboardController
             || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
         if (!$canReadAllDivisions) $divisionId = (int)$user['division_id'];
 
-        $rows = (new StockBatch())->allAccessible($user, ['division_id' => $divisionId]);
+        $stockBatchModel = new StockBatch();
+        $rows = $stockBatchModel->allAccessible($user, ['division_id' => $divisionId]);
+        $lastStockUpdatedAt = $stockBatchModel->latestUpdatedAt($user, $divisionId);
         $grader = new GradeService();
         $rows = array_map(fn($r) => $grader->enrich($r), $rows);
 
@@ -110,6 +112,7 @@ class DashboardController
             'rows' => $tableRows,
             'alerts' => $alerts,
             'gradeCriteria' => $gradeCriteria,
+            'lastStockUpdatedAt' => $lastStockUpdatedAt,
         ]);
     }
 }

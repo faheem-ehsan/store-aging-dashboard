@@ -25,11 +25,32 @@ $dashboardNumber = static function ($value): string {
     return number_format((int)round($number));
 };
 
+$dashboardStockValue = static function ($value): string {
+    $number = (float)$value;
+
+    if (abs($number) >= 1000000) {
+        // Preserve the actual stock value while displaying it in Millions.
+        // Up to 8 decimal places are available so paisa precision is not lost.
+        // Only unnecessary trailing zeroes are removed.
+        $millions = $number / 1000000;
+        $formatted = number_format($millions, 8, '.', ',');
+        $formatted = rtrim(rtrim($formatted, '0'), '.');
+        return $formatted . ' Million';
+    }
+
+    // Keep exact rupee/paisa value below one million and remove only
+    // unnecessary trailing zeroes.
+    $formatted = number_format($number, 2, '.', ',');
+    return rtrim(rtrim($formatted, '0'), '.');
+};
+
 $dashboardPlainNumber = static function ($value): string {
     return number_format((int)round((float)$value));
 };
 $dashboardActualMoney = static function ($value): string {
-    return 'Rs/ ' . number_format((int)round((float)$value));
+    $number = (float)$value;
+    $formatted = rtrim(rtrim(number_format($number, 2, '.', ','), '0'), '.');
+    return 'Rs/ ' . $formatted;
 };
 $dashboardCalendarAgingPeriod = static function ($startDate, $endDate): string {
     try {
@@ -127,6 +148,20 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Divisions';
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
+$dashboardLastUpdatedLabel = 'No stock update recorded';
+if (!empty($lastStockUpdatedAt)) {
+    try {
+        $dashboardLastUpdatedLabel = (new \DateTimeImmutable((string)$lastStockUpdatedAt))->format('d M Y');
+    } catch (\Throwable $e) {
+        $dashboardLastUpdatedLabel = (string)$lastStockUpdatedAt;
+    }
+}
+$dashboardDivisionBars = array_map(static function (array $division): array {
+    return [
+        'code' => (string)($division['code'] ?? ''),
+        'name' => (string)($division['name'] ?? ''),
+    ];
+}, $divisions ?? []);
 $displayRows = array_slice($rows ?? [], 0, 10);
 $cumulativePct = 0;
 $distributionStops = [];
@@ -175,6 +210,11 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
             <?php endif; ?>
         </div>
     </div>
+
+    <div class="dashboard-last-update" title="Latest stock batch update for the current dashboard selection">
+        <span>Last Updated</span>
+        <strong><?= e($dashboardLastUpdatedLabel) ?></strong>
+    </div>
 </div>
 
 <div class="dashboard-summary-grid">
@@ -194,7 +234,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </span>
         <div>
             <small>Stock Retail Value</small>
-            <strong>Rs/ <?= $dashboardNumber($metrics['stock_value']) ?></strong>
+            <strong>Rs/ <?= $dashboardStockValue($metrics['stock_value']) ?></strong>
             
         </div>
     </div>
@@ -225,13 +265,13 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
 
                 <div class="grade-unit-table-body">
                     <?php if (empty($gs['uoms'])): ?>
-                        <div class="grade-unit-empty">No stock available</div>
+                        <div class="grade-unit-empty">0</div>
                     <?php else: ?>
                         <?php foreach ($gs['uoms'] as $uomCode => $uomMetric): ?>
                             <div class="grade-unit-table-row" role="row">
                                 <span class="grade-unit-code" role="cell"><?= e($uomCode) ?></span>
                                 <strong role="cell"><?= $dashboardPlainNumber($uomMetric['qty']) ?></strong>
-                                <span class="grade-unit-value" role="cell">Rs/ <?= $dashboardNumber($uomMetric['value']) ?></span>
+                                <span class="grade-unit-value" role="cell">Rs/ <?= $dashboardStockValue($uomMetric['value']) ?></span>
                             </div>
                         <?php endforeach; ?>
                     <?php endif; ?>
@@ -245,7 +285,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
                 </div>
                 <div>
                     <span>Total Stock Retail Value</span>
-                    <strong>Rs/ <?= $dashboardNumber($gs['value']) ?></strong>
+                    <strong>Rs/ <?= $dashboardStockValue($gs['value']) ?></strong>
                 </div>
             </div>
         </div>
@@ -291,11 +331,33 @@ ksort($modalLocations);
         </div>
 
         <div class="grade-modal-summary">
-            <div><span>No. of Batches</span><strong id="gradeModalBatchCount">0</strong></div>
+            <div><span>No of Batches</span><strong id="gradeModalBatchCount">0</strong></div>
             <div><span>Total Quantity</span><strong id="gradeModalQty">0</strong></div>
             <div><span>Stock Retail Value</span><strong id="gradeModalValue">Rs/ 0</strong></div>
         </div>
-        <div class="grade-modal-uoms" id="gradeModalUoms"></div>
+        <div class="grade-modal-breakdown-grid <?= !empty($selectedDivision) ? 'division-selected' : '' ?>">
+            <div class="grade-division-bars" id="gradeDivisionBars" <?= !empty($selectedDivision) ? 'hidden' : '' ?>>
+                <div class="grade-division-bars-head">
+                    <strong>Quantity by Division</strong>
+                    <span>Selected grade</span>
+                </div>
+                <div class="grade-division-summary-head">
+                    <span>Division Name</span>
+                    <span>No of Batches</span>
+                    <span>QTY</span>
+                    <span>Value</span>
+                </div>
+                <div class="grade-division-bars-list grade-division-summary-list" id="gradeDivisionBarsList"></div>
+            </div>
+
+            <div class="grade-unit-split-panel">
+                <div class="grade-unit-split-head">
+                    <strong>Unit-wise Quantity</strong>
+                    <span>Selected grade</span>
+                </div>
+                <div class="grade-modal-uoms grade-modal-uoms-panel" id="gradeModalUoms"></div>
+            </div>
+        </div>
 
         <div class="grade-modal-filters">
             <label>Search
@@ -323,7 +385,19 @@ ksort($modalLocations);
         <div class="grade-modal-table-wrap">
             <table class="aging-table grade-modal-table">
                 <thead><tr>
-                    <th>Division</th><th>Product Code</th><th>Product Name</th><th>Current Stock</th><th>UoM</th><th>Retail Stock Value</th><th>Batch No</th><th>Manufacturing Date</th><th>Expiry Date</th><th>Aging</th><th>Aging Remaining</th><th>Stock Location</th><th>Grade</th>
+                    <th class="popup-sortable-th" data-sort-index="0" data-sort-type="text"><button type="button" class="popup-sort-btn">Division <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="1" data-sort-type="text"><button type="button" class="popup-sort-btn">Product Code <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="2" data-sort-type="text"><button type="button" class="popup-sort-btn">Product Name <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="3" data-sort-type="qty"><button type="button" class="popup-sort-btn">Current Stock <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="4" data-sort-type="text"><button type="button" class="popup-sort-btn">UoM <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="5" data-sort-type="value"><button type="button" class="popup-sort-btn">Retail Stock Value <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="6" data-sort-type="text"><button type="button" class="popup-sort-btn">Batch No <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="7" data-sort-type="date"><button type="button" class="popup-sort-btn">Manufacturing Date <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="8" data-sort-type="date"><button type="button" class="popup-sort-btn">Expiry Date <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="9" data-sort-type="aging"><button type="button" class="popup-sort-btn">Aging <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="10" data-sort-type="remaining"><button type="button" class="popup-sort-btn">Aging Remaining <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="11" data-sort-type="text"><button type="button" class="popup-sort-btn">Stock Location <i>↕</i></button></th>
+                    <th class="popup-sortable-th" data-sort-index="12" data-sort-type="text"><button type="button" class="popup-sort-btn">Grade <i>↕</i></button></th>
                 </tr></thead>
                 <tbody id="gradeModalRows">
                 <?php foreach (($rows ?? []) as $r):
@@ -340,7 +414,9 @@ ksort($modalLocations);
                         data-qty="<?= e((string)(float)$r['current_qty']) ?>"
                         data-uom="<?= e(strtoupper(trim((string)($r['uom'] ?? ''))) ?: 'UNSPECIFIED') ?>"
                         data-uom-label="<?= e($formatUomFull($r['uom'] ?? '')) ?>"
-                        data-value="<?= e((string)(float)($r['stock_value'] ?? 0)) ?>">
+                        data-value="<?= e((string)(float)($r['stock_value'] ?? 0)) ?>"
+                        data-aging-days="<?= e((string)max(0, (int)floor((strtotime($dashboardAgingReferenceDate) - strtotime($r['manufacture_date'])) / 86400))) ?>"
+                        data-remaining-days="<?= e((string)(int)($r['remaining_days'] ?? 0)) ?>">
                         <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
                         <td><?= e($r['material_code']) ?></td>
                         <td><?= e($r['material_description']) ?></td>
@@ -385,8 +461,16 @@ ksort($modalLocations);
     const valueEl = document.getElementById('gradeModalValue');
     const uomsEl = document.getElementById('gradeModalUoms');
     const resultText = document.getElementById('gradeModalResultText');
+    const divisionBars = document.getElementById('gradeDivisionBars');
+    const divisionBarsList = document.getElementById('gradeDivisionBarsList');
+    const divisionDefinitions = <?= json_encode($dashboardDivisionBars, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
+    const showDivisionBars = <?= empty($selectedDivision) ? 'true' : 'false' ?>;
+    const popupBody = document.getElementById('gradeModalRows');
+    const popupHeaders = Array.from(modal.querySelectorAll('.popup-sortable-th'));
     let activeGrade = '';
     let lastFocused = null;
+    let popupSortIndex = -1;
+    let popupSortDirection = 'asc';
 
     function dashboardNumber(value) {
         const number = Number(value || 0);
@@ -396,12 +480,89 @@ ksort($modalLocations);
         return Math.round(number).toLocaleString();
     }
 
+    function dashboardStockValue(value) {
+        const number = Number(value || 0);
+
+        if (Math.abs(number) >= 1000000) {
+            // Keep the real value in Millions instead of rounding to 2 decimals.
+            // JavaScript automatically suppresses trailing zeroes.
+            return (number / 1000000).toLocaleString(undefined, {
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 8
+            }) + ' Million';
+        }
+
+        return number.toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 2
+        });
+    }
+
+    function renderDivisionBars(divisionStats) {
+        if (!divisionBars || !divisionBarsList) return;
+        divisionBars.hidden = !showDivisionBars;
+        if (!showDivisionBars) return;
+
+        divisionBarsList.innerHTML = '';
+        divisionDefinitions.forEach(function (divisionDef) {
+            const stats = divisionStats[divisionDef.code] || {batches: 0, qty: 0, value: 0};
+            const item = document.createElement('div');
+            item.className = 'grade-division-summary-row';
+            item.innerHTML =
+                '<span class="grade-division-name"><b>' + divisionDef.code + '</b> — ' + divisionDef.name + '</span>' +
+                '<strong>' + Number(stats.batches || 0).toLocaleString() + '</strong>' +
+                '<strong>' + Math.round(Number(stats.qty || 0)).toLocaleString() + '</strong>' +
+                '<strong>Rs/ ' + dashboardStockValue(Number(stats.value || 0)) + '</strong>';
+            divisionBarsList.appendChild(item);
+        });
+    }
+
+    function popupSortDate(value) {
+        const m = String(value || '').trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+        return m ? new Date(+m[3], +m[2] - 1, +m[1]).getTime() : 0;
+    }
+    function dashboardPopupSortValue(row,index,type) {
+        if (type === 'qty') return Number(row.dataset.qty || 0);
+        if (type === 'value') return Number(row.dataset.value || 0);
+        if (type === 'aging') return Number(row.dataset.agingDays || 0);
+        if (type === 'remaining') return Number(row.dataset.remainingDays || 0);
+        const cell = row.cells[index];
+        const value = cell ? cell.textContent.trim() : '';
+        if (type === 'date') return popupSortDate(value);
+        return value.toLowerCase();
+    }
+    function sortPopupRows(index,type,direction) {
+        const factor = direction === 'desc' ? -1 : 1;
+        rows.sort(function(a,b){
+            const av=dashboardPopupSortValue(a,index,type), bv=dashboardPopupSortValue(b,index,type);
+            const result=(typeof av==='number' && typeof bv==='number') ? av-bv : String(av).localeCompare(String(bv),undefined,{numeric:true,sensitivity:'base'});
+            return result*factor;
+        });
+        rows.forEach(function(row){ popupBody.insertBefore(row,empty); });
+    }
+    function resetPopupSort(){
+        popupHeaders.forEach(function(h){ h.removeAttribute('aria-sort'); const i=h.querySelector('i'); if(i)i.textContent='↕'; });
+    }
+    popupHeaders.forEach(function(header){
+        const button=header.querySelector('.popup-sort-btn'); if(!button)return;
+        button.addEventListener('click',function(){
+            const index=Number(header.dataset.sortIndex||0), type=header.dataset.sortType||'text';
+            if(popupSortIndex===index) popupSortDirection=popupSortDirection==='asc'?'desc':'asc';
+            else { popupSortIndex=index; popupSortDirection='asc'; }
+            resetPopupSort();
+            header.setAttribute('aria-sort',popupSortDirection==='asc'?'ascending':'descending');
+            const i=header.querySelector('i'); if(i)i.textContent=popupSortDirection==='asc'?'↑':'↓';
+            sortPopupRows(index,type,popupSortDirection);
+        });
+    });
+
     function applyFilters() {
         const q = search.value.trim().toLowerCase();
         const d = division.value;
         const l = location.value;
         let count = 0, value = 0, totalQty = 0;
         const uomTotals = {};
+        const divisionStats = {};
 
         rows.forEach(function (row) {
             const visible = row.dataset.grade === activeGrade &&
@@ -422,13 +583,22 @@ ksort($modalLocations);
                 uomTotals[uom].qty += rowQty;
                 totalQty += rowQty;
                 value += parseFloat(row.dataset.value || '0');
+                const divisionCode = row.dataset.division || '';
+                if (divisionCode) {
+                    if (!divisionStats[divisionCode]) {
+                        divisionStats[divisionCode] = {batches: 0, qty: 0, value: 0};
+                    }
+                    divisionStats[divisionCode].batches += 1;
+                    divisionStats[divisionCode].qty += rowQty;
+                    divisionStats[divisionCode].value += parseFloat(row.dataset.value || '0');
+                }
             }
         });
 
         empty.hidden = count !== 0;
         countEl.textContent = count.toLocaleString();
         qtyEl.textContent = Math.round(totalQty).toLocaleString();
-        valueEl.textContent = 'Rs/ ' + dashboardNumber(value);
+        valueEl.textContent = 'Rs/ ' + dashboardStockValue(value);
         uomsEl.innerHTML = '';
         Object.keys(uomTotals).sort().forEach(function (uom) {
             const chip = document.createElement('div');
@@ -437,11 +607,13 @@ ksort($modalLocations);
             uomsEl.appendChild(chip);
         });
         resultText.textContent = 'Showing ' + count.toLocaleString() + ' batch' + (count === 1 ? '' : 'es');
+        renderDivisionBars(divisionStats);
     }
 
     function openModal(card) {
         activeGrade = card.dataset.grade || '';
         title.textContent = card.dataset.gradeLabel || activeGrade;
+        popupSortIndex = -1; popupSortDirection = 'asc'; resetPopupSort();
         search.value = '';
         division.value = '';
         location.value = '';

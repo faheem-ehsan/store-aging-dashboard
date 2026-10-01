@@ -42,6 +42,29 @@ class StockBatch
         return $stmt->fetchAll();
     }
 
+    public function latestUpdatedAt(array $user, ?int $divisionId = null): ?string
+    {
+        $sql = 'SELECT MAX(sb.updated_at) FROM stock_batches sb WHERE 1=1';
+        $params = [];
+
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+
+        if (!$canReadAllDivisions) {
+            $sql .= ' AND sb.division_id=?';
+            $params[] = (int)$user['division_id'];
+        } elseif ($divisionId) {
+            $sql .= ' AND sb.division_id=?';
+            $params[] = $divisionId;
+        }
+
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute($params);
+        $value = $stmt->fetchColumn();
+
+        return $value ? (string)$value : null;
+    }
+
     public function findAccessible(int $id, array $user): ?array
     {
         $sql = $this->baseSelect() . ' WHERE sb.id=?';

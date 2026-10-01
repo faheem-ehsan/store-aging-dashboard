@@ -3506,3 +3506,484 @@ body.modal-open{overflow:hidden}
         justify-content:space-between;
     }
 }
+
+
+/* Stock value accuracy + dashboard last-update label */
+.dashboard-last-update{
+    margin-left:auto;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    min-width:205px;
+    padding:10px 14px;
+    border:1px solid #e1e6ed;
+    border-radius:14px;
+    background:#f8fafc;
+}
+.dashboard-last-update span{
+    color:#667085;
+    font-size:9px;
+    font-weight:600;
+    line-height:1.25;
+    text-transform:uppercase;
+    letter-spacing:.04em;
+}
+.dashboard-last-update strong{
+    margin-top:3px;
+    color:#172033;
+    font-size:13px;
+    font-weight:700;
+    line-height:1.25;
+}
+
+/* Yellow B card: black text is more readable than white. */
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-card-title{
+    color:#111827 !important;
+    text-shadow:none !important;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-uom-count{
+    color:#111827 !important;
+    text-shadow:none !important;
+}
+
+/* Division quantity bars shown inside grade popups only for All Divisions. */
+.grade-division-bars{
+    margin:0 20px 16px;
+    padding:14px 16px;
+    border:1px solid #e4e7ec;
+    border-radius:12px;
+    background:#fbfcfe;
+}
+.grade-division-bars[hidden]{display:none !important}
+.grade-division-bars-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-bottom:12px;
+}
+.grade-division-bars-head strong{
+    color:#172033;
+    font-size:13px;
+    font-weight:700;
+}
+.grade-division-bars-head span{
+    color:#667085;
+    font-size:10px;
+    font-weight:500;
+}
+.grade-division-bars-list{
+    display:grid;
+    gap:10px;
+}
+.grade-division-bar-label{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:14px;
+    margin-bottom:5px;
+    color:#475467;
+    font-size:10px;
+}
+.grade-division-bar-label span{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+.grade-division-bar-label b{
+    color:#172033;
+    font-weight:700;
+}
+.grade-division-bar-label strong{
+    color:#172033;
+    font-size:11px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+}
+.grade-division-bar-track{
+    height:8px;
+    overflow:hidden;
+    border-radius:999px;
+    background:#e9edf2;
+}
+.grade-division-bar-track i{
+    display:block;
+    height:100%;
+    border-radius:999px;
+    background:linear-gradient(90deg,#e31b23,#ff5b61);
+    transition:width .2s ease;
+}
+@media(max-width:900px){
+    .dashboard-last-update{
+        order:3;
+        width:100%;
+        margin-left:0;
+    }
+}
+
+
+/* Dashboard top header refinement */
+.dashboard-variant2-overview .dashboard-title-only-head{
+    grid-template-columns:minmax(420px,1fr) minmax(290px,360px) 170px !important;
+    align-items:center !important;
+    gap:14px !important;
+    padding:15px 18px !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head h1{
+    font-size:26px !important;
+    line-height:1.18 !important;
+    font-weight:700 !important;
+    letter-spacing:-.018em !important;
+    min-width:0;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .dashboard-division-selector{
+    min-width:0 !important;
+    width:100%;
+    padding:8px 11px !important;
+    gap:10px !important;
+    border-radius:13px !important;
+    border-color:#e2e7ed !important;
+    background:#fbfcfd !important;
+    box-shadow:none !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .division-selector-icon{
+    width:36px !important;
+    height:36px !important;
+    border-radius:10px !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .division-selector-icon svg{
+    width:18px !important;
+    height:18px !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .division-selector-content{
+    gap:1px !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .division-selector-content small{
+    font-size:8.5px !important;
+    letter-spacing:.07em !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .dashboard-division-form select{
+    min-width:0 !important;
+    height:31px !important;
+    padding-top:2px !important;
+    padding-bottom:2px !important;
+    color:#344054 !important;
+    font-size:13px !important;
+    font-weight:500 !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .division-selector-content strong{
+    font-size:13px !important;
+    font-weight:600 !important;
+    color:#344054 !important;
+}
+
+.dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update{
+    margin-left:0 !important;
+    min-width:0 !important;
+    width:170px;
+    min-height:54px;
+    padding:9px 12px !important;
+    border-radius:13px !important;
+    border-color:#e2e7ed !important;
+    background:#fbfcfd !important;
+    box-shadow:none !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update span{
+    font-size:8px !important;
+    line-height:1.2 !important;
+    letter-spacing:.06em !important;
+}
+.dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update strong{
+    margin-top:4px !important;
+    font-size:13px !important;
+    line-height:1.2 !important;
+    color:#172033 !important;
+}
+
+@media(max-width:1250px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:minmax(0,1fr) minmax(270px,330px) 155px !important;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head h1{
+        font-size:23px !important;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update{
+        width:155px;
+    }
+}
+@media(max-width:1020px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:1fr 1fr !important;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head h1{
+        grid-column:1/-1;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update{
+        width:100%;
+    }
+}
+@media(max-width:700px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:1fr !important;
+        padding:14px !important;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head h1{
+        grid-column:auto;
+        font-size:21px !important;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head .dashboard-division-selector,
+    .dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update{
+        width:100%;
+    }
+}
+
+
+/* Dashboard grade popup - division summary columns */
+.grade-division-summary-head,
+.grade-division-summary-row{
+    display:grid;
+    grid-template-columns:minmax(260px,1.8fr) minmax(110px,.65fr) minmax(130px,.8fr) minmax(150px,.95fr);
+    align-items:center;
+    column-gap:16px;
+}
+.grade-division-summary-head{
+    padding:8px 12px;
+    margin-bottom:4px;
+    border-bottom:1px solid #e4e7ec;
+    color:#667085;
+    font-size:10px;
+    font-weight:700;
+    text-transform:uppercase;
+    letter-spacing:.025em;
+}
+.grade-division-summary-head span:not(:first-child){
+    text-align:right;
+}
+.grade-division-summary-list{
+    display:grid !important;
+    gap:0 !important;
+}
+.grade-division-summary-row{
+    min-height:42px;
+    padding:9px 12px;
+    border-bottom:1px solid #eef1f4;
+    color:#344054;
+    font-size:11px;
+}
+.grade-division-summary-row:last-child{
+    border-bottom:0;
+}
+.grade-division-summary-row:hover{
+    background:#f8fafc;
+}
+.grade-division-name{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    font-weight:500;
+}
+.grade-division-name b{
+    color:#172033;
+    font-weight:700;
+}
+.grade-division-summary-row strong{
+    text-align:right;
+    color:#172033;
+    font-size:11px;
+    font-weight:700;
+    font-variant-numeric:tabular-nums;
+    white-space:nowrap;
+}
+
+/* The new summary replaces the old horizontal bars. */
+.grade-division-summary-list .grade-division-bar-track,
+.grade-division-summary-list .grade-division-bar-label{
+    display:none !important;
+}
+
+@media(max-width:900px){
+    .grade-division-summary-head,
+    .grade-division-summary-row{
+        grid-template-columns:minmax(180px,1.4fr) 90px 110px 135px;
+        column-gap:10px;
+    }
+}
+@media(max-width:680px){
+    .grade-division-bars{
+        overflow-x:auto;
+    }
+    .grade-division-summary-head,
+    .grade-division-summary-row{
+        min-width:640px;
+    }
+}
+
+
+/* Dashboard popup division summary - compact column spacing */
+.grade-division-summary-head,
+.grade-division-summary-row{
+    grid-template-columns:320px 110px 120px 170px !important;
+    column-gap:18px !important;
+    justify-content:start !important;
+}
+.grade-division-summary-head,
+.grade-division-summary-row{
+    padding-left:12px !important;
+    padding-right:12px !important;
+}
+.grade-division-summary-head span:not(:first-child),
+.grade-division-summary-row strong{
+    text-align:right !important;
+}
+.grade-division-summary-head span:first-child,
+.grade-division-name{
+    text-align:left !important;
+}
+
+@media(max-width:1050px){
+    .grade-division-summary-head,
+    .grade-division-summary-row{
+        grid-template-columns:280px 100px 110px 155px !important;
+        column-gap:12px !important;
+    }
+}
+@media(max-width:760px){
+    .grade-division-bars{
+        overflow-x:auto;
+    }
+    .grade-division-summary-head,
+    .grade-division-summary-row{
+        grid-template-columns:250px 95px 105px 145px !important;
+        min-width:650px !important;
+        column-gap:10px !important;
+    }
+}
+
+
+/* Grade popup: use the remaining space beside Division summary for unit-wise split */
+.grade-modal-breakdown-grid{
+    display:grid;
+    grid-template-columns:minmax(0,1.9fr) minmax(270px,.72fr);
+    gap:14px;
+    align-items:stretch;
+    margin:0 20px 16px;
+}
+.grade-modal-breakdown-grid.division-selected{
+    grid-template-columns:1fr;
+}
+
+.grade-modal-breakdown-grid .grade-division-bars{
+    margin:0 !important;
+    min-width:0;
+    height:100%;
+}
+
+.grade-unit-split-panel{
+    min-width:0;
+    padding:14px 14px 12px;
+    border:1px solid #e4e7ec;
+    border-radius:12px;
+    background:#fbfcfe;
+}
+.grade-unit-split-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    margin-bottom:11px;
+    padding-bottom:10px;
+    border-bottom:1px solid #e4e7ec;
+}
+.grade-unit-split-head strong{
+    color:#172033;
+    font-size:13px;
+    font-weight:700;
+}
+.grade-unit-split-head span{
+    color:#667085;
+    font-size:10px;
+    font-weight:500;
+    white-space:nowrap;
+}
+
+.grade-modal-uoms-panel{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:7px !important;
+    padding:0 !important;
+    margin:0 !important;
+    border:0 !important;
+}
+.grade-modal-uoms-panel .grade-modal-uom-chip{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:space-between !important;
+    gap:10px !important;
+    min-width:0 !important;
+    width:100% !important;
+    min-height:34px;
+    padding:7px 10px !important;
+    border:1px solid #e0e6ed !important;
+    border-radius:9px !important;
+    background:#fff !important;
+    box-shadow:none !important;
+}
+.grade-modal-uoms-panel .grade-modal-uom-chip span{
+    min-width:0;
+    overflow:hidden;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+    color:#475467;
+    font-size:10px !important;
+    font-weight:600 !important;
+}
+.grade-modal-uoms-panel .grade-modal-uom-chip strong{
+    flex:0 0 auto;
+    color:#172033;
+    font-size:12px !important;
+    font-weight:700 !important;
+    font-variant-numeric:tabular-nums;
+}
+
+/* When a division is already selected, keep the unit panel useful across the full row. */
+.grade-modal-breakdown-grid.division-selected .grade-unit-split-panel{
+    max-width:none;
+}
+.grade-modal-breakdown-grid.division-selected .grade-modal-uoms-panel{
+    grid-template-columns:repeat(auto-fit,minmax(190px,1fr)) !important;
+}
+
+@media(max-width:1180px){
+    .grade-modal-breakdown-grid{
+        grid-template-columns:minmax(0,1.55fr) minmax(250px,.75fr);
+    }
+}
+@media(max-width:900px){
+    .grade-modal-breakdown-grid{
+        grid-template-columns:1fr;
+    }
+    .grade-modal-uoms-panel{
+        grid-template-columns:repeat(auto-fit,minmax(180px,1fr)) !important;
+    }
+}
+@media(max-width:640px){
+    .grade-modal-breakdown-grid{
+        margin-left:12px;
+        margin-right:12px;
+    }
+    .grade-modal-uoms-panel{
+        grid-template-columns:1fr !important;
+    }
+}
+
+
+/* Ascending / descending controls for all popup table headings */
+.grade-modal-table .popup-sortable-th{padding:0!important;vertical-align:middle}
+.grade-modal-table .popup-sort-btn{appearance:none;width:100%;min-height:40px;display:flex;align-items:center;justify-content:space-between;gap:7px;padding:9px 10px;border:0;background:transparent;color:inherit;font:inherit;font-size:10px;font-weight:700;line-height:1.2;text-align:left;text-transform:uppercase;letter-spacing:.02em;white-space:nowrap;cursor:pointer}
+.grade-modal-table .popup-sort-btn:hover{background:#fdeff0;color:#8f1015}
+.grade-modal-table .popup-sort-btn:focus-visible{outline:2px solid #ef1c25;outline-offset:-2px}
+.grade-modal-table .popup-sort-btn i{flex:0 0 auto;color:#98a2b3;font-size:12px;font-style:normal;font-weight:800}
+.grade-modal-table .popup-sortable-th[aria-sort="ascending"] .popup-sort-btn,.grade-modal-table .popup-sortable-th[aria-sort="descending"] .popup-sort-btn{background:#fff4f4;color:#8f1015}
+.grade-modal-table .popup-sortable-th[aria-sort="ascending"] .popup-sort-btn i,.grade-modal-table .popup-sortable-th[aria-sort="descending"] .popup-sort-btn i{color:#ef1c25}
