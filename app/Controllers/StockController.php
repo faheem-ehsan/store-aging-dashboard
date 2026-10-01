@@ -23,7 +23,9 @@ class StockController
             'division_id' => isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null,
             'grade' => trim($_GET['grade'] ?? ''),
         ];
-        if ($user['role'] !== 'super_admin') $filters['division_id'] = (int)$user['division_id'];
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $grader = new GradeService();
         $rows = array_map(fn($r) => $grader->enrich($r), (new StockBatch())->allAccessible($user, $filters));
@@ -39,7 +41,7 @@ class StockController
         ];
 
         $selectedDivisionLabel = 'All Divisions';
-        if ($user['role'] !== 'super_admin') {
+        if (!$canReadAllDivisions) {
             $selectedDivisionLabel = trim((string)($user['division_code'] ?? 'Division')) ?: 'Division';
         } elseif (!empty($filters['division_id'])) {
             foreach ($divisions as $division) {

@@ -116,7 +116,9 @@ class MarketReturnController
             'value_status' => trim((string)($_GET['value_status'] ?? '')),
             'expiry_bucket' => trim((string)($_GET['expiry_bucket'] ?? '')),
         ];
-        if ($user['role'] !== 'super_admin') $filters['division_id'] = (int)$user['division_id'];
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $divisions = (new Division())->all(true);
         $categories = MarketReturnImporter::CATEGORIES;
@@ -186,8 +188,10 @@ class MarketReturnController
             else $metrics['unvalued']++;
         }
 
-        $selectedDivisionLabel = $user['role'] === 'super_admin' ? 'All Divisions' : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
-        if ($user['role'] === 'super_admin' && !empty($filters['division_id'])) {
+        $selectedDivisionLabel = $canReadAllDivisions
+            ? 'All Divisions'
+            : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
+        if ($canReadAllDivisions && !empty($filters['division_id'])) {
             foreach ($divisions as $division) {
                 if ((int)$division['id'] === (int)$filters['division_id']) {
                     $selectedDivisionLabel = $division['code'] . ' — ' . $division['name'];

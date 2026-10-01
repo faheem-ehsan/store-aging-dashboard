@@ -178,7 +178,7 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
             <input id="stockSearch" class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, product name or batch no...">
         </div>
 
-        <?php if ($user['role'] === 'super_admin'): ?>
+        <?php if ($user['role'] === 'super_admin' || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
             <div class="stock-filter-field">
                 <label for="stockDivision">Division</label>
                 <select id="stockDivision" name="division_id">

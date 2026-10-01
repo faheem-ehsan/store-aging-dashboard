@@ -42,7 +42,12 @@ class User
         if (!$user || !password_verify($password, $user['password_hash'])) return null;
 
         if ($user['role'] === 'super_admin') {
+            // Super Admin must use the dedicated Super Admin login selection.
             if ($divisionId !== null) return null;
+        } elseif ($user['role'] === 'user' && empty($user['division_id'])) {
+            // A read-only user with no division assignment has read access to all divisions.
+            // It must use the dedicated "All Divisions / Read-only User" login selection.
+            if ($divisionId !== 0) return null;
         } else {
             if (!$divisionId || (int)$user['division_id'] !== $divisionId) return null;
         }
@@ -61,7 +66,9 @@ class User
     public function create(array $data): int
     {
         $role = $data['role'];
-        $divisionId = $role === 'super_admin' ? null : (int)$data['division_id'];
+        $divisionId = ($role === 'super_admin' || ($role === 'user' && empty($data['division_id'])))
+            ? null
+            : (int)$data['division_id'];
 
         if ($this->hasAvatarColumn()) {
             $stmt = Database::connection()->prepare(
@@ -94,7 +101,9 @@ class User
     public function update(int $id, array $data): void
     {
         $role = $data['role'];
-        $divisionId = $role === 'super_admin' ? null : (int)$data['division_id'];
+        $divisionId = ($role === 'super_admin' || ($role === 'user' && empty($data['division_id'])))
+            ? null
+            : (int)$data['division_id'];
         $params = [$divisionId, trim($data['name']), strtolower(trim($data['email'])), $role];
         $sets = ['division_id=?', 'name=?', 'email=?', 'role=?'];
 

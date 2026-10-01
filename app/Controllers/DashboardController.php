@@ -13,7 +13,9 @@ class DashboardController
     {
         $user = Auth::requireLogin();
         $divisionId = isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null;
-        if ($user['role'] !== 'super_admin') $divisionId = (int)$user['division_id'];
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        if (!$canReadAllDivisions) $divisionId = (int)$user['division_id'];
 
         $rows = (new StockBatch())->allAccessible($user, ['division_id' => $divisionId]);
         $grader = new GradeService();

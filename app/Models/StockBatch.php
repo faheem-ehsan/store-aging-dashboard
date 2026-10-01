@@ -19,7 +19,10 @@ class StockBatch
         $sql = $this->baseSelect() . ' WHERE 1=1';
         $params = [];
 
-        if ($user['role'] !== 'super_admin') {
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+
+        if (!$canReadAllDivisions) {
             $sql .= ' AND sb.division_id=?';
             $params[] = (int)$user['division_id'];
         } elseif (!empty($filters['division_id'])) {
@@ -43,7 +46,9 @@ class StockBatch
     {
         $sql = $this->baseSelect() . ' WHERE sb.id=?';
         $params = [$id];
-        if ($user['role'] !== 'super_admin') {
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        if (!$canReadAllDivisions) {
             $sql .= ' AND sb.division_id=?';
             $params[] = (int)$user['division_id'];
         }

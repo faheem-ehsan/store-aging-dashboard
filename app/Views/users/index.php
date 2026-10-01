@@ -8,6 +8,9 @@ $formUser = $editUser ?? [
     'division_id' => '',
     'avatar_path' => null,
 ];
+$formRoleValue = (($formUser['role'] ?? '') === 'user' && empty($formUser['division_id']))
+    ? 'read_only_all'
+    : ($formUser['role'] ?? 'division_admin');
 $initials = static function (string $name): string {
     $parts = preg_split('/\s+/', trim($name)) ?: [];
     $letters = '';
@@ -61,14 +64,15 @@ $initials = static function (string $name): string {
                 </label>
                 <label>Role
                     <select name="role" id="roleSelect" required>
-                        <option value="division_admin" <?= $formUser['role'] === 'division_admin' ? 'selected' : '' ?>>Division Admin</option>
-                        <option value="user" <?= $formUser['role'] === 'user' ? 'selected' : '' ?>>Read-only User</option>
-                        <option value="super_admin" <?= $formUser['role'] === 'super_admin' ? 'selected' : '' ?>>Super Admin</option>
+                        <option value="division_admin" <?= $formRoleValue === 'division_admin' ? 'selected' : '' ?>>Division Admin</option>
+                        <option value="user" <?= $formRoleValue === 'user' ? 'selected' : '' ?>>Read-only User — Division</option>
+                        <option value="read_only_all" <?= $formRoleValue === 'read_only_all' ? 'selected' : '' ?>>Read-only User — All Divisions</option>
+                        <option value="super_admin" <?= $formRoleValue === 'super_admin' ? 'selected' : '' ?>>Super Admin</option>
                     </select>
                 </label>
                 <label class="span-2" id="divisionField">Division
                     <select name="division_id" id="divisionSelect">
-                        <option value="">None / Super Admin</option>
+                        <option value="" id="divisionEmptyOption">Select Division</option>
                         <?php foreach ($divisions as $d): ?>
                             <option value="<?= (int)$d['id'] ?>" <?= (int)($formUser['division_id'] ?? 0) === (int)$d['id'] ? 'selected' : '' ?>><?= e($d['code']) ?> — <?= e($d['name']) ?></option>
                         <?php endforeach; ?>
@@ -104,8 +108,15 @@ $initials = static function (string $name): string {
                             </div>
                         </td>
                         <td><?= e($u['email']) ?></td>
-                        <td><?= e(ucwords(str_replace('_',' ', $u['role']))) ?></td>
-                        <td><?= e($u['division_code'] ?? 'All') ?></td>
+                        <td>
+                            <?php
+                            $userRoleLabel = ($u['role'] ?? '') === 'user'
+                                ? (empty($u['division_code']) ? 'Read-only User — All Divisions' : 'Read-only User')
+                                : ucwords(str_replace('_',' ', (string)$u['role']));
+                            ?>
+                            <?= e($userRoleLabel) ?>
+                        </td>
+                        <td><?= e($u['division_code'] ?? (($u['role'] ?? '') === 'user' ? 'All Divisions' : 'All')) ?></td>
                         <td><?= $u['is_active'] ? '<span class="status on">Active</span>' : '<span class="status off">Disabled</span>' ?></td>
                         <td class="user-actions">
                             <a href="<?= e(url('/users/edit?id=' . (int)$u['id'])) ?>">Edit</a>
@@ -131,11 +142,26 @@ $initials = static function (string $name): string {
     const division = document.getElementById('divisionSelect');
     const field = document.getElementById('divisionField');
     if (!role || !division || !field) return;
+    const emptyOption = document.getElementById('divisionEmptyOption');
     function syncDivision() {
         const isSuper = role.value === 'super_admin';
-        field.classList.toggle('muted-field', isSuper);
-        division.disabled = isSuper;
-        if (isSuper) division.value = '';
+        const isAllDivisionReadOnly = role.value === 'read_only_all';
+        const needsDivision = role.value === 'division_admin' || role.value === 'user';
+        const disableDivision = isSuper || isAllDivisionReadOnly;
+
+        field.classList.toggle('muted-field', disableDivision);
+        division.disabled = disableDivision;
+        division.required = needsDivision;
+
+        if (isSuper) {
+            division.value = '';
+            if (emptyOption) emptyOption.textContent = 'None / Super Admin';
+        } else if (isAllDivisionReadOnly) {
+            division.value = '';
+            if (emptyOption) emptyOption.textContent = 'All Divisions';
+        } else {
+            if (emptyOption) emptyOption.textContent = 'Select Division';
+        }
     }
     role.addEventListener('change', syncDivision);
     syncDivision();

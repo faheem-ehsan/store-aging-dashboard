@@ -177,12 +177,17 @@ class UserController
 
     private function validatedUserData(bool $passwordRequired): array
     {
+        $requestedRole = $_POST['role'] ?? 'user';
+        $isAllDivisionReadOnly = $requestedRole === 'read_only_all';
+
         $data = [
             'name' => trim($_POST['name'] ?? ''),
             'email' => trim($_POST['email'] ?? ''),
             'password' => $_POST['password'] ?? '',
-            'role' => $_POST['role'] ?? 'user',
-            'division_id' => $_POST['division_id'] ?? '',
+            // Keep the existing database ENUM unchanged: global read-only is stored
+            // as role=user with division_id=NULL.
+            'role' => $isAllDivisionReadOnly ? 'user' : $requestedRole,
+            'division_id' => $isAllDivisionReadOnly ? '' : ($_POST['division_id'] ?? ''),
         ];
 
         if (!$data['name'] || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {
@@ -197,8 +202,11 @@ class UserController
         if (!in_array($data['role'], ['super_admin','division_admin','user'], true)) {
             throw new \RuntimeException('Invalid role.');
         }
-        if ($data['role'] !== 'super_admin' && !(int)$data['division_id']) {
-            throw new \RuntimeException('Division is required for division users.');
+        if ($data['role'] === 'division_admin' && !(int)$data['division_id']) {
+            throw new \RuntimeException('Division is required for Division Admin.');
+        }
+        if ($data['role'] === 'user' && !$isAllDivisionReadOnly && !(int)$data['division_id']) {
+            throw new \RuntimeException('Choose a Division, or select Read-only User — All Divisions.');
         }
         return $data;
     }

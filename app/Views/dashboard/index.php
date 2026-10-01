@@ -161,7 +161,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </span>
         <div class="division-selector-content">
             <small>Division</small>
-            <?php if ($user['role'] === 'super_admin'): ?>
+            <?php if ($user['role'] === 'super_admin' || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
                 <form method="get" action="<?= e(url('/')) ?>" class="dashboard-division-form">
                     <select name="division_id" onchange="this.form.submit()" aria-label="Select division">
                         <option value="">All Divisions</option>

@@ -41,7 +41,14 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
                 <span>Stock Aging Dashboard</span>
             </div>
         </div>
-        <div class="division-chip"><?= e($me['role'] === 'super_admin' ? 'SUPER ADMIN' : ($me['division_code'] ?? 'DIVISION')) ?></div>
+        <?php
+        $sidebarDivisionLabel = $me['role'] === 'super_admin'
+            ? 'SUPER ADMIN'
+            : ((($me['role'] ?? '') === 'user' && empty($me['division_id']))
+                ? 'ALL DIVISIONS'
+                : ($me['division_code'] ?? 'DIVISION'));
+        ?>
+        <div class="division-chip"><?= e($sidebarDivisionLabel) ?></div>
         <nav>
             <a class="nav-link<?= $isDashboardActive ? ' active' : '' ?>" href="<?= e(url('/')) ?>"<?= $isDashboardActive ? ' aria-current="page"' : '' ?>>
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4.5v-6h-5v6H5a1 1 0 0 1-1-1v-9.5Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
@@ -85,7 +92,9 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
                 </div>
                 <div class="sidebar-user-copy">
                     <strong><?= e($me['name']) ?></strong>
-                    <small><?= e(ucwords(str_replace('_',' ', $me['role']))) ?></small>
+                    <small><?= e(($me['role'] ?? '') === 'user'
+                        ? (empty($me['division_id']) ? 'Read-only User · All Divisions' : 'Read-only User')
+                        : ucwords(str_replace('_',' ', (string)$me['role'])) ) ?></small>
                     <span><?= e(date('d M Y')) ?></span>
                 </div>
             </div>
