@@ -3987,3 +3987,116 @@ body.modal-open{overflow:hidden}
 .grade-modal-table .popup-sort-btn i{flex:0 0 auto;color:#98a2b3;font-size:12px;font-style:normal;font-weight:800}
 .grade-modal-table .popup-sortable-th[aria-sort="ascending"] .popup-sort-btn,.grade-modal-table .popup-sortable-th[aria-sort="descending"] .popup-sort-btn{background:#fff4f4;color:#8f1015}
 .grade-modal-table .popup-sortable-th[aria-sort="ascending"] .popup-sort-btn i,.grade-modal-table .popup-sortable-th[aria-sort="descending"] .popup-sort-btn i{color:#ef1c25}
+
+
+/* ==========================================================
+   Popup behavior: All Divisions shows summary only.
+   The detailed filter/table stays available when one Division
+   is selected from the main Dashboard / Market Return page.
+   ========================================================== */
+.grade-modal-dialog.grade-modal-all-divisions .grade-modal-detail-only{
+    display:none !important;
+}
+.grade-modal-dialog.grade-modal-all-divisions .grade-modal-foot{
+    justify-content:flex-end !important;
+    min-height:58px;
+}
+.grade-modal-dialog.grade-modal-all-divisions .grade-modal-breakdown-grid{
+    margin-bottom:4px;
+}
+
+/* ==========================================================
+   Dashboard Grade popup header uses the same colors as cards.
+   ========================================================== */
+#gradeStockModal .grade-modal-dialog .grade-modal-head{
+    transition:background-color .15s ease, color .15s ease;
+    border-radius:18px 18px 0 0;
+}
+#gradeStockModal .grade-modal-dialog[data-grade-theme="A+"] .grade-modal-head{
+    background:#153b7c !important;
+    color:#ffffff !important;
+    border-bottom-color:#153b7c !important;
+}
+#gradeStockModal .grade-modal-dialog[data-grade-theme="A"] .grade-modal-head{
+    background:#92d050 !important;
+    color:#16220d !important;
+    border-bottom-color:#92d050 !important;
+}
+#gradeStockModal .grade-modal-dialog[data-grade-theme="B"] .grade-modal-head{
+    background:#fff200 !important;
+    color:#171700 !important;
+    border-bottom-color:#fff200 !important;
+}
+#gradeStockModal .grade-modal-dialog[data-grade-theme="C"] .grade-modal-head{
+    background:#ff1a1a !important;
+    color:#ffffff !important;
+    border-bottom-color:#ff1a1a !important;
+}
+#gradeStockModal .grade-modal-dialog[data-grade-theme="EX"] .grade-modal-head{
+    background:#000000 !important;
+    color:#ffffff !important;
+    border-bottom-color:#000000 !important;
+}
+
+/* All text inside the colored header follows the selected grade contrast. */
+#gradeStockModal .grade-modal-dialog[data-grade-theme] .grade-modal-head .grade-modal-kicker,
+#gradeStockModal .grade-modal-dialog[data-grade-theme] .grade-modal-head h2,
+#gradeStockModal .grade-modal-dialog[data-grade-theme] .grade-modal-head p{
+    color:inherit !important;
+}
+#gradeStockModal .grade-modal-dialog[data-grade-theme] .grade-modal-head .grade-modal-close{
+    color:inherit !important;
+    border-color:currentColor !important;
+    background:rgba(255,255,255,.14) !important;
+}
+#gradeStockModal .grade-modal-dialog[data-grade-theme="A"] .grade-modal-head .grade-modal-close,
+#gradeStockModal .grade-modal-dialog[data-grade-theme="B"] .grade-modal-head .grade-modal-close{
+    background:rgba(255,255,255,.42) !important;
+}
+
+/* ==========================================================
+   Market Return popup header follows its grading-card colors.
+   ========================================================== */
+#marketReturnModal .grade-modal-dialog .grade-modal-head{
+    transition:background-color .15s ease, color .15s ease;
+    border-radius:18px 18px 0 0;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme="a"] .grade-modal-head{
+    background:#92d050 !important;
+    color:#16220d !important;
+    border-bottom-color:#92d050 !important;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme="b"] .grade-modal-head{
+    background:#fff200 !important;
+    color:#171700 !important;
+    border-bottom-color:#fff200 !important;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme="c"] .grade-modal-head{
+    background:#ff1a1a !important;
+    color:#ffffff !important;
+    border-bottom-color:#ff1a1a !important;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme="expired"] .grade-modal-head{
+    background:#000000 !important;
+    color:#ffffff !important;
+    border-bottom-color:#000000 !important;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme="no_expiry"] .grade-modal-head{
+    background:#98a2b3 !important;
+    color:#ffffff !important;
+    border-bottom-color:#98a2b3 !important;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme] .grade-modal-head .grade-modal-kicker,
+#marketReturnModal .grade-modal-dialog[data-market-theme] .grade-modal-head h2,
+#marketReturnModal .grade-modal-dialog[data-market-theme] .grade-modal-head p{
+    color:inherit !important;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme] .grade-modal-head .grade-modal-close{
+    color:inherit !important;
+    border-color:currentColor !important;
+    background:rgba(255,255,255,.14) !important;
+}
+#marketReturnModal .grade-modal-dialog[data-market-theme="a"] .grade-modal-head .grade-modal-close,
+#marketReturnModal .grade-modal-dialog[data-market-theme="b"] .grade-modal-head .grade-modal-close{
+    background:rgba(255,255,255,.42) !important;
+}

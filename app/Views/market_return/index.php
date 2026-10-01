@@ -440,12 +440,11 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 
 <div class="grade-modal" id="marketReturnModal" aria-hidden="true">
     <div class="grade-modal-backdrop" data-market-return-close></div>
-    <section class="grade-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="marketReturnModalTitle">
+    <section class="grade-modal-dialog <?= empty($filters['division_id']) ? 'grade-modal-all-divisions' : 'grade-modal-single-division' ?>" role="dialog" aria-modal="true" aria-labelledby="marketReturnModalTitle">
         <div class="grade-modal-head">
             <div>
                 <span class="grade-modal-kicker">Market Return Details</span>
                 <h2 id="marketReturnModalTitle"><span id="marketReturnModalName">Expiry Group</span></h2>
-                <p>Use the quick filters below to review item details for the selected expiry group.</p>
             </div>
             <button type="button" class="grade-modal-close" data-market-return-close aria-label="Close">×</button>
         </div>
@@ -464,7 +463,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             <div class="grade-division-bars-list" id="marketReturnDivisionBarsList"></div>
         </div>
 
-        <div class="grade-modal-filters market-return-modal-filters">
+        <div class="grade-modal-filters market-return-modal-filters grade-modal-detail-only">
             <label>
                 Search
                 <input type="search" id="marketReturnModalSearch" placeholder="Product, remarks, section...">
@@ -499,7 +498,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             <button type="button" class="btn ghost" id="marketReturnModalReset">Clear Filters</button>
         </div>
 
-        <div class="grade-modal-table-wrap">
+        <div class="grade-modal-table-wrap grade-modal-detail-only">
             <table class="market-return-table grade-modal-table market-return-modal-table">
                 <thead>
                     <tr>
@@ -556,7 +555,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         </div>
 
         <div class="grade-modal-foot">
-            <span id="marketReturnModalResultText">Showing 0 items</span>
+            <span id="marketReturnModalResultText" class="grade-modal-detail-only">Showing 0 items</span>
             <button type="button" class="btn" data-market-return-close>Close</button>
         </div>
     </section>
@@ -567,6 +566,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     const modal = document.getElementById('marketReturnModal');
     if (!modal) return;
 
+    const modalDialog = modal.querySelector('.grade-modal-dialog');
     const cards = document.querySelectorAll('.market-return-click-card');
     const rows = Array.from(modal.querySelectorAll('.market-return-modal-row'));
     const empty = document.getElementById('marketReturnModalEmpty');
@@ -706,6 +706,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     function openModal(card) {
         activeGroup = card.dataset.expiryGroup || '';
         title.textContent = card.dataset.expiryLabel || 'Expiry Group';
+        if (modalDialog) modalDialog.setAttribute('data-market-theme', activeGroup);
         popupSortIndex = -1; popupSortDirection = 'asc'; resetPopupSort();
         search.value = '';
         division.value = '';

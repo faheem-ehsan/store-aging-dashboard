@@ -320,12 +320,11 @@ ksort($modalLocations);
 ?>
 <div class="grade-modal" id="gradeStockModal" aria-hidden="true">
     <div class="grade-modal-backdrop" data-grade-modal-close></div>
-    <section class="grade-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="gradeModalTitle">
+    <section class="grade-modal-dialog <?= empty($selectedDivision) ? 'grade-modal-all-divisions' : 'grade-modal-single-division' ?>" role="dialog" aria-modal="true" aria-labelledby="gradeModalTitle">
         <div class="grade-modal-head">
             <div>
                 <span class="grade-modal-kicker">Grade Stock Details</span>
                 <h2 id="gradeModalTitle"><span id="gradeModalName">A+</span> Grade</h2>
-                <p>All batches for the selected Dashboard division. Use the filters below to narrow the table.</p>
             </div>
             <button type="button" class="grade-modal-close" data-grade-modal-close aria-label="Close">×</button>
         </div>
@@ -359,7 +358,7 @@ ksort($modalLocations);
             </div>
         </div>
 
-        <div class="grade-modal-filters">
+        <div class="grade-modal-filters grade-modal-detail-only">
             <label>Search
                 <input type="search" id="gradeModalSearch" placeholder="Product, batch, location...">
             </label>
@@ -382,7 +381,7 @@ ksort($modalLocations);
             <button type="button" class="btn ghost" id="gradeModalReset">Clear Filters</button>
         </div>
 
-        <div class="grade-modal-table-wrap">
+        <div class="grade-modal-table-wrap grade-modal-detail-only">
             <table class="aging-table grade-modal-table">
                 <thead><tr>
                     <th class="popup-sortable-th" data-sort-index="0" data-sort-type="text"><button type="button" class="popup-sort-btn">Division <i>↕</i></button></th>
@@ -437,7 +436,7 @@ ksort($modalLocations);
             </table>
         </div>
         <div class="grade-modal-foot">
-            <span id="gradeModalResultText">Showing 0 batches</span>
+            <span id="gradeModalResultText" class="grade-modal-detail-only">Showing 0 batches</span>
             <button type="button" class="btn" data-grade-modal-close>Close</button>
         </div>
     </section>
@@ -448,6 +447,7 @@ ksort($modalLocations);
     const modal = document.getElementById('gradeStockModal');
     if (!modal) return;
 
+    const modalDialog = modal.querySelector('.grade-modal-dialog');
     const cards = document.querySelectorAll('.grade-click-card');
     const rows = Array.from(modal.querySelectorAll('.grade-modal-data-row'));
     const empty = document.getElementById('gradeModalEmpty');
@@ -613,6 +613,7 @@ ksort($modalLocations);
     function openModal(card) {
         activeGrade = card.dataset.grade || '';
         title.textContent = card.dataset.gradeLabel || activeGrade;
+        if (modalDialog) modalDialog.setAttribute('data-grade-theme', activeGrade);
         popupSortIndex = -1; popupSortDirection = 'asc'; resetPopupSort();
         search.value = '';
         division.value = '';
@@ -622,7 +623,7 @@ ksort($modalLocations);
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.classList.add('modal-open');
-        window.setTimeout(function () { search.focus(); }, 20);
+        if (!showDivisionBars) window.setTimeout(function () { search.focus(); }, 20);
     }
 
     function closeModal() {
