@@ -455,12 +455,28 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             <div><span>Retail Stock Value</span><strong id="marketReturnModalValue">Rs/ 0</strong></div>
         </div>
 
-        <div class="grade-division-bars" id="marketReturnDivisionBars" <?= !empty($filters['division_id']) ? 'hidden' : '' ?>>
-            <div class="grade-division-bars-head">
-                <strong>Quantity by Division</strong>
-                <span>Selected grading group</span>
+        <div class="grade-modal-breakdown-grid market-return-breakdown-grid" id="marketReturnBreakdownGrid" <?= !empty($filters['division_id']) ? 'hidden' : '' ?>>
+            <div class="grade-division-bars" id="marketReturnDivisionBars">
+                <div class="grade-division-bars-head">
+                    <strong>Quantity by Division</strong>
+                    <span>Selected grading group</span>
+                </div>
+                <div class="grade-division-summary-head">
+                    <span>Division Name</span>
+                    <span>No of Items</span>
+                    <span>QTY</span>
+                    <span>Value</span>
+                </div>
+                <div class="grade-division-bars-list grade-division-summary-list" id="marketReturnDivisionBarsList"></div>
             </div>
-            <div class="grade-division-bars-list" id="marketReturnDivisionBarsList"></div>
+
+            <div class="grade-unit-split-panel market-return-unit-split-panel">
+                <div class="grade-unit-split-head">
+                    <strong>Unit-wise Quantity</strong>
+                    <span>Selected grading group</span>
+                </div>
+                <div class="grade-modal-uoms grade-modal-uoms-panel" id="marketReturnUnitSummary"></div>
+            </div>
         </div>
 
         <div class="grade-modal-filters market-return-modal-filters grade-modal-detail-only">
@@ -582,6 +598,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     const resultText = document.getElementById('marketReturnModalResultText');
     const divisionBars = document.getElementById('marketReturnDivisionBars');
     const divisionBarsList = document.getElementById('marketReturnDivisionBarsList');
+    const unitSummary = document.getElementById('marketReturnUnitSummary');
     const divisionDefinitions = <?= json_encode($marketReturnDivisionBars, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?>;
     const showDivisionBars = <?= empty($filters['division_id']) ? 'true' : 'false' ?>;
     const popupBody = document.getElementById('marketReturnModalRows');
@@ -607,27 +624,49 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         });
     }
 
-    function renderDivisionBars(divisionQty) {
+    function renderDivisionBars(divisionStats) {
         if (!divisionBars || !divisionBarsList) return;
         divisionBars.hidden = !showDivisionBars;
         if (!showDivisionBars) return;
 
-        const maxQty = Math.max(1, ...divisionDefinitions.map(function (divisionDef) {
-            return Number(divisionQty[divisionDef.code.toLowerCase()] || 0);
-        }));
-
         divisionBarsList.innerHTML = '';
         divisionDefinitions.forEach(function (divisionDef) {
             const key = divisionDef.code.toLowerCase();
-            const qty = Number(divisionQty[key] || 0);
-            const pct = qty <= 0 ? 0 : (qty / maxQty) * 100;
+            const stats = divisionStats[key] || {items: 0, qty: 0, value: 0};
             const item = document.createElement('div');
-            item.className = 'grade-division-bar-item';
+            item.className = 'grade-division-summary-row';
             item.innerHTML =
-                '<div class="grade-division-bar-label"><span><b>' + divisionDef.code + '</b> — ' + divisionDef.name + '</span><strong>' +
-                Math.round(qty).toLocaleString() + '</strong></div>' +
-                '<div class="grade-division-bar-track"><i style="width:' + pct.toFixed(2) + '%"></i></div>';
+                '<span class="grade-division-name"><b>' + divisionDef.code + '</b> — ' + divisionDef.name + '</span>' +
+                '<strong>' + Number(stats.items || 0).toLocaleString() + '</strong>' +
+                '<strong>' + formatQty(stats.qty || 0) + '</strong>' +
+                '<strong>' + formatMoney(stats.value || 0) + '</strong>';
             divisionBarsList.appendChild(item);
+        });
+    }
+
+    function renderUnitSummary(unitStats) {
+        if (!unitSummary || !showDivisionBars) return;
+        unitSummary.innerHTML = '';
+
+        const units = Object.keys(unitStats).sort(function (a, b) {
+            return a.localeCompare(b, undefined, {numeric: true, sensitivity: 'base'});
+        });
+
+        if (!units.length) {
+            const emptyUnit = document.createElement('div');
+            emptyUnit.className = 'grade-modal-uom-chip';
+            emptyUnit.innerHTML = '<span>No Unit</span><strong>0</strong>';
+            unitSummary.appendChild(emptyUnit);
+            return;
+        }
+
+        units.forEach(function (unitName) {
+            const chip = document.createElement('div');
+            chip.className = 'grade-modal-uom-chip';
+            chip.innerHTML =
+                '<span>' + unitName + '</span>' +
+                '<strong>' + formatQty(unitStats[unitName] || 0) + '</strong>';
+            unitSummary.appendChild(chip);
         });
     }
 
@@ -675,7 +714,8 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         let visibleCount = 0;
         let visibleQty = 0;
         let visibleValue = 0;
-        const divisionQty = {};
+        const divisionStats = {};
+        const unitStats = {};
 
         rows.forEach(function (row) {
             const matchGroup = row.dataset.expiryGroup === activeGroup;
@@ -688,10 +728,22 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
             if (show) {
                 visibleCount++;
                 const rowQty = Number(row.dataset.qty || 0);
+                const rowValue = Number(row.dataset.value || 0);
                 visibleQty += rowQty;
-                visibleValue += Number(row.dataset.value || 0);
+                visibleValue += rowValue;
+
                 const divisionCode = row.dataset.division || '';
-                if (divisionCode) divisionQty[divisionCode] = (divisionQty[divisionCode] || 0) + rowQty;
+                if (divisionCode) {
+                    if (!divisionStats[divisionCode]) {
+                        divisionStats[divisionCode] = {items: 0, qty: 0, value: 0};
+                    }
+                    divisionStats[divisionCode].items += 1;
+                    divisionStats[divisionCode].qty += rowQty;
+                    divisionStats[divisionCode].value += rowValue;
+                }
+
+                const unitName = (row.cells[4] ? row.cells[4].textContent.trim() : '') || 'No Unit';
+                unitStats[unitName] = (unitStats[unitName] || 0) + rowQty;
             }
         });
 
@@ -700,7 +752,8 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         qtyEl.textContent = formatQty(visibleQty);
         valueEl.textContent = formatMoney(visibleValue);
         resultText.textContent = 'Showing ' + visibleCount.toLocaleString() + ' item(s)';
-        renderDivisionBars(divisionQty);
+        renderDivisionBars(divisionStats);
+        renderUnitSummary(unitStats);
     }
 
     function openModal(card) {
