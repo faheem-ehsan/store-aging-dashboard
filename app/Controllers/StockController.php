@@ -452,7 +452,7 @@ class StockController
         ]);
         // Example row follows the uploaded stock-aging report layout. Aging columns are
         // intentionally blank because the system calculates them when the file is imported.
-        fputcsv($out, [$division,'100409','SPRINGLEY 500 ML (1*12)','2085','CS','505946.10','SP180926','2026-09-18','2027-09-18','','','FW02']);
+        fputcsv($out, [$division,'100409','SPRINGLEY 500 ML (1*12)','2085','CS','505946.10','SP180926','18.09.2026','18.09.2027','','','FW02']);
         fclose($out);
         exit;
     }
@@ -573,22 +573,24 @@ class StockController
     private function normalizeCsvDate(string $value): string
     {
         $value = trim($value);
-        if ($value === '') throw new \RuntimeException('Date is missing.');
-
-        if (is_numeric($value) && (float)$value > 20000 && (float)$value < 100000) {
-            $unix = ((int)$value - 25569) * 86400;
-            return gmdate('Y-m-d', $unix);
+        if ($value === '') {
+            throw new \RuntimeException('Date is required. Use DD.MM.YYYY.');
         }
 
-        $formats = ['Y-m-d','d.m.Y','d/m/Y','d-m-Y','m/d/Y','m-d-Y','Y/m/d'];
-        foreach ($formats as $format) {
-            $dt = \DateTimeImmutable::createFromFormat('!' . $format, $value);
-            $errors = \DateTimeImmutable::getLastErrors();
-            if ($dt && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
-                return $dt->format('Y-m-d');
-            }
+        // CSV imports use one fixed human-readable format.
+        // MySQL DATE columns remain native DATE values and therefore use YYYY-MM-DD internally.
+        if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $value)) {
+            throw new \RuntimeException('Invalid date "' . $value . '". CSV dates must use DD.MM.YYYY, for example 18.09.2026.');
         }
-        throw new \RuntimeException('Invalid date "' . $value . '". Use YYYY-MM-DD or DD.MM.YYYY.');
+
+        $dt = \DateTimeImmutable::createFromFormat('!d.m.Y', $value);
+        $errors = \DateTimeImmutable::getLastErrors();
+
+        if (!$dt || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+            throw new \RuntimeException('Invalid calendar date "' . $value . '". Use DD.MM.YYYY.');
+        }
+
+        return $dt->format('Y-m-d');
     }
 
     private function normalizeNumber(string $value): string

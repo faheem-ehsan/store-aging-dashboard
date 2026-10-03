@@ -1,0 +1,7 @@
+DATE FORMAT POLICY
+==================
+CSV input: DD.MM.YYYY
+Application display: DD.MM.YYYY
+MySQL DATE storage: YYYY-MM-DD
+
+MySQL DATE should remain a DATE column. The importer validates DD.MM.YYYY and converts it to YYYY-MM-DD before saving.

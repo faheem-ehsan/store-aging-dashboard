@@ -106,11 +106,11 @@ class MarketReturnImporter
                 if ($product === '') throw new \RuntimeException('Row ' . $rowNo . ': product name is missing.');
                 $qty = $this->numberOrNull($row['quantity'] ?? '');
                 if ($qty === null) throw new \RuntimeException('Row ' . $rowNo . ': quantity is invalid.');
-                [$expiryRaw, $expiryDate] = $this->normalizeExpiry($row['expiry_raw'] ?? '');
+                [$expiryRaw, $expiryDate] = $this->normalizeCsvExpiry($row['expiry_raw'] ?? '', $rowNo);
                 $retail = $this->numberOrNull($row['retail_price'] ?? '');
                 $amount = $this->numberOrNull($row['total_amount'] ?? '');
                 $amountText = $amount === null ? trim((string)($row['total_amount'] ?? '')) : '';
-                $reportDate = $this->normalizeDate($row['report_date'] ?? '');
+                $reportDate = $this->normalizeCsvDate($row['report_date'] ?? '', $rowNo, true);
                 $sourceSheet = trim((string)($row['source_sheet'] ?? ''));
                 if ($sourceSheet === '') $sourceSheet = self::CATEGORIES[$category]['sheet'];
 
@@ -326,6 +326,39 @@ class MarketReturnImporter
             }
         }
         return null;
+    }
+
+    private function normalizeCsvDate(mixed $value, int $rowNo, bool $allowBlank = false): ?string
+    {
+        $raw = trim((string)$value);
+        if ($raw === '') {
+            if ($allowBlank) return null;
+            throw new \RuntimeException('Row ' . $rowNo . ': date is required. Use DD.MM.YYYY.');
+        }
+
+        if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $raw)) {
+            throw new \RuntimeException(
+                'Row ' . $rowNo . ': invalid date "' . $raw . '". CSV dates must use DD.MM.YYYY, for example 24.09.2026.'
+            );
+        }
+
+        $dt = \DateTimeImmutable::createFromFormat('!d.m.Y', $raw);
+        $errors = \DateTimeImmutable::getLastErrors();
+
+        if (!$dt || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+            throw new \RuntimeException('Row ' . $rowNo . ': invalid calendar date "' . $raw . '". Use DD.MM.YYYY.');
+        }
+
+        return $dt->format('Y-m-d');
+    }
+
+    private function normalizeCsvExpiry(mixed $value, int $rowNo): array
+    {
+        $raw = trim((string)$value);
+        if ($raw === '') return ['', null];
+
+        $date = $this->normalizeCsvDate($raw, $rowNo, false);
+        return [$raw, $date];
     }
 
     private function normalizeExpiry(mixed $value): array

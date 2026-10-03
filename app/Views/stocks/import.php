@@ -15,7 +15,8 @@
             <div class="csv-columns">
                 <span>Division</span><span>Product Code</span><span>Product Name</span><span>Current Stock</span><span>UoM</span><span>Retail Stock Value</span><span>Batch No</span><span>Manufacturing Date</span><span>Expiry Date</span><span>Aging (Days)</span><span>Aging Remaining (Days)</span><span>Stock Location</span>
             </div>
-            <p>This matches the uploaded Stock Aging Report layout. Aging columns may be blank because the system calculates them automatically. Dates can be YYYY-MM-DD or DD.MM.YYYY, and Excel date serials are accepted. The source code SNMW is also accepted as SNW.</p>
+            <p><b>Fixed CSV date format:</b> DD.MM.YYYY for Manufacturing Date, Expiry Date and Last Receipt Date.</p>
+            <p>This matches the uploaded Stock Aging Report layout. Aging columns may be blank because the system calculates them automatically. CSV dates must use DD.MM.YYYY only (for example 18.09.2026). The system converts them to the SQL DATE format automatically. The source code SNMW is also accepted as SNW.</p>
             <?php if ($user['role'] !== 'super_admin'): ?>
                 <p>Your login is restricted to <b><?= e($user['division_code'] ?? '') ?></b>. The importer automatically assigns every row to this division. A Division column is optional.</p>
             <?php else: ?>

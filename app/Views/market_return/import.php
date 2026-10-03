@@ -23,6 +23,7 @@
             <?php endif; ?>
             <strong>Safety</strong>
             <p>If Super Admin uploads a row that cannot be matched to one unique division, that row is not guessed. It is shown in the import result as an unmatched item so it cannot be stored under the wrong division.</p>
+            <p><b>CSV date format:</b> DD.MM.YYYY only for Expiry and Report Date, for example 31.08.2027 and 24.09.2026. XLSX imports keep their existing flexible date handling.</p>
             <p><b>No category selection is required.</b> XLSX categories come from the workbook sheet names. CSV files can carry the Category column from the supplied template; if it is omitted, the importer can also detect a recognized category from a Source Sheet column or the CSV filename.</p>
         </div>
 

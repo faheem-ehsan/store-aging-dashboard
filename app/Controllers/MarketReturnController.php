@@ -506,8 +506,8 @@ class MarketReturnController
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'wb');
         fputcsv($out, ['Division','Category','Section','S. No.','Product Name','Quantity','Unit','Expiry','Retail Price','Total Amount','Remarks','Aux Label','Aux Value','Report Date']);
-        fputcsv($out, ['JSD','Utilizable Stock','Utilizable Stock - Market Return Store','1','Jam-e-Shirin 500ml','10','Bottles','Aug 2027','750','7500','','','','2026-09-24']);
-        fputcsv($out, ['SNW','Fresh Saleable Stock','Fresh Saleable Stock','2','Springley 500ml','24','Bottles','Apr 2029','100','2400','','','','2026-09-24']);
+        fputcsv($out, ['JSD','Utilizable Stock','Utilizable Stock - Market Return Store','1','Jam-e-Shirin 500ml','10','Bottles','31.08.2027','750','7500','','','','24.09.2026']);
+        fputcsv($out, ['SNW','Fresh Saleable Stock','Fresh Saleable Stock','2','Springley 500ml','24','Bottles','30.04.2029','100','2400','','','','24.09.2026']);
         fclose($out);
         exit;
     }
