@@ -4187,3 +4187,16 @@ body.modal-open{overflow:hidden}
         column-gap:10px !important;
     }
 }
+
+
+/* Add/Edit Batch fixed manual date format */
+.dispatch-batch-grid input[name="manufacture_date"],
+.dispatch-batch-grid input[name="expiry_date"]{
+    font-variant-numeric:tabular-nums;
+    letter-spacing:.01em;
+}
+.dispatch-batch-grid input[name="manufacture_date"]::placeholder,
+.dispatch-batch-grid input[name="expiry_date"]::placeholder{
+    color:#98a2b3;
+    opacity:1;
+}

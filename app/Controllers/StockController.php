@@ -506,9 +506,11 @@ class StockController
             'material_code' => trim($_POST['material_code'] ?? ''),
             'material_description' => trim($_POST['material_description'] ?? ''),
             'batch_no' => trim($_POST['batch_no'] ?? ''),
-            'manufacture_date' => $_POST['manufacture_date'] ?? '',
-            'expiry_date' => $_POST['expiry_date'] ?? '',
-            'last_receipt_date' => !empty($_POST['last_receipt_date']) ? $_POST['last_receipt_date'] : null,
+            'manufacture_date' => $this->normalizeManualDate($_POST['manufacture_date'] ?? ''),
+            'expiry_date' => $this->normalizeManualDate($_POST['expiry_date'] ?? ''),
+            'last_receipt_date' => !empty($_POST['last_receipt_date'])
+                ? $this->normalizeManualDate($_POST['last_receipt_date'])
+                : null,
             'current_qty' => $_POST['current_qty'] ?? '',
             'stock_value' => $_POST['stock_value'] ?? '0',
             'receiving_store' => trim($_POST['receiving_store'] ?? ''),
@@ -522,7 +524,9 @@ class StockController
             return 'Division, product code, product name and batch number are required.';
         }
         foreach (['manufacture_date','expiry_date'] as $f) {
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$d[$f])) return 'Manufacture and expiry dates are required.';
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$d[$f])) {
+                return 'Manufacturing Date and Expiry Date must use DD/MM/YYYY, for example 18/09/2026.';
+            }
         }
         if ($d['manufacture_date'] > $d['expiry_date']) return 'Manufacture date cannot be after expiry date.';
         if (!is_numeric($d['current_qty']) || (float)$d['current_qty'] < 0) return 'Current Stock must be zero or greater.';
@@ -530,6 +534,27 @@ class StockController
         if (trim((string)$d['uom']) === '') return 'UoM is required.';
         if (trim((string)$d['receiving_store']) === '') return 'Stock Location is required.';
         return null;
+    }
+
+    private function normalizeManualDate(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') return '';
+
+        // Manual Add/Edit Batch form uses DD/MM/YYYY.
+        // Convert to native SQL DATE representation (YYYY-MM-DD) before saving.
+        if (!preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value)) {
+            return $value;
+        }
+
+        $dt = \DateTimeImmutable::createFromFormat('!d/m/Y', $value);
+        $errors = \DateTimeImmutable::getLastErrors();
+
+        if (!$dt || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
+            return $value;
+        }
+
+        return $dt->format('Y-m-d');
     }
 
     private function canonicalHeader(string $header): string

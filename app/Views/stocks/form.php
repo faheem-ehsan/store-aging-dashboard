@@ -6,8 +6,15 @@ $selectedDivisionId = $isEdit
 $divisionLabel = $user['role'] === 'super_admin'
     ? ''
     : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
-$manufactureDate = $batch['manufacture_date'] ?? '';
-$expiryDate = $batch['expiry_date'] ?? '';
+$formatFormDate = static function (?string $value): string {
+    $value = trim((string)$value);
+    if ($value === '') return '';
+
+    $dt = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
+    return $dt ? $dt->format('d/m/Y') : $value;
+};
+$manufactureDate = $formatFormDate($batch['manufacture_date'] ?? '');
+$expiryDate = $formatFormDate($batch['expiry_date'] ?? '');
 $divisionCode = $user['role'] === 'super_admin' ? '' : ($user['division_code'] ?? '');
 if ($user['role'] === 'super_admin' && $selectedDivisionId > 0) {
     foreach ($divisions as $d) {
@@ -47,8 +54,34 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
         <label>UoM<input name="uom" value="<?= e($batch['uom'] ?? '') ?>" placeholder="e.g. CS, PCS, BT" required></label>
         <label>Retail Stock Value<input type="number" step="0.01" min="0" name="stock_value" value="<?= e($batch['stock_value'] ?? '0') ?>" required></label>
         <label>Batch No<input name="batch_no" value="<?= e($batch['batch_no'] ?? '') ?>" required></label>
-        <label>Manufacturing Date<input type="date" id="manufacture_date" name="manufacture_date" value="<?= e($manufactureDate) ?>" required></label>
-        <label>Expiry Date<input type="date" id="expiry_date" name="expiry_date" value="<?= e($expiryDate) ?>" required></label>
+        <label>Manufacturing Date
+            <input
+                type="text"
+                id="manufacture_date"
+                name="manufacture_date"
+                value="<?= e($manufactureDate) ?>"
+                placeholder="DD/MM/YYYY"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="10"
+                pattern="\d{2}/\d{2}/\d{4}"
+                title="Enter date as DD/MM/YYYY, for example 18/09/2026"
+                required>
+        </label>
+        <label>Expiry Date
+            <input
+                type="text"
+                id="expiry_date"
+                name="expiry_date"
+                value="<?= e($expiryDate) ?>"
+                placeholder="DD/MM/YYYY"
+                inputmode="numeric"
+                autocomplete="off"
+                maxlength="10"
+                pattern="\d{2}/\d{2}/\d{4}"
+                title="Enter date as DD/MM/YYYY, for example 18/09/2027"
+                required>
+        </label>
         <label>Aging (Days)<input id="aging_days_preview" value="" readonly tabindex="-1"></label>
         <label>Aging Remaining (Days)<input id="remaining_days_preview" value="" readonly tabindex="-1"></label>
         <label class="span-2">Stock Location<input name="receiving_store" value="<?= e($batch['receiving_store'] ?? '') ?>" placeholder="e.g. FW02" required></label>
@@ -67,11 +100,35 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
     const remaining = document.getElementById('remaining_days_preview');
     const dayMs = 86400000;
     function dateOnly(value) {
-        if (!value) return null;
-        const parts = value.split('-').map(Number);
-        if (parts.length !== 3) return null;
-        return Date.UTC(parts[0], parts[1] - 1, parts[2]);
+        const match = String(value || '').trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+        if (!match) return null;
+
+        const day = Number(match[1]);
+        const month = Number(match[2]);
+        const year = Number(match[3]);
+        const utc = Date.UTC(year, month - 1, day);
+        const check = new Date(utc);
+
+        if (
+            check.getUTCFullYear() !== year ||
+            check.getUTCMonth() !== month - 1 ||
+            check.getUTCDate() !== day
+        ) return null;
+
+        return utc;
     }
+
+    function formatDateInput(input) {
+        let digits = input.value.replace(/\D/g, '').slice(0, 8);
+        if (digits.length > 4) {
+            input.value = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
+        } else if (digits.length > 2) {
+            input.value = digits.slice(0, 2) + '/' + digits.slice(2);
+        } else {
+            input.value = digits;
+        }
+    }
+
     function update() {
         const today = new Date();
         const todayUtc = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
@@ -80,8 +137,15 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
         aging.value = mfgUtc === null ? '' : Math.floor((todayUtc - mfgUtc) / dayMs);
         remaining.value = expUtc === null ? '' : Math.floor((expUtc - todayUtc) / dayMs);
     }
-    mfg.addEventListener('change', update);
-    exp.addEventListener('change', update);
+
+    [mfg, exp].forEach(function (input) {
+        input.addEventListener('input', function () {
+            formatDateInput(input);
+            update();
+        });
+        input.addEventListener('blur', update);
+    });
+
     update();
 })();
 </script>
