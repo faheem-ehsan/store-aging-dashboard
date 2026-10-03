@@ -47,7 +47,38 @@ class MarketReturnItem
             $sql .= ' AND mri.total_amount IS NULL';
         }
 
-        $sql .= " ORDER BY FIELD(mri.category_code,'fresh_saleable','utilizable','cabinets','rawalkot','export','promotion','tablet_strips','expired'), mri.section_name, mri.serial_no, mri.product_name";
+        $sql .= " ORDER BY
+                    CASE
+                        WHEN FIELD(mri.category_code,'fresh_saleable','utilizable','cabinets','rawalkot','export','promotion','tablet_strips','expired') = 0 THEN 999
+                        ELSE FIELD(mri.category_code,'fresh_saleable','utilizable','cabinets','rawalkot','export','promotion','tablet_strips','expired')
+                    END,
+                    mri.source_sheet, mri.section_name, mri.product_name";
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute($params);
+        return $stmt->fetchAll();
+    }
+
+    public function categoryOptions(array $user, ?int $divisionId = null): array
+    {
+        $sql = 'SELECT mri.category_code,
+                       MAX(CASE WHEN TRIM(COALESCE(mri.source_sheet, \'\')) <> \'\' THEN mri.source_sheet ELSE mri.category_code END) category_label
+                FROM market_return_items mri
+                WHERE 1=1';
+        $params = [];
+
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+
+        if (!$canReadAllDivisions) {
+            $sql .= ' AND mri.division_id=?';
+            $params[] = (int)$user['division_id'];
+        } elseif ($divisionId) {
+            $sql .= ' AND mri.division_id=?';
+            $params[] = $divisionId;
+        }
+
+        $sql .= ' GROUP BY mri.category_code ORDER BY category_label';
+
         $stmt = Database::connection()->prepare($sql);
         $stmt->execute($params);
         return $stmt->fetchAll();
@@ -150,12 +181,27 @@ class MarketReturnItem
             $importId = (int)$pdo->lastInsertId();
 
             $deleted = 0;
-            if ($replaceExisting && $categories) {
-                $placeholders = implode(',', array_fill(0, count($categories), '?'));
-                $params = array_merge([$divisionId], array_values($categories));
-                $delete = $pdo->prepare("DELETE FROM market_return_items WHERE division_id=? AND category_code IN ($placeholders)");
-                $delete->execute($params);
-                $deleted = $delete->rowCount();
+            if ($replaceExisting && $items) {
+                // Replacement is scoped to Division + Category + Section.
+                // A newly introduced Section under an existing Category is therefore
+                // added as a new group instead of deleting the other Sections.
+                $replaceGroups = [];
+                foreach ($items as $item) {
+                    $categoryCode = trim((string)($item['category_code'] ?? ''));
+                    $sectionName = trim((string)($item['section_name'] ?? ''));
+                    if ($categoryCode === '') continue;
+                    $replaceGroups[$categoryCode . "\x1F" . $sectionName] = [$categoryCode, $sectionName];
+                }
+
+                $delete = $pdo->prepare(
+                    "DELETE FROM market_return_items
+                     WHERE division_id=? AND category_code=? AND COALESCE(section_name,'')=?"
+                );
+
+                foreach ($replaceGroups as [$categoryCode, $sectionName]) {
+                    $delete->execute([$divisionId, $categoryCode, $sectionName]);
+                    $deleted += $delete->rowCount();
+                }
             }
 
             $insert = $pdo->prepare(

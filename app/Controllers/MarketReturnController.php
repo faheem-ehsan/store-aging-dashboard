@@ -17,6 +17,32 @@ class MarketReturnController
         return in_array($user['role'] ?? '', ['super_admin', 'division_admin'], true);
     }
 
+    private function marketReturnCategories(array $user, ?int $divisionId = null): array
+    {
+        $categories = MarketReturnImporter::CATEGORIES;
+
+        try {
+            $dynamic = (new MarketReturnItem())->categoryOptions($user, $divisionId);
+            foreach ($dynamic as $row) {
+                $code = trim((string)($row['category_code'] ?? ''));
+                if ($code === '') continue;
+
+                if (!isset($categories[$code])) {
+                    $label = trim((string)($row['category_label'] ?? ''));
+                    $categories[$code] = [
+                        'label' => $label !== '' ? $label : $code,
+                        'sheet' => $label !== '' ? $label : $code,
+                        'class' => 'default',
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            // Keep the original built-in list when the module tables are not installed yet.
+        }
+
+        return $categories;
+    }
+
     private function expiryBuckets(): array
     {
         return [
@@ -121,7 +147,7 @@ class MarketReturnController
         if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $divisions = (new Division())->all(true);
-        $categories = MarketReturnImporter::CATEGORIES;
+        $categories = $this->marketReturnCategories($user, $filters['division_id']);
         $expiryBuckets = $this->expiryBuckets();
         if ($filters['expiry_bucket'] !== '' && !isset($expiryBuckets[$filters['expiry_bucket']])) {
             $filters['expiry_bucket'] = '';
@@ -226,7 +252,10 @@ class MarketReturnController
             'title' => 'Add Market Return Item',
             'user' => $user,
             'divisions' => (new Division())->all(true),
-            'categories' => MarketReturnImporter::CATEGORIES,
+            'categories' => $this->marketReturnCategories(
+                $user,
+                $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) ?: null : (int)$user['division_id']
+            ),
             'item' => null,
             'selectedDivisionId' => $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
             'selectedCategory' => trim((string)($_GET['category'] ?? '')),
@@ -269,7 +298,7 @@ class MarketReturnController
             'title' => 'Edit Market Return Item',
             'user' => $user,
             'divisions' => (new Division())->all(true),
-            'categories' => MarketReturnImporter::CATEGORIES,
+            'categories' => $this->marketReturnCategories($user, (int)$item['division_id']),
             'item' => $item,
             'selectedDivisionId' => (int)$item['division_id'],
             'selectedCategory' => $item['category_code'],
@@ -336,7 +365,7 @@ class MarketReturnController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $divisions = (new Division())->all(true);
-        $categories = MarketReturnImporter::CATEGORIES;
+        $categories = $this->marketReturnCategories($user);
         $result = [
             'inserted' => 0,
             'deleted_previous' => 0,
@@ -505,9 +534,9 @@ class MarketReturnController
         header('Content-Disposition: attachment; filename="market_return_store_auto_import_template.csv"');
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'wb');
-        fputcsv($out, ['Division','Category','Section','S. No.','Product Name','Quantity','Unit','Expiry','Retail Price','Total Amount','Remarks','Aux Label','Aux Value','Report Date']);
-        fputcsv($out, ['JSD','Utilizable Stock','Utilizable Stock - Market Return Store','1','Jam-e-Shirin 500ml','10','Bottles','31.08.2027','750','7500','','','','24.09.2026']);
-        fputcsv($out, ['SNW','Fresh Saleable Stock','Fresh Saleable Stock','2','Springley 500ml','24','Bottles','30.04.2029','100','2400','','','','24.09.2026']);
+        fputcsv($out, ['Division','Category','Section','Product Name','Quantity','Unit','Expiry','Retail Price','Total Amount','Remarks','Aux Label','Aux Value','Report Date']);
+        fputcsv($out, ['JSD','Utilizable Stock','Utilizable Stock - Market Return Store','Jam-e-Shirin 500ml','10','Bottles','31.08.2027','750','7500','','','','24.09.2026']);
+        fputcsv($out, ['SNW','Fresh Saleable Stock','Fresh Saleable Stock','Springley 500ml','24','Bottles','30.04.2029','100','2400','','','','24.09.2026']);
         fclose($out);
         exit;
     }
@@ -541,7 +570,7 @@ class MarketReturnController
     private function validate(array $data): ?string
     {
         if ((int)$data['division_id'] <= 0) return 'Division is required.';
-        if (!isset(MarketReturnImporter::CATEGORIES[$data['category_code']])) return 'Choose a valid Market Return category.';
+        if (trim((string)$data['category_code']) === '') return 'Category is required.';
         if ($data['product_name'] === '') return 'Product Name / Description is required.';
         if ((float)$data['quantity'] < 0) return 'Quantity cannot be negative.';
         if ($data['unit'] === '') return 'Unit is required.';

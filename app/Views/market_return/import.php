@@ -24,7 +24,7 @@
             <strong>Safety</strong>
             <p>If Super Admin uploads a row that cannot be matched to one unique division, that row is not guessed. It is shown in the import result as an unmatched item so it cannot be stored under the wrong division.</p>
             <p><b>CSV date format:</b> DD.MM.YYYY only for Expiry and Report Date, for example 31.08.2027 and 24.09.2026. XLSX imports keep their existing flexible date handling.</p>
-            <p><b>No category selection is required.</b> XLSX categories come from the workbook sheet names. CSV files can carry the Category column from the supplied template; if it is omitted, the importer can also detect a recognized category from a Source Sheet column or the CSV filename.</p>
+            <p><b>CSV Category and Section are automatic.</b> S. No. is not required. Any new Category or Section value in the CSV is accepted automatically and stored as a new group. If Category is written once at the start of a block, following blank category cells can inherit it.</p>
         </div>
 
         <form method="post" action="<?= e(url('/market-return/import')) ?>" enctype="multipart/form-data" class="market-return-import-form">
@@ -54,7 +54,7 @@
 
             <label class="market-return-replace-option">
                 <input type="checkbox" name="replace_existing" value="1" <?= !isset($_POST['replace_existing']) || $_POST['replace_existing'] === '1' ? 'checked' : '' ?>>
-                <span><b>Replace existing records for the automatically identified division/category groups</b><small>If any rows cannot be assigned safely, replacement is automatically disabled for that import to protect existing data.</small></span>
+                <span><b>Replace existing records for the identified Division + Category + Section groups</b><small>A new Category or Section is added as a new group. Existing data in other Sections is not removed.</small></span>
             </label>
 
             <div class="form-actions">
