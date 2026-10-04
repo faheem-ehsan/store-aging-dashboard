@@ -1,7 +1,13 @@
 DATE FORMAT POLICY
 ==================
-CSV input: DD.MM.YYYY
-Application display: DD.MM.YYYY
+Project display / manual entry / CSV text / XLSX text: DD/MON/YYYY
+Example: 01/Sep/2026
+Excel real-date cells: display them as dd/mmm/yyyy
 MySQL DATE storage: YYYY-MM-DD
 
-MySQL DATE should remain a DATE column. The importer validates DD.MM.YYYY and converts it to YYYY-MM-DD before saving.
+Conversion examples:
+01/Sep/2026 -> 2026-09-01
+25/Sep/2026 -> 2026-09-25
+09/Feb/2026 -> 2026-02-09
+
+Months: Jan, Feb, Mar, Apr, May, Jun, Jul, Aug, Sep, Oct, Nov, Dec.

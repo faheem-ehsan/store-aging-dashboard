@@ -84,6 +84,83 @@ class MarketReturnItem
         return $stmt->fetchAll();
     }
 
+    public function bulkDeleteDivisionStats(): array
+    {
+        $sql = 'SELECT d.id division_id,
+                       d.code division_code,
+                       d.name division_name,
+                       d.is_active,
+                       COUNT(mri.id) item_count,
+                       COALESCE(SUM(mri.quantity),0) total_qty,
+                       COALESCE(SUM(mri.total_amount),0) stock_value
+                FROM divisions d
+                LEFT JOIN market_return_items mri ON mri.division_id=d.id
+                GROUP BY d.id,d.code,d.name,d.is_active
+                ORDER BY d.code';
+
+        return Database::connection()->query($sql)->fetchAll();
+    }
+
+    public function bulkDeleteByDivisions(array $divisionIds): array
+    {
+        $divisionIds = array_values(array_unique(array_filter(
+            array_map('intval', $divisionIds),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$divisionIds) {
+            return [
+                'deleted_items' => 0,
+                'divisions' => [],
+            ];
+        }
+
+        $pdo = Database::connection();
+        $placeholders = implode(',', array_fill(0, count($divisionIds), '?'));
+
+        // Snapshot division totals before deletion for Activity Logs and UI feedback.
+        $statsStmt = $pdo->prepare(
+            "SELECT d.id division_id,
+                    d.code division_code,
+                    d.name division_name,
+                    COUNT(mri.id) item_count,
+                    COALESCE(SUM(mri.quantity),0) total_qty,
+                    COALESCE(SUM(mri.total_amount),0) stock_value
+             FROM divisions d
+             LEFT JOIN market_return_items mri ON mri.division_id=d.id
+             WHERE d.id IN ($placeholders)
+             GROUP BY d.id,d.code,d.name
+             ORDER BY d.code"
+        );
+        $statsStmt->execute($divisionIds);
+        $stats = $statsStmt->fetchAll();
+
+        $pdo->beginTransaction();
+        try {
+            $delete = $pdo->prepare(
+                "DELETE FROM market_return_items WHERE division_id IN ($placeholders)"
+            );
+            $delete->execute($divisionIds);
+            $deletedItems = $delete->rowCount();
+
+            // Intentionally preserve:
+            // - divisions
+            // - users
+            // - market_return_imports (import history)
+            // - market_return_division_mappings
+            // - Finish Goods stock
+            $pdo->commit();
+
+            return [
+                'deleted_items' => $deletedItems,
+                'divisions' => $stats,
+            ];
+        } catch (\Throwable $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $e;
+        }
+    }
+
     public function findAccessible(int $id, array $user): ?array
     {
         $sql = $this->baseSelect() . ' WHERE mri.id=?';

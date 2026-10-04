@@ -95,7 +95,7 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
                     <small><?= e(($me['role'] ?? '') === 'user'
                         ? (empty($me['division_id']) ? 'Read-only User · All Divisions' : 'Read-only User')
                         : ucwords(str_replace('_',' ', (string)$me['role'])) ) ?></small>
-                    <span><?= e(date('d M Y')) ?></span>
+                    <span><?= e(date('d/M/Y')) ?></span>
                 </div>
             </div>
             <form class="logout" method="post" action="<?= e(url('/logout')) ?>">

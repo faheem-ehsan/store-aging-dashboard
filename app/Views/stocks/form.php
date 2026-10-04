@@ -7,11 +7,7 @@ $divisionLabel = $user['role'] === 'super_admin'
     ? ''
     : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
 $formatFormDate = static function (?string $value): string {
-    $value = trim((string)$value);
-    if ($value === '') return '';
-
-    $dt = \DateTimeImmutable::createFromFormat('!Y-m-d', $value);
-    return $dt ? $dt->format('d/m/Y') : $value;
+    return format_app_date($value, '');
 };
 $manufactureDate = $formatFormDate($batch['manufacture_date'] ?? '');
 $expiryDate = $formatFormDate($batch['expiry_date'] ?? '');
@@ -60,12 +56,12 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
                 id="manufacture_date"
                 name="manufacture_date"
                 value="<?= e($manufactureDate) ?>"
-                placeholder="DD/MM/YYYY"
-                inputmode="numeric"
+                placeholder="DD/MON/YYYY"
+                inputmode="text"
                 autocomplete="off"
-                maxlength="10"
-                pattern="\d{2}/\d{2}/\d{4}"
-                title="Enter date as DD/MM/YYYY, for example 18/09/2026"
+                maxlength="11"
+                pattern="\d{2}/[A-Za-z]{3}/\d{4}"
+                title="Enter date as DD/MON/YYYY, for example 18/Sep/2026"
                 required>
         </label>
         <label>Expiry Date
@@ -74,12 +70,12 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
                 id="expiry_date"
                 name="expiry_date"
                 value="<?= e($expiryDate) ?>"
-                placeholder="DD/MM/YYYY"
-                inputmode="numeric"
+                placeholder="DD/MON/YYYY"
+                inputmode="text"
                 autocomplete="off"
-                maxlength="10"
-                pattern="\d{2}/\d{2}/\d{4}"
-                title="Enter date as DD/MM/YYYY, for example 18/09/2027"
+                maxlength="11"
+                pattern="\d{2}/[A-Za-z]{3}/\d{4}"
+                title="Enter date as DD/MON/YYYY, for example 18/Sep/2027"
                 required>
         </label>
         <label>Aging (Days)<input id="aging_days_preview" value="" readonly tabindex="-1"></label>
@@ -99,34 +95,64 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
     const aging = document.getElementById('aging_days_preview');
     const remaining = document.getElementById('remaining_days_preview');
     const dayMs = 86400000;
-    function dateOnly(value) {
-        const match = String(value || '').trim().match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-        if (!match) return null;
+    const monthMap = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+    const monthLabels = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-        const day = Number(match[1]);
-        const month = Number(match[2]);
-        const year = Number(match[3]);
-        const utc = Date.UTC(year, month - 1, day);
-        const check = new Date(utc);
+    function formatDateWhileTyping(value) {
+        const raw = String(value || '')
+            .replace(/[^0-9A-Za-z]/g, '')
+            .slice(0, 9);
 
-        if (
-            check.getUTCFullYear() !== year ||
-            check.getUTCMonth() !== month - 1 ||
-            check.getUTCDate() !== day
-        ) return null;
+        let day = '';
+        let month = '';
+        let year = '';
 
-        return utc;
+        for (const ch of raw) {
+            if (day.length < 2) {
+                if (/\d/.test(ch)) day += ch;
+                continue;
+            }
+            if (month.length < 3) {
+                if (/[A-Za-z]/.test(ch)) month += ch;
+                continue;
+            }
+            if (year.length < 4 && /\d/.test(ch)) {
+                year += ch;
+            }
+        }
+
+        if (month.length > 0) {
+            month = month.charAt(0).toUpperCase() + month.slice(1).toLowerCase();
+        }
+
+        let formatted = day;
+        if (month.length > 0) formatted += '/' + month;
+        if (year.length > 0) formatted += '/' + year;
+
+        return formatted;
     }
 
-    function formatDateInput(input) {
-        let digits = input.value.replace(/\D/g, '').slice(0, 8);
-        if (digits.length > 4) {
-            input.value = digits.slice(0, 2) + '/' + digits.slice(2, 4) + '/' + digits.slice(4);
-        } else if (digits.length > 2) {
-            input.value = digits.slice(0, 2) + '/' + digits.slice(2);
-        } else {
-            input.value = digits;
-        }
+    function normalizeDateText(value) {
+        const typed = formatDateWhileTyping(value);
+        const match = typed.match(/^(\d{2})\/([A-Za-z]{3})\/(\d{4})$/);
+        if (!match) return typed;
+        const monthIndex = monthMap[match[2].toLowerCase()];
+        if (monthIndex === undefined) return typed;
+        return match[1] + '/' + monthLabels[monthIndex] + '/' + match[3];
+    }
+
+    function dateOnly(value) {
+        const normalized = normalizeDateText(value);
+        const match = normalized.match(/^(\d{2})\/([A-Za-z]{3})\/(\d{4})$/);
+        if (!match) return null;
+        const day = Number(match[1]);
+        const month = monthMap[match[2].toLowerCase()];
+        const year = Number(match[3]);
+        if (month === undefined) return null;
+        const utc = Date.UTC(year, month, day);
+        const check = new Date(utc);
+        if (check.getUTCFullYear() !== year || check.getUTCMonth() !== month || check.getUTCDate() !== day) return null;
+        return utc;
     }
 
     function update() {
@@ -140,10 +166,13 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
 
     [mfg, exp].forEach(function (input) {
         input.addEventListener('input', function () {
-            formatDateInput(input);
+            input.value = formatDateWhileTyping(input.value);
             update();
         });
-        input.addEventListener('blur', update);
+        input.addEventListener('blur', function () {
+            input.value = normalizeDateText(input.value);
+            update();
+        });
     });
 
     update();

@@ -28,7 +28,8 @@ class StockController
         if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $grader = new GradeService();
-        $rows = array_map(fn($r) => $grader->enrich($r), (new StockBatch())->allAccessible($user, $filters));
+        $stockBatchModel = new StockBatch();
+        $rows = array_map(fn($r) => $grader->enrich($r), $stockBatchModel->allAccessible($user, $filters));
         if ($filters['grade'] !== '') {
             $rows = array_values(array_filter($rows, fn($r) => $r['grade']['grade_code'] === $filters['grade']));
         }
@@ -67,6 +68,10 @@ class StockController
             ? $grader->criteriaForDivision((int)$filters['division_id'])
             : null;
 
+        $bulkDeleteStats = $user['role'] === 'super_admin'
+            ? $stockBatchModel->bulkDeleteDivisionStats()
+            : [];
+
         View::render('stocks/index', [
             'title' => 'Stock Aging Dashboard',
             'user' => $user,
@@ -78,6 +83,7 @@ class StockController
             'selectedDivisionLabel' => $selectedDivisionLabel,
             'selectedGradeLabel' => $selectedGradeLabel,
             'gradeCriteria' => $gradeCriteria,
+            'bulkDeleteStats' => $bulkDeleteStats,
         ]);
     }
 
@@ -230,6 +236,72 @@ class StockController
             );
         }
         flash('success', 'Batch deleted.');
+        redirect('/stocks');
+    }
+
+    public function bulkDelete(): void
+    {
+        verify_csrf();
+        $user = Auth::requireSuperAdmin();
+
+        $divisionIds = $_POST['division_ids'] ?? [];
+        if (!is_array($divisionIds)) $divisionIds = [];
+
+        $divisionIds = array_values(array_unique(array_filter(
+            array_map('intval', $divisionIds),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$divisionIds) {
+            flash('error', 'Select at least one Division for bulk deletion.');
+            redirect('/stocks');
+        }
+
+        if (strtoupper(trim((string)($_POST['confirm_text'] ?? ''))) !== 'DELETE') {
+            flash('error', 'Bulk delete was not completed. Type DELETE to confirm.');
+            redirect('/stocks');
+        }
+
+        try {
+            $model = new StockBatch();
+            $result = $model->bulkDeleteByDivisions($divisionIds);
+
+            foreach ($result['divisions'] as $division) {
+                $batchCount = (int)($division['batch_count'] ?? 0);
+                if ($batchCount <= 0) continue;
+
+                AuditLogger::log(
+                    'BATCH_BULK_DELETE',
+                    'Bulk deleted ' . number_format($batchCount) . ' Finish Goods batch(es) for division ' .
+                        ($division['division_code'] ?? '') . '.',
+                    'stock_division_bulk_delete',
+                    (string)($division['division_id'] ?? ''),
+                    [
+                        'deleted_batches' => $batchCount,
+                        'total_quantity' => (float)($division['total_qty'] ?? 0),
+                        'stock_value' => (float)($division['stock_value'] ?? 0),
+                        'deleted_stock_movements_total_operation' => (int)($result['deleted_movements'] ?? 0),
+                    ],
+                    $user,
+                    (int)($division['division_id'] ?? 0),
+                    $division['division_code'] ?? null
+                );
+            }
+
+            $deleted = (int)($result['deleted_batches'] ?? 0);
+            if ($deleted > 0) {
+                flash(
+                    'success',
+                    number_format($deleted) . ' Finish Goods batch record(s) deleted from the selected Division(s). ' .
+                    'Divisions, users, grading criteria and Market Return data were not deleted.'
+                );
+            } else {
+                flash('success', 'No Finish Goods batches were found in the selected Division(s).');
+            }
+        } catch (\Throwable $e) {
+            flash('error', 'Bulk delete could not be completed. No partial deletion was saved.');
+        }
+
         redirect('/stocks');
     }
 
@@ -452,7 +524,9 @@ class StockController
         ]);
         // Example row follows the uploaded stock-aging report layout. Aging columns are
         // intentionally blank because the system calculates them when the file is imported.
-        fputcsv($out, [$division,'100409','SPRINGLEY 500 ML (1*12)','2085','CS','505946.10','SP180926','18.09.2026','18.09.2027','','','FW02']);
+        // Leading TAB keeps DD/MON/YYYY visible exactly as written when the CSV is opened in Excel.
+        // normalizeCsvDate() trims it before converting to SQL YYYY-MM-DD.
+        fputcsv($out, [$division,'100409','SPRINGLEY 500 ML (1*12)','2085','CS','505946.10','SP180926',"\t18/Sep/2026","\t18/Sep/2027",'','','FW02']);
         fclose($out);
         exit;
     }
@@ -525,7 +599,7 @@ class StockController
         }
         foreach (['manufacture_date','expiry_date'] as $f) {
             if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$d[$f])) {
-                return 'Manufacturing Date and Expiry Date must use DD/MM/YYYY, for example 18/09/2026.';
+                return 'Manufacturing Date and Expiry Date must use DD/MON/YYYY, for example 18/Sep/2026.';
             }
         }
         if ($d['manufacture_date'] > $d['expiry_date']) return 'Manufacture date cannot be after expiry date.';
@@ -540,21 +614,7 @@ class StockController
     {
         $value = trim($value);
         if ($value === '') return '';
-
-        // Manual Add/Edit Batch form uses DD/MM/YYYY.
-        // Convert to native SQL DATE representation (YYYY-MM-DD) before saving.
-        if (!preg_match('/^\d{2}\/\d{2}\/\d{4}$/', $value)) {
-            return $value;
-        }
-
-        $dt = \DateTimeImmutable::createFromFormat('!d/m/Y', $value);
-        $errors = \DateTimeImmutable::getLastErrors();
-
-        if (!$dt || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
-            return $value;
-        }
-
-        return $dt->format('Y-m-d');
+        return \parse_app_date($value) ?? $value;
     }
 
     private function canonicalHeader(string $header): string
@@ -598,24 +658,12 @@ class StockController
     private function normalizeCsvDate(string $value): string
     {
         $value = trim($value);
-        if ($value === '') {
-            throw new \RuntimeException('Date is required. Use DD.MM.YYYY.');
+        if ($value === '') throw new \RuntimeException('Date is required. Use DD/MON/YYYY.');
+        $sqlDate = \parse_app_date($value);
+        if ($sqlDate === null) {
+            throw new \RuntimeException('Invalid date "' . $value . '". Preferred CSV format is DD/MON/YYYY (25/Sep/2026). Excel-exported DD-MON-YY dates such as 25-Sep-26 are also accepted automatically.');
         }
-
-        // CSV imports use one fixed human-readable format.
-        // MySQL DATE columns remain native DATE values and therefore use YYYY-MM-DD internally.
-        if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $value)) {
-            throw new \RuntimeException('Invalid date "' . $value . '". CSV dates must use DD.MM.YYYY, for example 18.09.2026.');
-        }
-
-        $dt = \DateTimeImmutable::createFromFormat('!d.m.Y', $value);
-        $errors = \DateTimeImmutable::getLastErrors();
-
-        if (!$dt || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
-            throw new \RuntimeException('Invalid calendar date "' . $value . '". Use DD.MM.YYYY.');
-        }
-
-        return $dt->format('Y-m-d');
+        return $sqlDate;
     }
 
     private function normalizeNumber(string $value): string

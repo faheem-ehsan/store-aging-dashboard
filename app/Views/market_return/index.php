@@ -167,7 +167,10 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         </div>
         <?php if ($canManage && $databaseReady): ?>
             <div class="stock-actions stock-control-actions">
-                <?php if ($user['role'] === 'super_admin'): ?><a class="btn ghost" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a><?php endif; ?>
+                <?php if ($user['role'] === 'super_admin'): ?>
+                    <button class="btn bulk-delete-trigger" type="button" id="openMarketReturnBulkDelete">Bulk Delete</button>
+                    <a class="btn ghost" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a>
+                <?php endif; ?>
                 <a class="btn ghost" href="<?= e(url('/market-return/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import Market Return File</a>
                 <a class="btn primary" href="<?= e(url('/market-return/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Item</a>
             </div>
@@ -382,13 +385,13 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
                     <td class="market-return-product"><?= e($row['product_name']) ?></td>
                     <td class="num"><?= $formatQty($row['quantity']) ?></td>
                     <td><?= e($row['unit']) ?></td>
-                    <td><?= e($row['expiry_raw'] ?: ($row['expiry_date'] ? date('d.m.Y', strtotime($row['expiry_date'])) : '—')) ?></td>
+                    <td><?= e($row['expiry_display'] ?? (!empty($row['expiry_date']) ? format_app_date($row['expiry_date']) : ($row['expiry_raw'] ?: '—'))) ?></td>
                     <td><span class="market-return-expiry-tag <?= e($expiryMeta['class']) ?>"><?= e($expiryMeta['short']) ?></span></td>
                     <td class="num"><?= $row['retail_price'] !== null ? 'Rs/ ' . number_format((int)round((float)$row['retail_price'])) : '—' ?></td>
                     <td class="num"><?php if ($row['total_amount'] !== null): ?><?= e($formatMoney($row['total_amount'])) ?><?php elseif (!empty($row['amount_text'])): ?><?= e($row['amount_text']) ?><?php else: ?>—<?php endif; ?></td>
                     <td class="market-return-remarks"><?= e($row['remarks'] ?? '') ?><?php if (!empty($row['aux_label']) || !empty($row['aux_value'])): ?><small><?= e(trim(($row['aux_label'] ?? '') . ': ' . ($row['aux_value'] ?? ''), ': ')) ?></small><?php endif; ?></td>
                     <td><?= e($row['section_name'] ?? '') ?></td>
-                    <td><?= !empty($row['report_date']) ? e(date('d.m.Y', strtotime($row['report_date']))) : '—' ?></td>
+                    <td><?= !empty($row['report_date']) ? e(format_app_date($row['report_date'])) : '—' ?></td>
                     <?php if ($canManage): ?>
                     <td class="actions">
                         <a href="<?= e(url('/market-return/edit?id=' . (int)$row['id'])) ?>">Edit</a>
@@ -558,7 +561,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
                         <td class="market-return-product"><?= e($row['product_name']) ?></td>
                         <td class="num"><?= $formatQty($row['quantity']) ?></td>
                         <td><?= e($row['unit']) ?></td>
-                        <td><?= e($row['expiry_raw'] ?: ($row['expiry_date'] ? date('d.m.Y', strtotime($row['expiry_date'])) : '—')) ?></td>
+                        <td><?= e($row['expiry_display'] ?? (!empty($row['expiry_date']) ? format_app_date($row['expiry_date']) : ($row['expiry_raw'] ?: '—'))) ?></td>
                         <td class="num"><?= $row['retail_price'] !== null ? 'Rs/ ' . number_format((int)round((float)$row['retail_price'])) : '—' ?></td>
                         <td class="num"><?php if ($row['total_amount'] !== null): ?><?= e($formatMoney($row['total_amount'])) ?><?php elseif (!empty($row['amount_text'])): ?><?= e($row['amount_text']) ?><?php else: ?>—<?php endif; ?></td>
                         <td><?= e($row['section_name'] ?? '') ?></td>
@@ -677,8 +680,11 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         return Number.isFinite(number)?number*multiplier:0;
     }
     function marketPopupSortDate(value) {
-        const m=String(value||'').trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-        return m?new Date(+m[3],+m[2]-1,+m[1]).getTime():0;
+        const m = String(value || '').trim().match(/^(\d{1,2})\/([A-Za-z]{3})\/(\d{4})$/);
+        if (!m) return 0;
+        const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+        const month = months[m[2].toLowerCase()];
+        return month === undefined ? 0 : new Date(+m[3], month, +m[1]).getTime();
     }
     function sortPopupRows(index,type,direction){
         const factor=direction==='desc'?-1:1;
@@ -809,5 +815,208 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     });
 })();
 </script>
+
+
+<?php if (($user['role'] ?? '') === 'super_admin' && $databaseReady): ?>
+<div class="stock-bulk-modal" id="marketReturnBulkDeleteModal" hidden>
+    <section class="stock-bulk-dialog" role="dialog" aria-modal="true" aria-labelledby="marketReturnBulkDeleteTitle">
+        <div class="stock-bulk-head">
+            <div>
+                <span>SUPER ADMIN</span>
+                <h2 id="marketReturnBulkDeleteTitle">Bulk Delete Market Returns</h2>
+                <p>Delete Market Return records by Division.</p>
+            </div>
+            <button type="button" class="stock-bulk-close" id="closeMarketReturnBulkDelete" aria-label="Close">×</button>
+        </div>
+
+        <form method="post" action="<?= e(url('/market-return/bulk-delete')) ?>" id="marketReturnBulkDeleteForm">
+            <?= csrf_field() ?>
+
+            <div class="stock-bulk-warning">
+                <strong>Permanent action</strong>
+                <span>
+                    This deletes Market Return item records for the selected Division(s).
+                    Finish Goods stock, Divisions, Users, Import History and Division Mapping remain unchanged.
+                </span>
+            </div>
+
+            <div class="stock-bulk-toolbar">
+                <div>
+                    <strong>Select Division(s)</strong>
+                    <span>Only divisions containing Market Return records can be selected.</span>
+                </div>
+                <button type="button" class="stock-bulk-select-all" id="marketReturnBulkSelectAll">Select All With Records</button>
+            </div>
+
+            <div class="stock-bulk-division-list">
+                <?php foreach (($bulkDeleteStats ?? []) as $stat): ?>
+                    <?php
+                    $bulkItemCount = (int)($stat['item_count'] ?? 0);
+                    $bulkHasRecords = $bulkItemCount > 0;
+                    $bulkPreselected = $bulkHasRecords
+                        && !empty($filters['division_id'])
+                        && (int)$filters['division_id'] === (int)$stat['division_id'];
+                    ?>
+                    <label class="stock-bulk-division-row <?= !$bulkHasRecords ? 'is-empty' : '' ?>">
+                        <input
+                            type="checkbox"
+                            name="division_ids[]"
+                            value="<?= (int)$stat['division_id'] ?>"
+                            <?= $bulkPreselected ? 'checked' : '' ?>
+                            <?= !$bulkHasRecords ? 'disabled' : '' ?>>
+
+                        <span class="stock-bulk-division-name">
+                            <b><?= e($stat['division_code']) ?></b>
+                            <small><?= e($stat['division_name']) ?></small>
+                        </span>
+
+                        <span class="stock-bulk-stat">
+                            <small>Items</small>
+                            <strong><?= number_format($bulkItemCount) ?></strong>
+                        </span>
+
+                        <span class="stock-bulk-stat">
+                            <small>Quantity</small>
+                            <strong><?= $formatQty($stat['total_qty'] ?? 0) ?></strong>
+                        </span>
+
+                        <span class="stock-bulk-stat stock-bulk-value">
+                            <small>Stock Retail Value</small>
+                            <strong><?= $formatMoney($stat['stock_value'] ?? 0) ?></strong>
+                        </span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="stock-bulk-confirm">
+                <label for="marketReturnBulkConfirm">
+                    <span>Type <b>DELETE</b> to confirm</span>
+                    <input
+                        id="marketReturnBulkConfirm"
+                        name="confirm_text"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="DELETE"
+                        maxlength="6"
+                        required>
+                </label>
+            </div>
+
+            <div class="stock-bulk-foot">
+                <span id="marketReturnBulkSelectedText">No divisions selected</span>
+                <div>
+                    <button type="button" class="btn ghost" id="cancelMarketReturnBulkDelete">Cancel</button>
+                    <button type="submit" class="btn stock-bulk-delete-btn" id="confirmMarketReturnBulkDelete" disabled>Delete Selected Records</button>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+(function () {
+    const modal = document.getElementById('marketReturnBulkDeleteModal');
+    const openBtn = document.getElementById('openMarketReturnBulkDelete');
+    const closeBtn = document.getElementById('closeMarketReturnBulkDelete');
+    const cancelBtn = document.getElementById('cancelMarketReturnBulkDelete');
+    const selectAllBtn = document.getElementById('marketReturnBulkSelectAll');
+    const form = document.getElementById('marketReturnBulkDeleteForm');
+    const confirmInput = document.getElementById('marketReturnBulkConfirm');
+    const submitBtn = document.getElementById('confirmMarketReturnBulkDelete');
+    const selectedText = document.getElementById('marketReturnBulkSelectedText');
+
+    if (!modal || !openBtn || !form) return;
+
+    const checkboxes = Array.from(
+        form.querySelectorAll('input[name="division_ids[]"]:not(:disabled)')
+    );
+
+    function selectedBoxes() {
+        return checkboxes.filter(function (box) { return box.checked; });
+    }
+
+    function updateState() {
+        const selected = selectedBoxes();
+        const confirmed = (confirmInput.value || '').trim().toUpperCase() === 'DELETE';
+
+        selectedText.textContent = selected.length
+            ? selected.length + ' Division' + (selected.length === 1 ? '' : 's') + ' selected'
+            : 'No divisions selected';
+
+        submitBtn.disabled = selected.length === 0 || !confirmed;
+
+        const allSelected = checkboxes.length > 0
+            && checkboxes.every(function (box) { return box.checked; });
+        selectAllBtn.textContent = allSelected ? 'Clear Selection' : 'Select All With Records';
+    }
+
+    function openModal() {
+        modal.hidden = false;
+        document.body.classList.add('stock-bulk-modal-open');
+        updateState();
+
+        window.setTimeout(function () {
+            const checked = selectedBoxes()[0];
+            if (checked) checked.focus();
+            else if (checkboxes[0]) checkboxes[0].focus();
+        }, 30);
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        document.body.classList.remove('stock-bulk-modal-open');
+        confirmInput.value = '';
+        updateState();
+        openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.hidden) closeModal();
+    });
+
+    checkboxes.forEach(function (box) {
+        box.addEventListener('change', updateState);
+    });
+
+    confirmInput.addEventListener('input', updateState);
+
+    selectAllBtn.addEventListener('click', function () {
+        const allSelected = checkboxes.length > 0
+            && checkboxes.every(function (box) { return box.checked; });
+
+        checkboxes.forEach(function (box) {
+            box.checked = !allSelected;
+        });
+
+        updateState();
+    });
+
+    form.addEventListener('submit', function (event) {
+        if (submitBtn.disabled) {
+            event.preventDefault();
+            return;
+        }
+
+        const count = selectedBoxes().length;
+        const confirmed = window.confirm(
+            'Permanently delete all Market Return item records from ' +
+            count + ' selected Division' + (count === 1 ? '' : 's') + '?'
+        );
+
+        if (!confirmed) event.preventDefault();
+    });
+
+    updateState();
+})();
+</script>
+<?php endif; ?>
 
 <?php endif; ?>

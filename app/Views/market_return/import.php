@@ -23,7 +23,7 @@
             <?php endif; ?>
             <strong>Safety</strong>
             <p>If Super Admin uploads a row that cannot be matched to one unique division, that row is not guessed. It is shown in the import result as an unmatched item so it cannot be stored under the wrong division.</p>
-            <p><b>CSV date format:</b> DD.MM.YYYY only for Expiry and Report Date, for example 31.08.2027 and 24.09.2026. XLSX imports keep their existing flexible date handling.</p>
+            <p><b>Fixed CSV / Excel date format:</b> DD/MON/YYYY for Expiry and Report Date, for example 31/Aug/2027 and 24/Sep/2026. Real Excel date cells are accepted when displayed as <b>dd/mmm/yyyy</b>. SQL stores dates automatically as YYYY-MM-DD.</p>
             <p><b>CSV Category and Section are automatic.</b> S. No. is not required. Any new Category or Section value in the CSV is accepted automatically and stored as a new group. If Category is written once at the start of a block, following blank category cells can inherit it.</p>
         </div>
 

@@ -151,7 +151,7 @@ $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivi
 $dashboardLastUpdatedLabel = 'No stock update recorded';
 if (!empty($lastStockUpdatedAt)) {
     try {
-        $dashboardLastUpdatedLabel = (new \DateTimeImmutable((string)$lastStockUpdatedAt))->format('d M Y');
+        $dashboardLastUpdatedLabel = (new \DateTimeImmutable((string)$lastStockUpdatedAt))->format('d/M/Y');
     } catch (\Throwable $e) {
         $dashboardLastUpdatedLabel = (string)$lastStockUpdatedAt;
     }
@@ -423,8 +423,8 @@ ksort($modalLocations);
                         <td class="grade-modal-unit-cell"><?= e($formatUomFull($r['uom'] ?? '')) ?></td>
                         <td class="num"><?= $dashboardActualMoney($r['stock_value'] ?? 0) ?></td>
                         <td><?= e($r['batch_no']) ?></td>
-                        <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
-                        <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
+                        <td><?= e(format_app_date($r['manufacture_date'])) ?></td>
+                        <td><?= e(format_app_date($r['expiry_date'])) ?></td>
                         <td class="num aging-period"><?= e($dashboardCalendarAgingPeriod($r['manufacture_date'], $dashboardAgingReferenceDate)) ?></td>
                         <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($dashboardCalendarAgingPeriod($dashboardAgingReferenceDate, $r['expiry_date'])) ?></td>
                         <td><?= e($r['receiving_store'] ?? '') ?></td>
@@ -518,8 +518,11 @@ ksort($modalLocations);
     }
 
     function popupSortDate(value) {
-        const m = String(value || '').trim().match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-        return m ? new Date(+m[3], +m[2] - 1, +m[1]).getTime() : 0;
+        const m = String(value || '').trim().match(/^(\d{1,2})\/([A-Za-z]{3})\/(\d{4})$/);
+        if (!m) return 0;
+        const months = {jan:0,feb:1,mar:2,apr:3,may:4,jun:5,jul:6,aug:7,sep:8,oct:9,nov:10,dec:11};
+        const month = months[m[2].toLowerCase()];
+        return month === undefined ? 0 : new Date(+m[3], month, +m[1]).getTime();
     }
     function dashboardPopupSortValue(row,index,type) {
         if (type === 'qty') return Number(row.dataset.qty || 0);

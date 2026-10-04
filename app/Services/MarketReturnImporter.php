@@ -444,23 +444,13 @@ class MarketReturnImporter
         $raw = trim((string)$value);
         if ($raw === '') {
             if ($allowBlank) return null;
-            throw new \RuntimeException('Row ' . $rowNo . ': date is required. Use DD.MM.YYYY.');
+            throw new \RuntimeException('Row ' . $rowNo . ': date is required. Use DD/MON/YYYY.');
         }
-
-        if (!preg_match('/^\d{2}\.\d{2}\.\d{4}$/', $raw)) {
-            throw new \RuntimeException(
-                'Row ' . $rowNo . ': invalid date "' . $raw . '". CSV dates must use DD.MM.YYYY, for example 24.09.2026.'
-            );
+        $date = \parse_app_date($raw);
+        if ($date === null) {
+            throw new \RuntimeException('Row ' . $rowNo . ': invalid date "' . $raw . '". Preferred CSV format is DD/MON/YYYY (01/Sep/2026). Excel-exported DD-MON-YY values such as 01-Sep-26 are also accepted automatically.');
         }
-
-        $dt = \DateTimeImmutable::createFromFormat('!d.m.Y', $raw);
-        $errors = \DateTimeImmutable::getLastErrors();
-
-        if (!$dt || ($errors !== false && ($errors['warning_count'] > 0 || $errors['error_count'] > 0))) {
-            throw new \RuntimeException('Row ' . $rowNo . ': invalid calendar date "' . $raw . '". Use DD.MM.YYYY.');
-        }
-
-        return $dt->format('Y-m-d');
+        return $date;
     }
 
     private function normalizeCsvExpiry(mixed $value, int $rowNo): array
@@ -469,7 +459,7 @@ class MarketReturnImporter
         if ($raw === '') return ['', null];
 
         $date = $this->normalizeCsvDate($raw, $rowNo, false);
-        return [$raw, $date];
+        return [\format_app_date($date), $date];
     }
 
     private function normalizeExpiry(mixed $value): array
@@ -477,61 +467,24 @@ class MarketReturnImporter
         if ($value === null || trim((string)$value) === '') return ['', null];
         if (is_numeric($value) && (float)$value > 20000 && (float)$value < 100000) {
             $date = $this->excelSerialToDate((float)$value);
-            return [$date ? (new \DateTimeImmutable($date))->format('d.m.Y') : (string)$value, $date];
+            return [$date ? \format_app_date($date) : (string)$value, $date];
         }
         $raw = preg_replace('/\s+/u', ' ', trim((string)$value));
         if (preg_match('/^(expired|n\.?a\.?|not found)$/i', $raw)) return [$raw, null];
-        $date = $this->normalizeDate($raw, true);
-        return [$raw, $date];
+        $date = \parse_app_date($raw);
+        if ($date === null) {
+            throw new \RuntimeException('Invalid XLSX Expiry date "' . $raw . '". Use DD/MON/YYYY, for example 01/Sep/2026, or use a real Excel date cell formatted as dd/mmm/yyyy.');
+        }
+        return [\format_app_date($date), $date];
     }
 
     private function normalizeDate(mixed $value, bool $monthYearAllowed = false): ?string
     {
+        if ($value === null) return null;
         $value = trim((string)$value);
         if ($value === '') return null;
         if (is_numeric($value) && (float)$value > 20000 && (float)$value < 100000) return $this->excelSerialToDate((float)$value);
-
-        // IMPORTANT: Market Return files frequently use month/year only (for example
-        // "Apr 2029" or "Sept.26"). Parse those BEFORE the permissive full-date
-        // formats below. PHP can otherwise interpret "Apr 2029" as 20-Apr-0029.
-        if ($monthYearAllowed) {
-            $clean = preg_replace('/[.,\-\/]+/', ' ', $value);
-            $clean = preg_replace('/\s+/', ' ', trim((string)$clean));
-            if (preg_match('/^([A-Za-z]+)\s+(\d{2,4})$/', $clean, $m)) {
-                $monthNames = [
-                    'jan'=>1,'january'=>1,'feb'=>2,'february'=>2,'mar'=>3,'march'=>3,'apr'=>4,'april'=>4,'may'=>5,'jun'=>6,'june'=>6,
-                    'jul'=>7,'july'=>7,'aug'=>8,'august'=>8,'sep'=>9,'sept'=>9,'september'=>9,'oct'=>10,'october'=>10,'nov'=>11,'november'=>11,'dec'=>12,'december'=>12,
-                ];
-                $month = $monthNames[strtolower($m[1])] ?? null;
-                if ($month) {
-                    $year = (int)$m[2];
-                    if ($year < 100) $year += 2000;
-                    $first = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
-                    return $first->modify('last day of this month')->format('Y-m-d');
-                }
-            }
-        }
-
-        $formats = ['Y-m-d','d-m-Y','d.m.Y','d/m/Y','m/d/Y','d-M-Y','d M Y','M d Y'];
-        foreach ($formats as $format) {
-            $dt = \DateTimeImmutable::createFromFormat('!' . $format, $value);
-            $errors = \DateTimeImmutable::getLastErrors();
-            if ($dt && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
-                // Guard against impossible ancient years caused by ambiguous parsing.
-                if ((int)$dt->format('Y') < 2000 && preg_match('/\b20\d{2}\b/', $value)) continue;
-                return $dt->format('Y-m-d');
-            }
-        }
-
-        if ($monthYearAllowed) {
-            $timestamp = strtotime($value);
-            if ($timestamp !== false) {
-                $parsed = new \DateTimeImmutable('@' . $timestamp);
-                $parsed = $parsed->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-                if ((int)$parsed->format('Y') >= 2000) return $parsed->format('Y-m-d');
-            }
-        }
-        return null;
+        return \parse_app_date($value);
     }
 
     private function excelSerialToDate(float $serial): ?string

@@ -83,7 +83,7 @@ class AuditLog
         $sql = "SELECT
                     SUM(created_at >= CURDATE()) AS today,
                     SUM(action='LOGIN_FAILED') AS failed_logins,
-                    SUM(action IN ('BATCH_CREATE','BATCH_UPDATE','BATCH_DELETE')) AS stock_changes,
+                    SUM(action IN ('BATCH_CREATE','BATCH_UPDATE','BATCH_DELETE','BATCH_BULK_DELETE')) AS stock_changes,
                     SUM(action='CSV_IMPORT') AS imports
                 FROM audit_logs";
         $row = Database::connection()->query($sql)->fetch() ?: [];

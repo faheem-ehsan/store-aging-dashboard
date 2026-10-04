@@ -168,6 +168,9 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
         </div>
         <?php if ($canManage): ?>
             <div class="stock-actions stock-control-actions">
+                <?php if (($user['role'] ?? '') === 'super_admin'): ?>
+                    <button class="btn bulk-delete-trigger" type="button" id="openStockBulkDelete">Bulk Delete</button>
+                <?php endif; ?>
                 <a class="btn ghost" href="<?= e(url('/stocks/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import CSV</a>
                 <a class="btn primary" href="<?= e(url('/stocks/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Batch</a>
             </div>
@@ -277,8 +280,8 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
     <td><?= e($r['uom'] ?? '') ?></td>
     <td class="num"><?= $stockValueActual($r['stock_value'] ?? 0) ?></td>
     <td><?= e($r['batch_no']) ?></td>
-    <td><?= e(date('d.m.Y', strtotime($r['manufacture_date']))) ?></td>
-    <td><?= e(date('d.m.Y', strtotime($r['expiry_date']))) ?></td>
+    <td><?= e(format_app_date($r['manufacture_date'])) ?></td>
+    <td><?= e(format_app_date($r['expiry_date'])) ?></td>
     <td class="num aging-period"><?= e($calendarAgingPeriod($r['manufacture_date'], $agingReferenceDate)) ?></td>
     <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($calendarAgingPeriod($agingReferenceDate, $r['expiry_date'])) ?></td>
     <td><?= e($r['receiving_store'] ?? '') ?></td>
@@ -347,3 +350,191 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
 </div>
 <?php endif; ?>
 </div>
+
+
+<?php if (($user['role'] ?? '') === 'super_admin'): ?>
+<div class="stock-bulk-modal" id="stockBulkDeleteModal" hidden>
+    <section class="stock-bulk-dialog" role="dialog" aria-modal="true" aria-labelledby="stockBulkDeleteTitle">
+        <div class="stock-bulk-head">
+            <div>
+                <span>SUPER ADMIN</span>
+                <h2 id="stockBulkDeleteTitle">Bulk Delete Finish Goods</h2>
+                <p>Delete stock batch records by Division.</p>
+            </div>
+            <button type="button" class="stock-bulk-close" id="closeStockBulkDelete" aria-label="Close">×</button>
+        </div>
+
+        <form method="post" action="<?= e(url('/stocks/bulk-delete')) ?>" id="stockBulkDeleteForm">
+            <?= csrf_field() ?>
+
+            <div class="stock-bulk-warning">
+                <strong>Permanent action</strong>
+                <span>This deletes Finish Goods batches for the selected Division(s). Divisions, users, grading criteria, materials and Market Return records remain unchanged.</span>
+            </div>
+
+            <div class="stock-bulk-toolbar">
+                <div>
+                    <strong>Select Division(s)</strong>
+                    <span>Only divisions with Finish Goods batches can be selected.</span>
+                </div>
+                <button type="button" class="stock-bulk-select-all" id="stockBulkSelectAll">Select All With Stock</button>
+            </div>
+
+            <div class="stock-bulk-division-list">
+                <?php foreach (($bulkDeleteStats ?? []) as $stat): ?>
+                    <?php
+                    $bulkBatchCount = (int)($stat['batch_count'] ?? 0);
+                    $bulkHasStock = $bulkBatchCount > 0;
+                    $bulkPreselected = $bulkHasStock
+                        && !empty($filters['division_id'])
+                        && (int)$filters['division_id'] === (int)$stat['division_id'];
+                    ?>
+                    <label class="stock-bulk-division-row <?= !$bulkHasStock ? 'is-empty' : '' ?>">
+                        <input
+                            type="checkbox"
+                            name="division_ids[]"
+                            value="<?= (int)$stat['division_id'] ?>"
+                            <?= $bulkPreselected ? 'checked' : '' ?>
+                            <?= !$bulkHasStock ? 'disabled' : '' ?>>
+                        <span class="stock-bulk-division-name">
+                            <b><?= e($stat['division_code']) ?></b>
+                            <small><?= e($stat['division_name']) ?></small>
+                        </span>
+                        <span class="stock-bulk-stat">
+                            <small>Batches</small>
+                            <strong><?= number_format($bulkBatchCount) ?></strong>
+                        </span>
+                        <span class="stock-bulk-stat">
+                            <small>Quantity</small>
+                            <strong><?= number_format((float)($stat['total_qty'] ?? 0), 0) ?></strong>
+                        </span>
+                        <span class="stock-bulk-stat stock-bulk-value">
+                            <small>Stock Value</small>
+                            <strong><?= $stockValueActual($stat['stock_value'] ?? 0) ?></strong>
+                        </span>
+                    </label>
+                <?php endforeach; ?>
+            </div>
+
+            <div class="stock-bulk-confirm">
+                <label for="stockBulkConfirm">
+                    <span>Type <b>DELETE</b> to confirm</span>
+                    <input
+                        id="stockBulkConfirm"
+                        name="confirm_text"
+                        type="text"
+                        autocomplete="off"
+                        placeholder="DELETE"
+                        maxlength="6"
+                        required>
+                </label>
+            </div>
+
+            <div class="stock-bulk-foot">
+                <span id="stockBulkSelectedText">No divisions selected</span>
+                <div>
+                    <button type="button" class="btn ghost" id="cancelStockBulkDelete">Cancel</button>
+                    <button type="submit" class="btn stock-bulk-delete-btn" id="confirmStockBulkDelete" disabled>Delete Selected Records</button>
+                </div>
+            </div>
+        </form>
+    </section>
+</div>
+
+<script>
+(function () {
+    const modal = document.getElementById('stockBulkDeleteModal');
+    const openBtn = document.getElementById('openStockBulkDelete');
+    const closeBtn = document.getElementById('closeStockBulkDelete');
+    const cancelBtn = document.getElementById('cancelStockBulkDelete');
+    const selectAllBtn = document.getElementById('stockBulkSelectAll');
+    const form = document.getElementById('stockBulkDeleteForm');
+    const confirmInput = document.getElementById('stockBulkConfirm');
+    const submitBtn = document.getElementById('confirmStockBulkDelete');
+    const selectedText = document.getElementById('stockBulkSelectedText');
+
+    if (!modal || !openBtn || !form) return;
+
+    const checkboxes = Array.from(
+        form.querySelectorAll('input[name="division_ids[]"]:not(:disabled)')
+    );
+
+    function selectedBoxes() {
+        return checkboxes.filter(function (box) { return box.checked; });
+    }
+
+    function updateState() {
+        const selected = selectedBoxes();
+        const confirmed = (confirmInput.value || '').trim().toUpperCase() === 'DELETE';
+
+        selectedText.textContent = selected.length
+            ? selected.length + ' Division' + (selected.length === 1 ? '' : 's') + ' selected'
+            : 'No divisions selected';
+
+        submitBtn.disabled = selected.length === 0 || !confirmed;
+    }
+
+    function openModal() {
+        modal.hidden = false;
+        document.body.classList.add('stock-bulk-modal-open');
+        updateState();
+        window.setTimeout(function () {
+            const checked = selectedBoxes()[0];
+            if (checked) checked.focus();
+            else if (checkboxes[0]) checkboxes[0].focus();
+        }, 30);
+    }
+
+    function closeModal() {
+        modal.hidden = true;
+        document.body.classList.remove('stock-bulk-modal-open');
+        confirmInput.value = '';
+        updateState();
+        openBtn.focus();
+    }
+
+    openBtn.addEventListener('click', openModal);
+    closeBtn.addEventListener('click', closeModal);
+    cancelBtn.addEventListener('click', closeModal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && !modal.hidden) closeModal();
+    });
+
+    checkboxes.forEach(function (box) {
+        box.addEventListener('change', updateState);
+    });
+
+    confirmInput.addEventListener('input', updateState);
+
+    selectAllBtn.addEventListener('click', function () {
+        const allSelected = checkboxes.length > 0 && checkboxes.every(function (box) { return box.checked; });
+        checkboxes.forEach(function (box) { box.checked = !allSelected; });
+        selectAllBtn.textContent = allSelected ? 'Select All With Stock' : 'Clear Selection';
+        updateState();
+    });
+
+    form.addEventListener('submit', function (event) {
+        if (submitBtn.disabled) {
+            event.preventDefault();
+            return;
+        }
+
+        const count = selectedBoxes().length;
+        if (!window.confirm(
+            'Permanently delete all Finish Goods batch records from ' +
+            count + ' selected Division' + (count === 1 ? '' : 's') + '?'
+        )) {
+            event.preventDefault();
+        }
+    });
+
+    updateState();
+})();
+</script>
+<?php endif; ?>
+

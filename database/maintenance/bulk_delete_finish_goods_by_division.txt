@@ -1,0 +1,9 @@
+FINISH GOODS BULK DELETE
+========================
+Access: Super Admin only.
+Location: Finish Goods Aging -> Bulk Delete.
+
+The operation deletes stock_batches for the selected Division(s).
+stock_movements child records are deleted first for compatibility with older FK definitions.
+The operation DOES NOT delete divisions, users, grading criteria, materials, or Market Return data.
+Each affected division is recorded in Activity Logs with action BATCH_BULK_DELETE.

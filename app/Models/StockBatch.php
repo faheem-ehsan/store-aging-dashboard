@@ -178,6 +178,102 @@ class StockBatch
         return 'inserted';
     }
 
+    public function bulkDeleteDivisionStats(): array
+    {
+        $sql = 'SELECT d.id division_id,
+                       d.code division_code,
+                       d.name division_name,
+                       d.is_active,
+                       COUNT(sb.id) batch_count,
+                       COALESCE(SUM(sb.current_qty),0) total_qty,
+                       COALESCE(SUM(sb.stock_value),0) stock_value
+                FROM divisions d
+                LEFT JOIN stock_batches sb ON sb.division_id=d.id
+                GROUP BY d.id,d.code,d.name,d.is_active
+                ORDER BY d.code';
+        return Database::connection()->query($sql)->fetchAll();
+    }
+
+    public function bulkDeleteByDivisions(array $divisionIds): array
+    {
+        $divisionIds = array_values(array_unique(array_filter(
+            array_map('intval', $divisionIds),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$divisionIds) {
+            return [
+                'deleted_batches' => 0,
+                'deleted_movements' => 0,
+                'divisions' => [],
+            ];
+        }
+
+        $pdo = Database::connection();
+        $placeholders = implode(',', array_fill(0, count($divisionIds), '?'));
+
+        // Snapshot totals first for audit logs and confirmation messages.
+        $statsStmt = $pdo->prepare(
+            "SELECT d.id division_id,
+                    d.code division_code,
+                    d.name division_name,
+                    COUNT(sb.id) batch_count,
+                    COALESCE(SUM(sb.current_qty),0) total_qty,
+                    COALESCE(SUM(sb.stock_value),0) stock_value
+             FROM divisions d
+             LEFT JOIN stock_batches sb ON sb.division_id=d.id
+             WHERE d.id IN ($placeholders)
+             GROUP BY d.id,d.code,d.name
+             ORDER BY d.code"
+        );
+        $statsStmt->execute($divisionIds);
+        $stats = $statsStmt->fetchAll();
+
+        $pdo->beginTransaction();
+        try {
+            $deletedMovements = 0;
+
+            // Some older installations have a restrictive FK from stock_movements.
+            // Delete child rows explicitly so bulk deletion works safely regardless
+            // of whether ON DELETE CASCADE is present.
+            $movementTableExists = false;
+            try {
+                $tableCheck = $pdo->query("SHOW TABLES LIKE 'stock_movements'");
+                $movementTableExists = (bool)$tableCheck->fetchColumn();
+            } catch (\Throwable $e) {
+                $movementTableExists = false;
+            }
+
+            if ($movementTableExists) {
+                $movementDelete = $pdo->prepare(
+                    "DELETE sm
+                     FROM stock_movements sm
+                     INNER JOIN stock_batches sb ON sb.id=sm.batch_id
+                     WHERE sb.division_id IN ($placeholders)"
+                );
+                $movementDelete->execute($divisionIds);
+                $deletedMovements = $movementDelete->rowCount();
+            }
+
+            $batchDelete = $pdo->prepare(
+                "DELETE FROM stock_batches WHERE division_id IN ($placeholders)"
+            );
+            $batchDelete->execute($divisionIds);
+            $deletedBatches = $batchDelete->rowCount();
+
+            $pdo->commit();
+
+            return [
+                'deleted_batches' => $deletedBatches,
+                'deleted_movements' => $deletedMovements,
+                'divisions' => $stats,
+            ];
+        } catch (\Throwable $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $e;
+        }
+    }
+
     public function delete(int $id, array $user): void
     {
         $batch = $this->findAccessible($id, $user);
