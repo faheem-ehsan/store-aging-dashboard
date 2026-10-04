@@ -12,11 +12,17 @@ use App\Controllers\GradeCriteriaController;
 use App\Controllers\MarketReturnController;
 use App\Controllers\MarketReturnMappingController;
 use App\Controllers\AdminController;
+use App\Controllers\EmailNotificationController;
 
 $router = new Router();
 
 $router->get('/', [DashboardController::class, 'index']);
 $router->get('/admin', [AdminController::class, 'index']);
+$router->get('/admin/email-notifications', [EmailNotificationController::class, 'index']);
+$router->post('/admin/email-notifications/save', [EmailNotificationController::class, 'save']);
+$router->post('/admin/email-notifications/test', [EmailNotificationController::class, 'test']);
+$router->post('/admin/email-notifications/sample', [EmailNotificationController::class, 'sample']);
+$router->post('/admin/email-notifications/run', [EmailNotificationController::class, 'runNow']);
 $router->get('/login', [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'login']);
 $router->post('/logout', [AuthController::class, 'logout']);

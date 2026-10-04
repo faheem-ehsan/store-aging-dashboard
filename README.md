@@ -284,3 +284,18 @@ Finish Goods grades are calculated from each batch's own Manufacture Date and Ex
 Formula: `Remaining % = (Expiry Date - Today) / (Expiry Date - Manufacture Date) * 100`.
 
 This automatically handles the supplied shelf-life patterns such as 180 days, 1 year, 1.5 years, 2 years, 2.5 years, 3 years and 4 years.
+
+
+## Grade Email Alerts (Super Admin)
+
+The Administration -> Grade Email Alerts page can send automatic email warnings one day before a Finish Goods batch moves to the next configured grade (A+ -> A -> B -> C -> Expired).
+
+1. Save SMTP settings and recipient emails in Administration -> Grade Email Alerts.
+2. Send a test email.
+3. Run `bin/install_grade_email_task.bat` once on the Windows/XAMPP server to create a daily 08:00 Task Scheduler job, or schedule this command manually:
+
+```
+C:\xampp\php\php.exe C:\xampp\htdocs\store-aging-dashboard\bin\send_grade_alerts.php
+```
+
+Alerts are grouped by Division. Active Division Admin users can be included automatically; additional Division Head addresses and global Value Chain / Supply Marketing Head addresses can be configured by Super Admin. Successfully sent batch alerts are de-duplicated so repeated scheduler runs do not resend the same transition warning.

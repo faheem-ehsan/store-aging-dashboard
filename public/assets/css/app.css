@@ -4755,3 +4755,423 @@ body.stock-bulk-modal-open{overflow:hidden}
         white-space:nowrap;
     }
 }
+
+
+/* Dashboard: make the Last Updated date explicit about its Division scope */
+.dashboard-variant2-overview .dashboard-title-only-head{
+    grid-template-columns:minmax(0,1fr) minmax(300px,340px) minmax(270px,315px);
+    align-items:center;
+    gap:14px;
+}
+
+.dashboard-last-update.dashboard-last-update-detailed{
+    min-width:0;
+    width:100%;
+    padding:10px 12px;
+    gap:0;
+    border-color:#dfe5ec;
+    background:#fbfcfe;
+}
+
+.dashboard-last-update-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding-bottom:7px;
+    border-bottom:1px solid #e8edf2;
+}
+
+.dashboard-last-update.dashboard-last-update-detailed .dashboard-last-update-top span{
+    color:#667085;
+    font-size:8px;
+    font-weight:800;
+    line-height:1.2;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    white-space:nowrap;
+}
+
+.dashboard-last-update.dashboard-last-update-detailed .dashboard-last-update-top strong{
+    margin:0;
+    color:#172033;
+    font-size:13px;
+    font-weight:800;
+    line-height:1.2;
+    white-space:nowrap;
+}
+
+.dashboard-last-update-source{
+    display:grid;
+    gap:2px;
+    min-width:0;
+    padding-top:7px;
+}
+
+.dashboard-last-update-source small{
+    color:#98a2b3;
+    font-size:8px;
+    font-weight:700;
+    line-height:1.2;
+    text-transform:uppercase;
+    letter-spacing:.05em;
+}
+
+.dashboard-last-update-source b{
+    min-width:0;
+    overflow:hidden;
+    color:#344054;
+    font-size:10px;
+    font-weight:700;
+    line-height:1.3;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+.dashboard-last-update.dashboard-last-update-detailed p{
+    margin:5px 0 0;
+    color:#667085;
+    font-size:8px;
+    font-weight:500;
+    line-height:1.35;
+}
+
+@media(max-width:1250px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:minmax(0,1fr) minmax(280px,330px);
+    }
+    .dashboard-last-update.dashboard-last-update-detailed{
+        grid-column:1/-1;
+        max-width:none;
+    }
+}
+
+@media(max-width:800px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:1fr;
+    }
+    .dashboard-division-selector,
+    .dashboard-last-update.dashboard-last-update-detailed{
+        width:100%;
+        min-width:0;
+    }
+}
+
+
+/* Dashboard Last Updated - compact professional status card */
+.dashboard-variant2-overview .dashboard-title-only-head{
+    grid-template-columns:minmax(0,1fr) minmax(300px,340px) minmax(260px,300px);
+    align-items:center;
+    gap:14px;
+}
+
+.dashboard-last-update.dashboard-last-update-compact{
+    display:flex;
+    flex-direction:row;
+    align-items:center;
+    gap:10px;
+    width:100%;
+    min-width:0;
+    min-height:58px;
+    margin-left:0;
+    padding:9px 11px;
+    border:1px solid #dfe5ec;
+    border-radius:14px;
+    background:#fbfcfe;
+    box-shadow:none;
+}
+
+.dashboard-update-icon{
+    display:grid;
+    place-items:center;
+    width:36px;
+    height:36px;
+    flex:0 0 36px;
+    border:1px solid #efd1d4;
+    border-radius:10px;
+    background:#fff4f5;
+    color:#c51f28;
+}
+
+.dashboard-update-icon svg{
+    width:18px;
+    height:18px;
+}
+
+.dashboard-update-copy{
+    display:grid;
+    gap:6px;
+    min-width:0;
+    flex:1;
+}
+
+.dashboard-update-line{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    min-width:0;
+}
+
+.dashboard-update-line small{
+    min-width:0;
+    overflow:hidden;
+    color:#667085;
+    font-size:8px;
+    font-weight:800;
+    line-height:1.2;
+    letter-spacing:.055em;
+    text-overflow:ellipsis;
+    text-transform:uppercase;
+    white-space:nowrap;
+}
+
+.dashboard-update-line strong{
+    flex:0 0 auto;
+    color:#172033;
+    font-size:12px;
+    font-weight:800;
+    line-height:1.2;
+    white-space:nowrap;
+}
+
+.dashboard-update-division{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    min-width:0;
+    padding-top:5px;
+    border-top:1px solid #edf0f4;
+}
+
+.dashboard-update-division>span{
+    flex:0 0 auto;
+    color:#98a2b3;
+    font-size:8px;
+    font-weight:700;
+    line-height:1.2;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+}
+
+.dashboard-update-code{
+    flex:0 0 auto;
+    padding:2px 5px;
+    border-radius:5px;
+    background:#fff0f1;
+    color:#b42318;
+    font-size:9px;
+    font-weight:800;
+    line-height:1.2;
+}
+
+.dashboard-update-name{
+    min-width:0;
+    overflow:hidden;
+    color:#344054;
+    font-size:9px;
+    font-weight:700;
+    line-height:1.2;
+    text-overflow:ellipsis;
+    white-space:nowrap;
+}
+
+/* Hide the old detailed explanatory layout if old CSS is still present. */
+.dashboard-last-update.dashboard-last-update-compact p{
+    display:none !important;
+}
+
+@media(max-width:1250px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:minmax(0,1fr) minmax(280px,330px);
+    }
+    .dashboard-last-update.dashboard-last-update-compact{
+        grid-column:1/-1;
+        max-width:360px;
+        justify-self:end;
+    }
+}
+
+@media(max-width:800px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:1fr;
+    }
+    .dashboard-last-update.dashboard-last-update-compact{
+        grid-column:auto;
+        width:100%;
+        max-width:none;
+        justify-self:stretch;
+    }
+}
+
+
+/* Dashboard update status - final layout override */
+.dashboard-variant2-overview .dashboard-title-only-head{
+    grid-template-columns:minmax(420px,1fr) minmax(310px,350px) minmax(300px,330px) !important;
+    gap:14px !important;
+    align-items:center !important;
+}
+
+.dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update.dashboard-last-update-compact{
+    width:100% !important;
+    min-width:300px !important;
+    min-height:62px !important;
+    padding:9px 12px !important;
+    display:flex !important;
+    align-items:center !important;
+    overflow:visible !important;
+}
+
+.dashboard-last-update-compact .dashboard-update-copy{
+    min-width:0 !important;
+    width:100%;
+    gap:5px !important;
+}
+
+.dashboard-last-update-compact .dashboard-update-line{
+    display:grid !important;
+    grid-template-columns:minmax(0,1fr) auto;
+    align-items:center;
+    gap:12px !important;
+}
+
+.dashboard-last-update-compact .dashboard-update-line small{
+    overflow:visible !important;
+    text-overflow:clip !important;
+    white-space:nowrap !important;
+    font-size:8.5px !important;
+}
+
+.dashboard-last-update-compact .dashboard-update-line strong{
+    font-size:13px !important;
+    line-height:1.15 !important;
+}
+
+.dashboard-last-update-compact .dashboard-update-division{
+    display:flex !important;
+    align-items:center !important;
+    gap:6px !important;
+    min-width:0 !important;
+    padding-top:5px !important;
+}
+
+.dashboard-last-update-compact .dashboard-update-division>span{
+    flex:0 0 auto;
+    font-size:8px !important;
+}
+
+.dashboard-update-division-value{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    min-width:0;
+    flex:1;
+}
+
+.dashboard-last-update-compact .dashboard-update-code{
+    flex:0 0 auto;
+    font-size:9px !important;
+}
+
+.dashboard-last-update-compact .dashboard-update-name{
+    display:block;
+    min-width:0;
+    overflow:visible !important;
+    text-overflow:clip !important;
+    white-space:normal !important;
+    font-size:9px !important;
+    line-height:1.25 !important;
+}
+
+@media(max-width:1280px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:minmax(0,1fr) minmax(300px,340px) !important;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head h1{
+        grid-column:1/-1;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head .dashboard-last-update.dashboard-last-update-compact{
+        min-width:0 !important;
+        width:100% !important;
+        max-width:none !important;
+        grid-column:auto !important;
+    }
+}
+
+@media(max-width:760px){
+    .dashboard-variant2-overview .dashboard-title-only-head{
+        grid-template-columns:1fr !important;
+    }
+    .dashboard-variant2-overview .dashboard-title-only-head h1{
+        grid-column:auto;
+    }
+}
+
+
+/* Grade Email Alerts - Super Admin */
+.grade-email-page{display:grid;gap:16px}
+.grade-email-intro{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:18px 20px}
+.grade-email-intro h2{margin:0;color:#8f1117;font-size:20px}.grade-email-intro p{margin:5px 0 0;color:#667085;font-size:11px}
+.grade-email-status{display:flex;align-items:center;gap:7px;padding:7px 10px;border:1px solid #dfe5ec;border-radius:999px;font-size:10px;font-weight:800}.grade-email-status>span{width:8px;height:8px;border-radius:50%}.grade-email-status.is-on{color:#067647;background:#ecfdf3;border-color:#abefc6}.grade-email-status.is-on>span{background:#12b76a}.grade-email-status.is-off{color:#667085;background:#f9fafb}.grade-email-status.is-off>span{background:#98a2b3}
+.grade-email-section{padding:16px 18px}.grade-email-section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding-bottom:12px;margin-bottom:14px;border-bottom:1px solid #edf0f4}.grade-email-section-head h3{margin:0;font-size:15px;color:#172033}.grade-email-section-head p{margin:4px 0 0;font-size:10px;color:#667085}.grade-email-password-state{padding:5px 8px;border-radius:7px;background:#f2f4f7;color:#475467;font-size:9px;font-weight:700}
+.grade-email-rule-row{display:grid;grid-template-columns:minmax(280px,1.5fr) minmax(150px,.6fr) minmax(260px,1fr);gap:12px;align-items:center}.grade-email-toggle{display:flex;align-items:center;gap:9px;cursor:pointer}.grade-email-toggle input{position:absolute;opacity:0;pointer-events:none}.grade-email-toggle>span{position:relative;width:38px;height:22px;flex:0 0 38px;border-radius:999px;background:#d0d5dd;transition:.2s}.grade-email-toggle>span:after{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s}.grade-email-toggle input:checked+span{background:#ed1c24}.grade-email-toggle input:checked+span:after{transform:translateX(16px)}.grade-email-toggle b{font-size:11px;color:#344054}.grade-email-fixed-rule{display:grid;gap:3px;padding:10px 12px;border:1px solid #e4e7ec;border-radius:10px;background:#fbfcfe}.grade-email-fixed-rule small{font-size:8px;color:#98a2b3;text-transform:uppercase;font-weight:700}.grade-email-fixed-rule strong{font-size:11px;color:#344054}
+.grade-email-smtp-grid{display:grid;grid-template-columns:2fr .6fr .8fr 1.3fr 1.3fr 1.5fr;gap:11px}.grade-email-smtp-grid label,.grade-email-global-recipient label{display:grid;gap:5px;font-size:9px;font-weight:700;color:#475467}.grade-email-smtp-grid input,.grade-email-smtp-grid select,.grade-email-global-recipient textarea,.grade-email-division-table textarea,.grade-email-action-card input{width:100%;min-height:38px;padding:8px 10px;border:1px solid #d8dee7;border-radius:8px;background:#fff;color:#172033;font:inherit;outline:none}.grade-email-smtp-grid input:focus,.grade-email-smtp-grid select:focus,.grade-email-global-recipient textarea:focus,.grade-email-division-table textarea:focus,.grade-email-action-card input:focus{border-color:#ef737a;box-shadow:0 0 0 3px rgba(239,28,37,.07)}.grade-email-span-2{grid-column:span 2}
+.grade-email-admin-toggle{margin:0 0 12px;padding:10px 12px;border:1px solid #e4e7ec;border-radius:10px;background:#fbfcfe}.grade-email-global-recipient{margin-bottom:14px}.grade-email-global-recipient small{font-size:8px;color:#98a2b3;font-weight:500}.grade-email-division-table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:10px}.grade-email-division-table{width:100%;border-collapse:collapse}.grade-email-division-table th{padding:9px 10px;background:#fff1f2;color:#8f1117;font-size:9px;text-align:left}.grade-email-division-table td{padding:9px 10px;border-top:1px solid #edf0f4;vertical-align:middle;font-size:10px}.grade-email-division-table td:first-child{min-width:200px}.grade-email-division-table td:first-child b{display:block;color:#b42318;font-size:11px}.grade-email-division-table td:first-child span{color:#667085}.grade-email-division-table textarea{min-width:300px;resize:vertical}.grade-email-admin-emails{min-width:240px;color:#475467}
+.grade-email-save-row{display:flex;justify-content:flex-end;gap:8px}.grade-email-last-run{display:grid;gap:2px;min-width:210px;text-align:right}.grade-email-last-run small{font-size:8px;color:#98a2b3;text-transform:uppercase;font-weight:700}.grade-email-last-run strong{font-size:10px;color:#344054}.grade-email-last-run span{font-size:8px;color:#667085}.grade-email-actions-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.grade-email-action-card{display:grid;grid-template-columns:minmax(180px,1fr) minmax(220px,.8fr) auto;align-items:center;gap:10px;padding:12px;border:1px solid #e4e7ec;border-radius:10px;background:#fbfcfe}.grade-email-action-card:nth-child(2){grid-template-columns:1fr auto}.grade-email-action-card>div{display:grid;gap:3px}.grade-email-action-card strong{font-size:11px;color:#344054}.grade-email-action-card span{font-size:9px;color:#667085}.grade-email-scheduler-box{display:grid;gap:7px;margin-top:12px;padding:12px;border:1px solid #e4e7ec;border-radius:10px;background:#f9fafb}.grade-email-scheduler-box>div{display:grid;gap:3px}.grade-email-scheduler-box strong{font-size:11px;color:#344054}.grade-email-scheduler-box span,.grade-email-scheduler-box small{font-size:9px;color:#667085}.grade-email-scheduler-box code{display:block;padding:8px 10px;border-radius:7px;background:#172033;color:#fff;font-size:9px;overflow:auto;white-space:nowrap}.grade-email-history td small{color:#667085}.grade-email-log-status{display:inline-flex;padding:4px 7px;border-radius:999px;font-size:8px;font-weight:800}.grade-email-log-status.sent{background:#ecfdf3;color:#067647}.grade-email-log-status.failed{background:#fef3f2;color:#b42318}
+@media(max-width:1200px){.grade-email-smtp-grid{grid-template-columns:repeat(3,1fr)}.grade-email-rule-row{grid-template-columns:1fr 1fr}.grade-email-rule-row>:first-child{grid-column:1/-1}.grade-email-actions-grid{grid-template-columns:1fr}.grade-email-action-card{grid-template-columns:1fr 1fr auto}}
+@media(max-width:720px){.grade-email-intro,.grade-email-section-head{align-items:flex-start;flex-direction:column}.grade-email-rule-row,.grade-email-smtp-grid{grid-template-columns:1fr}.grade-email-span-2{grid-column:auto}.grade-email-actions-grid{grid-template-columns:1fr}.grade-email-action-card,.grade-email-action-card:nth-child(2){grid-template-columns:1fr}.grade-email-last-run{text-align:left}.grade-email-save-row{flex-direction:column}.grade-email-save-row .btn{width:100%}}
+
+
+/* Grade Email Alerts - safe Test Mode */
+.grade-email-intro-statuses{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    flex-wrap:wrap;
+    justify-content:flex-end;
+}
+.grade-email-status.is-test{
+    background:#fff8df;
+    border-color:#f1cf70;
+    color:#8a5a00;
+}
+.grade-email-status.is-test span{background:#e0a100}
+.grade-email-test-mode-box{
+    display:grid;
+    grid-template-columns:auto minmax(220px,1fr) minmax(240px,.8fr);
+    align-items:center;
+    gap:16px;
+    margin-top:14px;
+    padding:14px;
+    border:1px solid #e4e7ec;
+    border-radius:12px;
+    background:#fbfcfe;
+}
+.grade-email-test-mode-box.is-active{
+    border-color:#f1cf70;
+    background:#fffaf0;
+}
+.grade-email-test-mode-copy{
+    display:grid;
+    gap:3px;
+}
+.grade-email-test-mode-copy strong{font-size:12px;color:#172033}
+.grade-email-test-mode-copy small{font-size:10px;color:#667085;line-height:1.45}
+.grade-email-test-recipient{
+    display:grid;
+    gap:5px;
+    font-size:10px;
+    font-weight:700;
+    color:#475467;
+}
+.grade-email-test-recipient input{
+    width:100%;
+    min-height:38px;
+}
+.grade-email-actions-grid-3{
+    grid-template-columns:repeat(3,minmax(0,1fr));
+}
+@media(max-width:1050px){
+    .grade-email-test-mode-box{grid-template-columns:1fr}
+    .grade-email-actions-grid-3{grid-template-columns:1fr}
+}

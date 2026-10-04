@@ -141,6 +141,55 @@ class GradeService
         );
     }
 
+    /**
+     * Returns the next grade transition for a live batch.
+     * The notification system uses this to alert exactly one calendar day
+     * before the configured grading threshold is crossed.
+     */
+    public function nextTransitionForBatch(array $batch, ?\DateTimeImmutable $asOf = null): ?array
+    {
+        $asOf = $asOf ?? new \DateTimeImmutable('today');
+        $mfg = new \DateTimeImmutable((string)$batch['manufacture_date']);
+        $expiry = new \DateTimeImmutable((string)$batch['expiry_date']);
+
+        if ($asOf >= $expiry) return null;
+
+        $divisionId = (int)($batch['division_id'] ?? 0);
+        $grade = $this->gradeForBatch($mfg, $expiry, $divisionId, $asOf);
+        $current = $grade['grade_code'];
+        $settings = $this->settingsForDivision($divisionId);
+        $totalShelfDays = (int)$mfg->diff($expiry)->format('%r%a');
+        if ($totalShelfDays <= 0) return null;
+
+        $next = null;
+        $transitionDate = null;
+
+        if ($current === 'A+') {
+            $next = 'A';
+            $transitionDate = $this->transitionDateAfterThreshold($mfg, $totalShelfDays, $settings['a_plus_used_pct']);
+        } elseif ($current === 'A') {
+            $next = 'B';
+            $transitionDate = $this->transitionDateAfterThreshold($mfg, $totalShelfDays, $settings['a_used_pct']);
+        } elseif ($current === 'B') {
+            $next = 'C';
+            $transitionDate = $this->transitionDateAfterThreshold($mfg, $totalShelfDays, $settings['b_used_pct']);
+        } elseif ($current === 'C') {
+            $next = 'EX';
+            $transitionDate = $expiry;
+        }
+
+        if (!$next || !$transitionDate) return null;
+        if ($transitionDate > $expiry) $transitionDate = $expiry;
+
+        return [
+            'current_grade' => $current,
+            'next_grade' => $next,
+            'next_grade_name' => $next === 'EX' ? 'Expired' : $next . ' Grade',
+            'transition_date' => $transitionDate->format('Y-m-d'),
+            'alert_date' => $transitionDate->modify('-1 day')->format('Y-m-d'),
+        ];
+    }
+
     public function criteriaForDivision(int $divisionId): array
     {
         return $this->criteriaFromSettings($this->settingsForDivision($divisionId));
@@ -213,6 +262,14 @@ class GradeService
     {
         $days = (int)floor($totalShelfDays * ($usedPercent / 100));
         return $manufactureDate->modify('+' . max(0, $days) . ' days')->format('Y-m-d');
+    }
+
+    private function transitionDateAfterThreshold(\DateTimeImmutable $manufactureDate, int $totalShelfDays, float $usedPercent): \DateTimeImmutable
+    {
+        // The current grade includes the threshold itself (<=). The next grade
+        // begins on the first whole day after that percentage is exceeded.
+        $days = (int)floor($totalShelfDays * ($usedPercent / 100.0)) + 1;
+        return $manufactureDate->modify('+' . max(1, $days) . ' days');
     }
 
     private function pct(float $value): string

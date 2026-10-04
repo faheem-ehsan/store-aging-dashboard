@@ -152,7 +152,7 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Divisions';
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
-$dashboardLastUpdatedLabel = 'No stock update recorded';
+$dashboardLastUpdatedLabel = 'No update recorded';
 if (!empty($lastStockUpdatedAt)) {
     try {
         $dashboardLastUpdatedLabel = (new \DateTimeImmutable((string)$lastStockUpdatedAt))->format('d/M/Y');
@@ -160,6 +160,36 @@ if (!empty($lastStockUpdatedAt)) {
         $dashboardLastUpdatedLabel = (string)$lastStockUpdatedAt;
     }
 }
+
+$lastUpdateDivisionCode = trim((string)($lastStockUpdateInfo['division_code'] ?? ''));
+$lastUpdateDivisionName = trim((string)($lastStockUpdateInfo['division_name'] ?? ''));
+
+if (!empty($pageDivision)) {
+    $lastUpdateDivisionCode = trim((string)($pageDivision['code'] ?? $lastUpdateDivisionCode));
+    $lastUpdateDivisionName = trim((string)($pageDivision['name'] ?? $lastUpdateDivisionName));
+}
+
+$dashboardLastUpdateDivision = trim(
+    $lastUpdateDivisionCode .
+    ($lastUpdateDivisionCode !== '' && $lastUpdateDivisionName !== '' ? ' — ' : '') .
+    $lastUpdateDivisionName
+);
+
+if ($dashboardLastUpdateDivision === '') {
+    $dashboardLastUpdateDivision = !empty($pageDivision) ? $selectedDivisionLabel : 'No division update available';
+}
+
+$dashboardLastUpdateHeading = empty($pageDivision)
+    ? 'Latest Stock Update'
+    : 'Last Stock Update';
+
+$dashboardLastUpdateScopeLabel = empty($pageDivision)
+    ? 'Source'
+    : '';
+
+$dashboardLastUpdateTooltip = empty($pageDivision)
+    ? 'Latest stock update across all divisions.'
+    : 'Latest stock update for the selected division.';
 $dashboardDivisionBars = array_map(static function (array $division): array {
     return [
         'code' => (string)($division['code'] ?? ''),
@@ -215,9 +245,36 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </div>
     </div>
 
-    <div class="dashboard-last-update" title="Latest stock batch update for the current dashboard selection">
-        <span>Last Updated</span>
-        <strong><?= e($dashboardLastUpdatedLabel) ?></strong>
+    <div class="dashboard-last-update dashboard-last-update-compact" title="<?= e($dashboardLastUpdateTooltip) ?>">
+        <span class="dashboard-update-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none">
+                <path d="M12 8v4l2.5 1.5M20 12a8 8 0 1 1-2.34-5.66M17 3.5v4h-4"
+                      stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+        </span>
+
+        <div class="dashboard-update-copy">
+            <div class="dashboard-update-line">
+                <small><?= e($dashboardLastUpdateHeading) ?></small>
+                <strong><?= e($dashboardLastUpdatedLabel) ?></strong>
+            </div>
+
+            <div class="dashboard-update-division">
+                <?php if ($dashboardLastUpdateScopeLabel !== ''): ?>
+                    <span><?= e($dashboardLastUpdateScopeLabel) ?></span>
+                <?php endif; ?>
+                <div class="dashboard-update-division-value">
+                    <?php if ($lastUpdateDivisionCode !== ''): ?>
+                        <b class="dashboard-update-code"><?= e($lastUpdateDivisionCode) ?></b>
+                    <?php endif; ?>
+                    <?php if ($lastUpdateDivisionName !== ''): ?>
+                        <b class="dashboard-update-name"><?= e($lastUpdateDivisionName) ?></b>
+                    <?php else: ?>
+                        <b class="dashboard-update-name"><?= e($dashboardLastUpdateDivision) ?></b>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 

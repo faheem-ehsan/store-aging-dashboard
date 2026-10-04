@@ -34,6 +34,7 @@ $isAdminChild = ($me['role'] ?? '') === 'super_admin' && (
     || str_starts_with($requestPath, $normalizePath(url('/grade-criteria')))
     || str_starts_with($requestPath, $normalizePath(url('/logs')))
     || str_starts_with($requestPath, $normalizePath(url('/market-return/mapping')))
+    || str_starts_with($requestPath, $normalizePath(url('/admin/email-notifications')))
 );
 $isAdminActive = $isAdminHome || $isAdminChild;
 $isMarketReturnActive = str_starts_with($requestPath, $normalizePath(url('/market-return'))) && !$isAdminChild;

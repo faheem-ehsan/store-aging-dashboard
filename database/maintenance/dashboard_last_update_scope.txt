@@ -1,0 +1,7 @@
+DASHBOARD LAST UPDATE SCOPE
+===========================
+When All Divisions is selected, the Dashboard shows the most recent stock_batches.updated_at date across all accessible divisions and identifies the Division that produced that date.
+
+When one Division is selected, the Dashboard shows that Division name/code and its own latest stock/quantity update date.
+
+The explanatory text is displayed directly under the date/source so users can understand the meaning without relying on a tooltip.

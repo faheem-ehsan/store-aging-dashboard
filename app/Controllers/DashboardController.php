@@ -19,7 +19,8 @@ class DashboardController
 
         $stockBatchModel = new StockBatch();
         $rows = $stockBatchModel->allAccessible($user, ['division_id' => $divisionId]);
-        $lastStockUpdatedAt = $stockBatchModel->latestUpdatedAt($user, $divisionId);
+        $lastStockUpdateInfo = $stockBatchModel->latestUpdateInfo($user, $divisionId);
+        $lastStockUpdatedAt = $lastStockUpdateInfo['updated_at'] ?? null;
         $grader = new GradeService();
         $rows = array_map(fn($r) => $grader->enrich($r), $rows);
 
@@ -113,6 +114,7 @@ class DashboardController
             'alerts' => $alerts,
             'gradeCriteria' => $gradeCriteria,
             'lastStockUpdatedAt' => $lastStockUpdatedAt,
+            'lastStockUpdateInfo' => $lastStockUpdateInfo,
         ]);
     }
 }

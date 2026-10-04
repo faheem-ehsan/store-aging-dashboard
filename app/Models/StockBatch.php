@@ -42,6 +42,37 @@ class StockBatch
         return $stmt->fetchAll();
     }
 
+    public function latestUpdateInfo(array $user, ?int $divisionId = null): ?array
+    {
+        $sql = 'SELECT sb.updated_at,
+                       sb.division_id,
+                       d.code division_code,
+                       d.name division_name
+                FROM stock_batches sb
+                JOIN divisions d ON d.id=sb.division_id
+                WHERE sb.updated_at IS NOT NULL';
+        $params = [];
+
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+
+        if (!$canReadAllDivisions) {
+            $sql .= ' AND sb.division_id=?';
+            $params[] = (int)$user['division_id'];
+        } elseif ($divisionId) {
+            $sql .= ' AND sb.division_id=?';
+            $params[] = $divisionId;
+        }
+
+        $sql .= ' ORDER BY sb.updated_at DESC, sb.id DESC LIMIT 1';
+
+        $stmt = Database::connection()->prepare($sql);
+        $stmt->execute($params);
+        $row = $stmt->fetch();
+
+        return $row ?: null;
+    }
+
     public function latestUpdatedAt(array $user, ?int $divisionId = null): ?string
     {
         $sql = 'SELECT MAX(sb.updated_at) FROM stock_batches sb WHERE 1=1';

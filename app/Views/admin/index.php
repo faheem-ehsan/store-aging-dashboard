@@ -39,6 +39,18 @@
                 <span class="admin-hub-arrow">→</span>
             </a>
 
+
+            <a class="admin-hub-card" href="<?= e(url('/admin/email-notifications')) ?>">
+                <span class="admin-hub-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6Zm0 1 8 6 8-6M17 4v4M15 6h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="admin-hub-card-copy">
+                    <strong>Grade Email Alerts</strong>
+                    <small>SMTP, Division Head recipients and automatic next-grade notifications.</small>
+                </span>
+                <span class="admin-hub-arrow">→</span>
+            </a>
+
             <a class="admin-hub-card" href="<?= e(url('/market-return/mapping')) ?>">
                 <span class="admin-hub-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M5 12h9M5 17h6M18 11v8m-4-4h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
