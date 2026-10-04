@@ -6027,3 +6027,507 @@ body.stock-bulk-modal-open{overflow:hidden}
         min-height:88px !important;
     }
 }
+
+
+/* ==========================================================
+   Daily Stock Record Reports
+   ========================================================== */
+.daily-report-filter-card{
+    padding:18px;
+    border:1px solid #dfe5ec;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 12px 30px rgba(16,24,40,.045);
+}
+.daily-report-filter-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:18px;
+    padding-bottom:15px;
+    margin-bottom:15px;
+    border-bottom:1px solid #edf0f4;
+}
+.daily-report-kicker{
+    display:block;
+    margin-bottom:4px;
+    color:#d71920;
+    font-size:9px;
+    font-weight:850;
+    letter-spacing:.08em;
+}
+.daily-report-filter-head h2,
+.daily-report-section-head h3,
+.daily-verification-card h3,
+.daily-report-empty h3{
+    margin:0;
+    color:#172033;
+}
+.daily-report-filter-head h2{font-size:18px}
+.daily-report-filter-head p,
+.daily-report-section-head p,
+.daily-verification-card p,
+.daily-report-empty p{
+    margin:5px 0 0;
+    color:#667085;
+    font-size:10px;
+    line-height:1.45;
+}
+.daily-report-filter-actions{
+    display:flex;
+    align-items:center;
+    justify-content:flex-end;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.daily-report-filter-actions form{margin:0}
+.daily-report-filters{
+    display:grid;
+    grid-template-columns:1fr 1.15fr 1fr auto;
+    gap:10px;
+    align-items:end;
+}
+.daily-report-filters label,
+.daily-detail-filters label{
+    display:grid;
+    gap:5px;
+    min-width:0;
+}
+.daily-report-filters label>span,
+.daily-detail-filters label>span{
+    color:#475467;
+    font-size:9px;
+    font-weight:800;
+    text-transform:uppercase;
+    letter-spacing:.045em;
+}
+.daily-report-filters input,
+.daily-report-filters select,
+.daily-detail-filters input,
+.daily-detail-filters select,
+.daily-verification-card input{
+    width:100%;
+    min-height:40px;
+    padding:8px 10px;
+    border:1px solid #d7dee7;
+    border-radius:9px;
+    background:#fff;
+    color:#172033;
+    font-size:11px;
+}
+.daily-report-view-actions{
+    display:flex;
+    gap:7px;
+    align-items:center;
+}
+.daily-report-context-strip{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:14px;
+    padding-top:12px;
+    border-top:1px solid #edf0f4;
+}
+.daily-report-context-strip>span{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    min-height:29px;
+    padding:5px 9px;
+    border:1px solid #e4e9ef;
+    border-radius:999px;
+    background:#f8fafc;
+}
+.daily-report-context-strip small{
+    color:#98a2b3;
+    font-size:8px;
+    font-weight:800;
+    letter-spacing:.05em;
+}
+.daily-report-context-strip b{
+    color:#344054;
+    font-size:9px;
+}
+.report-status-context.verified{
+    border-color:#b9eacb;
+    background:#effcf4;
+}
+.report-status-context.verified b{color:#067647}
+.report-status-context.pending{
+    border-color:#f5dc99;
+    background:#fff9e8;
+}
+.report-status-context.pending b{color:#8a6100}
+
+.daily-report-summary-grid{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:11px;
+    margin-top:14px;
+}
+.daily-summary-card{
+    display:grid;
+    gap:5px;
+    min-width:0;
+    min-height:112px;
+    padding:15px;
+    border:1px solid #dfe5ec;
+    border-radius:14px;
+    background:#fff;
+}
+.daily-summary-card>span{
+    color:#667085;
+    font-size:9px;
+    font-weight:700;
+}
+.daily-summary-card strong{
+    color:#101828;
+    font-size:18px;
+    line-height:1.2;
+    overflow-wrap:anywhere;
+}
+.daily-summary-card small{
+    color:#98a2b3;
+    font-size:8px;
+    line-height:1.35;
+}
+.daily-summary-card.variance.positive{
+    border-color:#c7ead4;
+    background:#f5fcf7;
+}
+.daily-summary-card.variance.positive strong,
+.daily-variance.positive{color:#067647}
+.daily-summary-card.variance.negative{
+    border-color:#f2c6ca;
+    background:#fff7f7;
+}
+.daily-summary-card.variance.negative strong,
+.daily-variance.negative{color:#b42318}
+.daily-summary-card.variance.neutral strong,
+.daily-variance.neutral{color:#475467}
+
+.daily-report-section{
+    margin-top:14px;
+    overflow:hidden;
+}
+.daily-report-section-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    padding:16px 18px 13px;
+    border-bottom:1px solid #edf0f4;
+}
+.daily-report-section-head h3{font-size:15px}
+.daily-report-table{
+    min-width:1040px;
+}
+.daily-report-table th{
+    white-space:nowrap;
+}
+.daily-report-table td{
+    vertical-align:middle;
+}
+.daily-table-sub{
+    display:block;
+    margin-top:2px;
+    color:#7b8798;
+    font-size:8px;
+}
+.daily-status{
+    display:inline-flex;
+    align-items:center;
+    min-height:23px;
+    padding:3px 8px;
+    border-radius:999px;
+    font-size:8px;
+    font-weight:800;
+}
+.daily-status.verified{background:#eafaf0;color:#067647}
+.daily-status.pending{background:#fff6d8;color:#8a6100}
+.daily-status.missing{background:#f2f4f7;color:#667085}
+
+.daily-report-grade-grid{
+    display:grid;
+    grid-template-columns:repeat(5,minmax(0,1fr));
+    gap:10px;
+    margin-top:14px;
+}
+.daily-grade-card{
+    overflow:hidden;
+    border:1px solid #dfe5ec;
+    border-radius:14px;
+    background:#fff;
+}
+.daily-grade-card header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    min-height:42px;
+    padding:9px 11px;
+    background:#344054;
+    color:#fff;
+}
+.daily-grade-card header strong{font-size:11px}
+.daily-grade-card header span{
+    padding:3px 7px;
+    border:1px solid rgba(255,255,255,.28);
+    border-radius:999px;
+    font-size:8px;
+    font-weight:700;
+}
+.daily-grade-card>div{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    padding:11px;
+    border-top:1px solid #edf0f4;
+}
+.daily-grade-card small{color:#7b8798;font-size:8px}
+.daily-grade-card b{color:#172033;font-size:10px;text-align:right}
+.daily-grade-card.blue header{background:#153b7c}
+.daily-grade-card.green header{background:#8fd149;color:#10230c}
+.daily-grade-card.yellow header{background:#f6ea00;color:#171400}
+.daily-grade-card.red header{background:#ff1e24}
+.daily-grade-card.black header{background:#050505}
+.daily-compare-badge{
+    flex:0 0 auto;
+    padding:5px 9px;
+    border-radius:999px;
+    background:#f2f4f7;
+    color:#475467;
+    font-size:8px;
+    font-weight:800;
+}
+.daily-variance-wrap{
+    max-height:360px;
+    overflow:auto;
+}
+
+.daily-detail-head{align-items:center}
+.daily-snapshot-meta{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+}
+.daily-snapshot-meta span{
+    display:grid;
+    gap:2px;
+    min-width:110px;
+    padding:7px 9px;
+    border:1px solid #e4e9ef;
+    border-radius:9px;
+    background:#f8fafc;
+}
+.daily-snapshot-meta small{
+    color:#98a2b3;
+    font-size:7px;
+    font-weight:800;
+    text-transform:uppercase;
+}
+.daily-snapshot-meta b{
+    color:#344054;
+    font-size:8px;
+}
+.daily-detail-filters{
+    display:grid;
+    grid-template-columns:minmax(260px,1fr) 140px auto auto;
+    gap:8px;
+    align-items:end;
+    padding:12px 18px;
+    border-bottom:1px solid #edf0f4;
+    background:#fbfcfe;
+}
+.daily-grade-pill{
+    display:inline-flex;
+    align-items:center;
+    min-height:22px;
+    padding:3px 8px;
+    border-radius:999px;
+    background:#e9edf3;
+    color:#344054;
+    font-size:8px;
+    font-weight:800;
+}
+.daily-grade-pill.grade-aplus{background:#e8eef8;color:#153b7c}
+.daily-grade-pill.grade-a{background:#eef8e5;color:#437d17}
+.daily-grade-pill.grade-b{background:#fffbd2;color:#6f6700}
+.daily-grade-pill.grade-c{background:#ffe8e8;color:#b42318}
+.daily-grade-pill.grade-ex{background:#111;color:#fff}
+.daily-pagination{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:11px 16px;
+    border-top:1px solid #edf0f4;
+    color:#667085;
+    font-size:9px;
+}
+.daily-pagination>div{
+    display:flex;
+    align-items:center;
+    gap:7px;
+}
+.daily-page-chip{
+    padding:5px 8px;
+    border:1px solid #e0e5ec;
+    border-radius:7px;
+    background:#f8fafc;
+    color:#344054;
+    font-weight:700;
+}
+
+.daily-verification-card{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:18px;
+    margin-top:14px;
+    padding:17px 18px;
+}
+.daily-verification-card h3{font-size:14px}
+.daily-verification-card form{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    min-width:min(520px,55%);
+}
+.daily-verification-card form input{
+    min-width:260px;
+}
+.daily-verified-seal{
+    flex:0 0 auto;
+    padding:9px 12px;
+    border:1px solid #a9dfbd;
+    border-radius:9px;
+    background:#effcf4;
+    color:#067647;
+    font-size:10px;
+    font-weight:900;
+}
+.daily-report-empty{
+    display:grid;
+    place-items:center;
+    min-height:260px;
+    margin-top:14px;
+    padding:30px;
+    text-align:center;
+}
+.daily-empty-icon{
+    display:grid;
+    place-items:center;
+    width:56px;
+    height:56px;
+    margin-bottom:10px;
+    border-radius:15px;
+    background:#fff1f1;
+    color:#d71920;
+}
+.daily-empty-icon svg{width:27px;height:27px}
+.daily-report-empty p{max-width:560px}
+
+.daily-auto-note{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-top:14px;
+    padding:11px 13px;
+    border:1px dashed #d8dee7;
+    border-radius:10px;
+    background:#fbfcfe;
+    color:#667085;
+    font-size:9px;
+}
+.daily-auto-note strong{
+    color:#344054;
+    white-space:nowrap;
+}
+.daily-auto-note code{
+    padding:2px 5px;
+    border-radius:5px;
+    background:#eef1f5;
+    color:#8f1117;
+}
+
+@media(max-width:1250px){
+    .daily-report-summary-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+    .daily-report-grade-grid{
+        grid-template-columns:repeat(3,minmax(0,1fr));
+    }
+}
+@media(max-width:900px){
+    .daily-report-filter-head,
+    .daily-verification-card{
+        flex-direction:column;
+        align-items:stretch;
+    }
+    .daily-report-filters{
+        grid-template-columns:1fr 1fr;
+    }
+    .daily-report-view-actions{
+        grid-column:1/-1;
+    }
+    .daily-report-summary-grid,
+    .daily-report-grade-grid{
+        grid-template-columns:1fr 1fr;
+    }
+    .daily-verification-card form{
+        min-width:0;
+        width:100%;
+    }
+}
+@media(max-width:620px){
+    .daily-report-filters,
+    .daily-report-summary-grid,
+    .daily-report-grade-grid,
+    .daily-detail-filters{
+        grid-template-columns:1fr;
+    }
+    .daily-report-view-actions{
+        grid-column:auto;
+    }
+    .daily-report-filter-actions,
+    .daily-verification-card form{
+        align-items:stretch;
+        flex-direction:column;
+    }
+    .daily-verification-card form input{
+        min-width:0;
+    }
+    .daily-pagination{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+}
+@media print{
+    .sidebar,
+    .topbar,
+    .daily-report-filter-actions,
+    .daily-report-filters,
+    .daily-detail-filters,
+    .daily-pagination,
+    .daily-auto-note,
+    .daily-verification-card form,
+    .footer{
+        display:none !important;
+    }
+    .app-shell,
+    .main{
+        display:block !important;
+        width:100% !important;
+        margin:0 !important;
+        padding:0 !important;
+    }
+    .daily-report-section,
+    .daily-summary-card,
+    .daily-grade-card,
+    .daily-verification-card{
+        break-inside:avoid;
+        box-shadow:none !important;
+    }
+}

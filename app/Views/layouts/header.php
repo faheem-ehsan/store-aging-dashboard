@@ -27,6 +27,7 @@ $requestPath = $normalizePath($requestPath);
 $dashboardPath = $normalizePath(url('/'));
 $isDashboardActive = $requestPath === $dashboardPath;
 $isStocksActive = str_starts_with($requestPath, $normalizePath(url('/stocks')));
+$isDailyReportsActive = str_starts_with($requestPath, $normalizePath(url('/daily-stock-reports')));
 $isAdminHome = $requestPath === $normalizePath(url('/admin'));
 $isAdminChild = ($me['role'] ?? '') === 'super_admin' && (
     str_starts_with($requestPath, $normalizePath(url('/users')))
@@ -68,6 +69,12 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5 12 4l7 3.5-7 3.5-7-3.5Zm0 0V16.5L12 20l7-3.5V7.5M5 12l7 3.5 7-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 <span class="nav-label">Finish Goods Aging</span>
             </a>
+            <?php if (in_array(($me['role'] ?? ''), ['super_admin','division_admin'], true)): ?>
+            <a class="nav-link<?= $isDailyReportsActive ? ' active' : '' ?>" href="<?= e(url('/daily-stock-reports')) ?>"<?= $isDailyReportsActive ? ' aria-current="page"' : '' ?>>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2Zm2-2h6v4H9V2Zm-1 8h8M8 14h8M8 18h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="nav-label">Daily Stock Reports</span>
+            </a>
+            <?php endif; ?>
             <a class="nav-link<?= $isMarketReturnActive ? ' active' : '' ?>" href="<?= e(url('/market-return')) ?>"<?= $isMarketReturnActive ? ' aria-current="page"' : '' ?>>
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7 7h10M7 12h10M7 17h6M5 4h14a1 1 0 0 1 1 1v14a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 <span class="nav-label">Market Returns</span>
