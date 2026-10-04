@@ -22,9 +22,9 @@ class GradeService
         }
     }
 
-    public function enrich(array $batch): array
+    public function enrich(array $batch, ?\DateTimeImmutable $asOf = null): array
     {
-        $today = new \DateTimeImmutable('today');
+        $today = $asOf ?? new \DateTimeImmutable('today');
         $mfg = new \DateTimeImmutable($batch['manufacture_date']);
         $expiry = new \DateTimeImmutable($batch['expiry_date']);
 

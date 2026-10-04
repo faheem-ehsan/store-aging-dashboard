@@ -13,6 +13,7 @@ use App\Controllers\MarketReturnController;
 use App\Controllers\MarketReturnMappingController;
 use App\Controllers\AdminController;
 use App\Controllers\EmailNotificationController;
+use App\Controllers\DailyStockReportController;
 
 $router = new Router();
 
@@ -26,6 +27,11 @@ $router->post('/admin/email-notifications/run', [EmailNotificationController::cl
 $router->get('/login', [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'login']);
 $router->post('/logout', [AuthController::class, 'logout']);
+
+$router->get('/daily-stock-reports', [DailyStockReportController::class, 'index']);
+$router->post('/daily-stock-reports/generate', [DailyStockReportController::class, 'generate']);
+$router->post('/daily-stock-reports/verify', [DailyStockReportController::class, 'verify']);
+$router->get('/daily-stock-reports/export', [DailyStockReportController::class, 'export']);
 
 $router->get('/stocks', [StockController::class, 'index']);
 $router->get('/stocks/create', [StockController::class, 'create']);
