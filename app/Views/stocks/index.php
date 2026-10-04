@@ -65,7 +65,8 @@ $gradeOptions = [
 ];
 
 $isSuperAdmin = (($user['role'] ?? '') === 'super_admin');
-$stockTableColspan = 13 + ($canManage ? 1 : 0) + ($isSuperAdmin ? 1 : 0);
+$canSelectMultiple = in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true);
+$stockTableColspan = 13 + ($canManage ? 1 : 0) + ($canSelectMultiple ? 1 : 0);
 
 // Finish Goods Aging detail-table sorting + pagination.
 // Default page size is 50, with 25 / 50 / 100 row presets.
@@ -209,7 +210,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
             <input id="stockSearch" class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, product name or batch no...">
         </div>
 
-        <?php if ($user['role'] === 'super_admin' || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
+        <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
             <div class="stock-filter-field">
                 <label for="stockDivision">Division</label>
                 <select id="stockDivision" name="division_id">
@@ -273,7 +274,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
 </section>
 
 <div class="card flush">
-<?php if ($isSuperAdmin): ?>
+<?php if ($canSelectMultiple): ?>
 <div class="stock-selected-toolbar" id="stockSelectedToolbar">
     <div class="stock-selected-summary">
         <strong id="stockSelectedCount">0</strong>
@@ -303,7 +304,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
 <div class="table-wrap">
 <table class="aging-table dispatch-stock-table">
 <thead><tr>
-    <?php if ($isSuperAdmin): ?>
+    <?php if ($canSelectMultiple): ?>
     <th class="stock-select-column">
         <input
             type="checkbox"
@@ -332,7 +333,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
 <?php if (!$tableRows): ?><tr><td colspan="<?= (int)$stockTableColspan ?>" class="empty">No stock batches found.</td></tr><?php endif; ?>
 <?php foreach ($tableRows as $r): ?>
 <tr>
-    <?php if ($isSuperAdmin): ?>
+    <?php if ($canSelectMultiple): ?>
     <td class="stock-select-column">
         <input
             type="checkbox"
@@ -467,7 +468,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
 })();
 </script>
 
-<?php if ($isSuperAdmin): ?>
+<?php if ($canSelectMultiple): ?>
 <script>
 (function () {
     const selectAll = document.getElementById('stockSelectAllVisible');

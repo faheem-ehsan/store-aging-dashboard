@@ -44,6 +44,9 @@ class User
         if ($user['role'] === 'super_admin') {
             // Super Admin must use the dedicated Super Admin login selection.
             if ($divisionId !== null) return null;
+        } elseif ($user['role'] === 'store_manager') {
+            // Store Manager is a global operational role and must use its own login selection.
+            if ($divisionId !== -1) return null;
         } elseif ($user['role'] === 'user' && empty($user['division_id'])) {
             // A read-only user with no division assignment has read access to all divisions.
             // It must use the dedicated "All Divisions / Read-only User" login selection.
@@ -66,7 +69,7 @@ class User
     public function create(array $data): int
     {
         $role = $data['role'];
-        $divisionId = ($role === 'super_admin' || ($role === 'user' && empty($data['division_id'])))
+        $divisionId = (in_array($role, ['super_admin','store_manager'], true) || ($role === 'user' && empty($data['division_id'])))
             ? null
             : (int)$data['division_id'];
 
@@ -101,7 +104,7 @@ class User
     public function update(int $id, array $data): void
     {
         $role = $data['role'];
-        $divisionId = ($role === 'super_admin' || ($role === 'user' && empty($data['division_id'])))
+        $divisionId = (in_array($role, ['super_admin','store_manager'], true) || ($role === 'user' && empty($data['division_id'])))
             ? null
             : (int)$data['division_id'];
         $params = [$divisionId, trim($data['name']), strtolower(trim($data['email'])), $role];

@@ -3,7 +3,7 @@ $isEdit = !empty($batch);
 $selectedDivisionId = $isEdit
     ? (int)($batch['division_id'] ?? 0)
     : (int)($selectedDivisionId ?? 0);
-$divisionLabel = $user['role'] === 'super_admin'
+$divisionLabel = in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true)
     ? ''
     : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
 $formatFormDate = static function (?string $value): string {
@@ -11,8 +11,8 @@ $formatFormDate = static function (?string $value): string {
 };
 $manufactureDate = $formatFormDate($batch['manufacture_date'] ?? '');
 $expiryDate = $formatFormDate($batch['expiry_date'] ?? '');
-$divisionCode = $user['role'] === 'super_admin' ? '' : ($user['division_code'] ?? '');
-if ($user['role'] === 'super_admin' && $selectedDivisionId > 0) {
+$divisionCode = in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) ? '' : ($user['division_code'] ?? '');
+if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) && $selectedDivisionId > 0) {
     foreach ($divisions as $d) {
         if ((int)$d['id'] === $selectedDivisionId) { $divisionCode = $d['code']; break; }
     }
@@ -50,7 +50,7 @@ $stockReturnHiddenMap = [
             <?php endforeach; ?>
         <?php endif; ?>
 
-        <?php if ($user['role'] === 'super_admin'): ?>
+        <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true)): ?>
         <label>Division
             <select name="division_id" required>
                 <option value="">Select division...</option>

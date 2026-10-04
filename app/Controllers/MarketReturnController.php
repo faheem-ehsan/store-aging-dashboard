@@ -14,7 +14,7 @@ class MarketReturnController
 {
     private function canManage(array $user): bool
     {
-        return in_array($user['role'] ?? '', ['super_admin', 'division_admin'], true);
+        return Auth::canManageOperational($user);
     }
 
     private function marketReturnReturnParams(array $source): array
@@ -197,8 +197,7 @@ class MarketReturnController
             'value_status' => trim((string)($_GET['value_status'] ?? '')),
             'expiry_bucket' => trim((string)($_GET['expiry_bucket'] ?? '')),
         ];
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $divisions = (new Division())->all(true);
@@ -320,10 +319,10 @@ class MarketReturnController
             'divisions' => (new Division())->all(true),
             'categories' => $this->marketReturnCategories(
                 $user,
-                $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) ?: null : (int)$user['division_id']
+                Auth::isGlobalOperator($user) ? (int)($_GET['division_id'] ?? 0) ?: null : (int)$user['division_id']
             ),
             'item' => null,
-            'selectedDivisionId' => $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
+            'selectedDivisionId' => Auth::isGlobalOperator($user) ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
             'selectedCategory' => trim((string)($_GET['category'] ?? '')),
         ]);
     }
@@ -687,7 +686,7 @@ class MarketReturnController
 
     private function payload(array $user): array
     {
-        $divisionId = $user['role'] === 'super_admin' ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'];
+        $divisionId = Auth::isGlobalOperator($user) ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'];
         $retail = trim((string)($_POST['retail_price'] ?? ''));
         $amount = trim((string)($_POST['total_amount'] ?? ''));
         return [

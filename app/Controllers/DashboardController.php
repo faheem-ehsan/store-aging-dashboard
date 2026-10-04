@@ -13,8 +13,7 @@ class DashboardController
     {
         $user = Auth::requireLogin();
         $divisionId = isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null;
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) $divisionId = (int)$user['division_id'];
 
         $stockBatchModel = new StockBatch();

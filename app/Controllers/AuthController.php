@@ -26,6 +26,8 @@ class AuthController
         $divisionRaw = $_POST['division_id'] ?? '';
         if ($divisionRaw === 'super') {
             $divisionId = null;
+        } elseif ($divisionRaw === 'manager') {
+            $divisionId = -1;
         } elseif ($divisionRaw === 'all') {
             $divisionId = 0;
         } else {
