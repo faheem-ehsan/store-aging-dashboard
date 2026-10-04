@@ -158,6 +158,22 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     $params['page'] = $page;
     return url('/market-return') . '?' . http_build_query($params);
 };
+
+$marketReturnReturnFields = [
+    'return_q' => $filters['q'] ?? '',
+    'return_division_id' => $filters['division_id'] ?? '',
+    'return_category' => $filters['category'] ?? '',
+    'return_expiry_bucket' => $filters['expiry_bucket'] ?? '',
+    'return_value_status' => $filters['value_status'] ?? '',
+    'return_page' => $currentPage,
+];
+$marketReturnReturnFields = array_filter(
+    $marketReturnReturnFields,
+    static fn($value): bool => $value !== '' && $value !== null
+);
+$marketReturnEditUrl = static function (int $id) use ($marketReturnReturnFields): string {
+    return url('/market-return/edit?' . http_build_query(array_merge(['id' => $id], $marketReturnReturnFields)));
+};
 ?>
 
 <section class="stock-control-panel market-return-control-panel market-return-dashboard-filter" aria-label="Market Return filters and actions">
@@ -180,7 +196,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         </div>
     <?php else: ?>
 
-    <form method="get" action="<?= e(url('/market-return')) ?>" class="market-return-filter-grid-refined">
+    <form method="get" action="<?= e(url('/market-return')) ?>" class="market-return-filter-grid-refined" id="marketReturnAutoFilterForm">
         <div class="stock-filter-field stock-filter-search-wrap">
             <label for="marketReturnSearch">Search</label>
             <input id="marketReturnSearch" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product, remarks, section, expiry...">
@@ -230,8 +246,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         </div>
 
         <div class="stock-filter-actions stock-filter-actions-refined market-return-filter-actions-refined">
-            <button class="btn primary" type="submit">Apply Filters</button>
-            <a class="btn ghost" href="<?= e(url('/market-return')) ?>">Reset</a>
+            <a class="btn ghost stock-filter-reset-btn" href="<?= e(url('/market-return')) ?>">Reset</a>
         </div>
     </form>
 
@@ -390,9 +405,13 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
                     <td><?= !empty($row['report_date']) ? e(format_app_date($row['report_date'])) : '—' ?></td>
                     <?php if ($canManage): ?>
                     <td class="actions">
-                        <a href="<?= e(url('/market-return/edit?id=' . (int)$row['id'])) ?>">Edit</a>
+                        <a href="<?= e($marketReturnEditUrl((int)$row['id'])) ?>">Edit</a>
                         <form method="post" action="<?= e(url('/market-return/delete')) ?>" onsubmit="return confirm('Delete this Market Return item?')">
-                            <?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                            <?= csrf_field() ?>
+                            <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                            <?php foreach ($marketReturnReturnFields as $returnName => $returnValue): ?>
+                                <input type="hidden" name="<?= e($returnName) ?>" value="<?= e((string)$returnValue) ?>">
+                            <?php endforeach; ?>
                             <button class="danger-link" type="submit">Delete</button>
                         </form>
                     </td>
@@ -812,6 +831,48 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
 })();
 </script>
 
+
+<script>
+(function () {
+    const form = document.getElementById('marketReturnAutoFilterForm');
+    if (!form) return;
+
+    const search = document.getElementById('marketReturnSearch');
+    const selects = [
+        document.getElementById('marketReturnDivision'),
+        document.getElementById('marketReturnCategory'),
+        document.getElementById('marketReturnExpiry'),
+        document.getElementById('marketReturnValueStatus')
+    ].filter(Boolean);
+
+    let searchTimer = null;
+    let submitting = false;
+
+    function submitFilters() {
+        if (submitting) return;
+        submitting = true;
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            form.submit();
+        }
+    }
+
+    selects.forEach(function (select) {
+        select.addEventListener('change', function () {
+            if (searchTimer) window.clearTimeout(searchTimer);
+            submitFilters();
+        });
+    });
+
+    if (search) {
+        search.addEventListener('input', function () {
+            if (searchTimer) window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(submitFilters, 450);
+        });
+    }
+})();
+</script>
 
 <?php if (($user['role'] ?? '') === 'super_admin' && $databaseReady): ?>
 <div class="stock-bulk-modal" id="marketReturnBulkDeleteModal" hidden>

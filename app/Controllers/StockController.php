@@ -15,6 +15,72 @@ class StockController
         return in_array($user['role'], ['super_admin','division_admin'], true);
     }
 
+    private function stockReturnParams(array $source): array
+    {
+        $params = [];
+
+        $q = trim((string)($source['return_q'] ?? ''));
+        if ($q !== '') $params['q'] = $q;
+
+        $divisionId = (int)($source['return_division_id'] ?? 0);
+        if ($divisionId > 0) $params['division_id'] = $divisionId;
+
+        $grade = trim((string)($source['return_grade'] ?? ''));
+        if (in_array($grade, ['A+','A','B','C','EX'], true)) {
+            $params['grade'] = $grade;
+        }
+
+        $allowedSorts = [
+            'division','product_code','product_name','current_stock','uom',
+            'stock_value','batch_no','manufacturing_date','expiry_date',
+            'aging','expiry_remaining','stock_location','grade',
+        ];
+        $sort = trim((string)($source['return_sort'] ?? ''));
+        if (in_array($sort, $allowedSorts, true)) {
+            $params['sort'] = $sort;
+            $params['dir'] = strtolower((string)($source['return_dir'] ?? 'asc')) === 'desc'
+                ? 'desc'
+                : 'asc';
+        }
+
+        $perPage = (int)($source['return_per_page'] ?? 50);
+        if (in_array($perPage, [25, 50, 100], true)) {
+            $params['per_page'] = $perPage;
+        }
+
+        $page = max(1, (int)($source['return_page'] ?? 1));
+        if ($page > 1) $params['page'] = $page;
+
+        return $params;
+    }
+
+    private function stockReturnPath(array $params): string
+    {
+        return '/stocks' . ($params ? '?' . http_build_query($params) : '');
+    }
+
+    private function stockReturnInputParams(array $params): array
+    {
+        $result = [];
+        $map = [
+            'q' => 'return_q',
+            'division_id' => 'return_division_id',
+            'grade' => 'return_grade',
+            'sort' => 'return_sort',
+            'dir' => 'return_dir',
+            'per_page' => 'return_per_page',
+            'page' => 'return_page',
+        ];
+
+        foreach ($map as $key => $inputName) {
+            if (array_key_exists($key, $params)) {
+                $result[$inputName] = $params[$key];
+            }
+        }
+
+        return $result;
+    }
+
     public function index(): void
     {
         $user = Auth::requireLogin();
@@ -162,11 +228,15 @@ class StockController
         $id = (int)($_GET['id'] ?? 0);
         $batch = (new StockBatch())->findAccessible($id, $user);
         if (!$batch) { http_response_code(404); View::render('errors/404', ['title'=>'Not Found']); return; }
+
+        $returnParams = $this->stockReturnParams($_GET);
+
         View::render('stocks/form', [
             'title' => 'Edit Batch',
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'batch' => $batch,
+            'returnParams' => $returnParams,
         ]);
     }
 
@@ -176,11 +246,18 @@ class StockController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+
+        $returnParams = $this->stockReturnParams($_POST);
+        $returnPath = $this->stockReturnPath($returnParams);
+        $editReturnQuery = http_build_query(
+            array_merge(['id' => $id], $this->stockReturnInputParams($returnParams))
+        );
+
         $data = $this->payload($user);
         $error = $this->validate($data);
         if ($error) {
             flash('error', $error);
-            redirect('/stocks/edit?id=' . $id);
+            redirect('/stocks/edit?' . $editReturnQuery);
         }
         try {
             $model = new StockBatch();
@@ -211,7 +288,7 @@ class StockController
         } catch (\Throwable $e) {
             flash('error', 'Unable to update batch. Run database/migrations/002_add_dispatch_stock_fields.sql if needed.');
         }
-        redirect('/stocks');
+        redirect($returnPath);
     }
 
     public function delete(): void
@@ -220,6 +297,9 @@ class StockController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+        $returnParams = $this->stockReturnParams($_POST);
+        $returnPath = $this->stockReturnPath($returnParams);
+
         $model = new StockBatch();
         $before = $model->findAccessible($id, $user);
         $model->delete($id, $user);
@@ -236,13 +316,16 @@ class StockController
             );
         }
         flash('success', 'Batch deleted.');
-        redirect('/stocks');
+        redirect($returnPath);
     }
 
     public function deleteSelected(): void
     {
         verify_csrf();
         $user = Auth::requireSuperAdmin();
+
+        $returnParams = $this->stockReturnParams($_POST);
+        $returnPath = $this->stockReturnPath($returnParams);
 
         $ids = $_POST['ids'] ?? [];
         if (!is_array($ids)) $ids = [];
@@ -254,7 +337,7 @@ class StockController
 
         if (!$ids) {
             flash('error', 'Select at least one Finish Goods record to delete.');
-            redirect('/stocks');
+            redirect($returnPath);
         }
 
         try {
@@ -322,7 +405,7 @@ class StockController
             flash('error', 'Selected records could not be deleted. No partial deletion was saved.');
         }
 
-        redirect('/stocks');
+        redirect($returnPath);
     }
 
     public function bulkDelete(): void

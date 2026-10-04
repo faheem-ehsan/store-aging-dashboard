@@ -18,6 +18,18 @@ if ($user['role'] === 'super_admin' && $selectedDivisionId > 0) {
     }
 }
 $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode . ' ' : 'Division ') . 'Add Batch');
+
+$returnParams = $returnParams ?? [];
+$returnUrl = url('/stocks' . ($returnParams ? '?' . http_build_query($returnParams) : ''));
+$stockReturnHiddenMap = [
+    'q' => 'return_q',
+    'division_id' => 'return_division_id',
+    'grade' => 'return_grade',
+    'sort' => 'return_sort',
+    'dir' => 'return_dir',
+    'per_page' => 'return_per_page',
+    'page' => 'return_page',
+];
 ?>
 <div class="card form-card dispatch-form-card">
     <div class="card-head">
@@ -30,6 +42,13 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
     <form method="post" action="<?= e(url($isEdit ? '/stocks/update' : '/stocks/store')) ?>" class="form-grid dispatch-batch-grid" id="batchForm">
         <?= csrf_field() ?>
         <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= (int)$batch['id'] ?>"><?php endif; ?>
+        <?php if ($isEdit): ?>
+            <?php foreach ($stockReturnHiddenMap as $returnKey => $returnInputName): ?>
+                <?php if (array_key_exists($returnKey, $returnParams)): ?>
+                    <input type="hidden" name="<?= e($returnInputName) ?>" value="<?= e((string)$returnParams[$returnKey]) ?>">
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
 
         <?php if ($user['role'] === 'super_admin'): ?>
         <label>Division
@@ -83,7 +102,7 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
         <label class="span-2">Stock Location<input name="receiving_store" value="<?= e($batch['receiving_store'] ?? '') ?>" placeholder="e.g. FW02" required></label>
 
         <div class="form-actions span-2">
-            <a class="btn ghost" href="<?= e(url('/stocks')) ?>">Cancel</a>
+            <a class="btn ghost" href="<?= e($isEdit ? $returnUrl : url('/stocks')) ?>">Cancel</a>
             <button class="btn primary" type="submit"><?= $isEdit ? 'Save Changes' : 'Create Batch' ?></button>
         </div>
     </form>

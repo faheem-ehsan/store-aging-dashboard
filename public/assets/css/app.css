@@ -4705,3 +4705,53 @@ body.stock-bulk-modal-open{overflow:hidden}
         width:100%;
     }
 }
+
+
+/* Automatic filters: compact Reset button stays in the filter row */
+.stock-filter-reset-btn{
+    min-width:88px !important;
+    justify-content:center;
+}
+.stock-filter-actions-refined{
+    align-self:end;
+}
+@media (min-width:1101px) and (max-width:1400px){
+    .market-return-filter-grid-refined{
+        grid-template-columns:minmax(220px,1.3fr) repeat(4,minmax(140px,.8fr)) auto !important;
+    }
+    .market-return-filter-grid-refined .stock-filter-search-wrap{
+        grid-column:auto !important;
+    }
+    .market-return-filter-actions-refined{
+        grid-column:auto !important;
+    }
+}
+
+
+/* Finish Goods filters: keep Reset on the same row as Search / Division / Grade */
+@media (min-width: 900px) {
+    #stockAutoFilterForm.stock-filter-grid-refined{
+        grid-template-columns:
+            minmax(240px, 1.65fr)
+            minmax(180px, .8fr)
+            minmax(180px, .8fr)
+            auto !important;
+        align-items:end;
+    }
+
+    #stockAutoFilterForm .stock-filter-search-wrap,
+    #stockAutoFilterForm .stock-filter-actions-refined{
+        grid-column:auto !important;
+    }
+
+    #stockAutoFilterForm .stock-filter-actions-refined{
+        align-self:end;
+        width:auto;
+    }
+
+    #stockAutoFilterForm .stock-filter-reset-btn{
+        min-width:88px !important;
+        height:42px;
+        white-space:nowrap;
+    }
+}

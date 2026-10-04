@@ -169,6 +169,23 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
     if ($sortKey !== $column) return 'none';
     return $sortDir === 'asc' ? 'ascending' : 'descending';
 };
+
+$stockReturnFields = [
+    'return_q' => $filters['q'] ?? '',
+    'return_division_id' => $filters['division_id'] ?? '',
+    'return_grade' => $filters['grade'] ?? '',
+    'return_sort' => $sortKey,
+    'return_dir' => $sortKey !== '' ? $sortDir : '',
+    'return_per_page' => $rowsPerPage,
+    'return_page' => $currentPage,
+];
+$stockReturnFields = array_filter(
+    $stockReturnFields,
+    static fn($value): bool => $value !== '' && $value !== null
+);
+$stockEditUrl = static function (int $id) use ($stockReturnFields): string {
+    return url('/stocks/edit?' . http_build_query(array_merge(['id' => $id], $stockReturnFields)));
+};
 ?>
 <section class="stock-control-panel" aria-label="Stock filters and actions">
     <div class="stock-control-head">
@@ -183,7 +200,7 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
         <?php endif; ?>
     </div>
 
-    <form method="get" action="<?= e(url('/stocks')) ?>" class="stock-filter-grid stock-filter-grid-refined">
+    <form method="get" action="<?= e(url('/stocks')) ?>" class="stock-filter-grid stock-filter-grid-refined" id="stockAutoFilterForm">
         <?php if ($sortKey !== ''): ?><input type="hidden" name="sort" value="<?= e($sortKey) ?>"><?php endif; ?>
         <?php if ($sortKey !== ''): ?><input type="hidden" name="dir" value="<?= e($sortDir) ?>"><?php endif; ?>
         <input type="hidden" name="per_page" value="<?= (int)$rowsPerPage ?>">
@@ -215,8 +232,7 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
         </div>
 
         <div class="stock-filter-actions stock-filter-actions-refined">
-            <button class="btn primary" type="submit">Apply Filters</button>
-            <a class="btn ghost" href="<?= e(url('/stocks')) ?>">Reset</a>
+            <a class="btn ghost stock-filter-reset-btn" href="<?= e(url('/stocks')) ?>">Reset</a>
         </div>
     </form>
 
@@ -266,6 +282,16 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
 
     <form method="post" action="<?= e(url('/stocks/delete-selected')) ?>" id="stockSelectedDeleteForm">
         <?= csrf_field() ?>
+
+        <!-- Preserve the current filtered/sorted/paginated view after deletion. -->
+        <input type="hidden" name="return_q" value="<?= e($filters['q'] ?? '') ?>">
+        <input type="hidden" name="return_division_id" value="<?= e((string)($filters['division_id'] ?? '')) ?>">
+        <input type="hidden" name="return_grade" value="<?= e($filters['grade'] ?? '') ?>">
+        <input type="hidden" name="return_sort" value="<?= e($sortKey) ?>">
+        <input type="hidden" name="return_dir" value="<?= e($sortKey !== '' ? $sortDir : '') ?>">
+        <input type="hidden" name="return_per_page" value="<?= (int)$rowsPerPage ?>">
+        <input type="hidden" name="return_page" value="<?= (int)$currentPage ?>">
+
         <div id="stockSelectedIds"></div>
         <button class="btn stock-selected-delete-btn" type="submit" id="stockSelectedDeleteBtn" disabled>
             Delete Selected
@@ -334,8 +360,15 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
         </span>
     </td>
     <?php if ($canManage): ?><td class="actions">
-        <a href="<?= e(url('/stocks/edit?id=' . (int)$r['id'])) ?>">Edit</a>
-        <form method="post" action="<?= e(url('/stocks/delete')) ?>" onsubmit="return confirm('Delete this batch?')"><?= csrf_field() ?><input type="hidden" name="id" value="<?= (int)$r['id'] ?>"><button class="danger-link" type="submit">Delete</button></form>
+        <a href="<?= e($stockEditUrl((int)$r['id'])) ?>">Edit</a>
+        <form method="post" action="<?= e(url('/stocks/delete')) ?>" onsubmit="return confirm('Delete this batch?')">
+            <?= csrf_field() ?>
+            <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
+            <?php foreach ($stockReturnFields as $returnName => $returnValue): ?>
+                <input type="hidden" name="<?= e($returnName) ?>" value="<?= e((string)$returnValue) ?>">
+            <?php endforeach; ?>
+            <button class="danger-link" type="submit">Delete</button>
+        </form>
     </td><?php endif; ?>
 </tr>
 <?php endforeach; ?>
@@ -393,6 +426,46 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
 <?php endif; ?>
 </div>
 
+
+<script>
+(function () {
+    const form = document.getElementById('stockAutoFilterForm');
+    if (!form) return;
+
+    const search = document.getElementById('stockSearch');
+    const selects = [
+        document.getElementById('stockDivision'),
+        document.getElementById('stockGrade')
+    ].filter(Boolean);
+
+    let searchTimer = null;
+    let submitting = false;
+
+    function submitFilters() {
+        if (submitting) return;
+        submitting = true;
+        if (typeof form.requestSubmit === 'function') {
+            form.requestSubmit();
+        } else {
+            form.submit();
+        }
+    }
+
+    selects.forEach(function (select) {
+        select.addEventListener('change', function () {
+            if (searchTimer) window.clearTimeout(searchTimer);
+            submitFilters();
+        });
+    });
+
+    if (search) {
+        search.addEventListener('input', function () {
+            if (searchTimer) window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(submitFilters, 450);
+        });
+    }
+})();
+</script>
 
 <?php if ($isSuperAdmin): ?>
 <script>

@@ -2,6 +2,17 @@
 $isEdit = !empty($item);
 $expiryDateDisplay = format_app_date($item['expiry_date'] ?? '', '');
 $reportDateDisplay = format_app_date($item['report_date'] ?? '', '');
+
+$returnParams = $returnParams ?? [];
+$returnUrl = url('/market-return' . ($returnParams ? '?' . http_build_query($returnParams) : ''));
+$marketReturnHiddenMap = [
+    'q' => 'return_q',
+    'division_id' => 'return_division_id',
+    'category' => 'return_category',
+    'expiry_bucket' => 'return_expiry_bucket',
+    'value_status' => 'return_value_status',
+    'page' => 'return_page',
+];
 ?>
 <div class="card market-return-form-card">
     <div class="card-head">
@@ -9,11 +20,18 @@ $reportDateDisplay = format_app_date($item['report_date'] ?? '', '');
             <h2><?= $isEdit ? 'Edit Market Return Item' : 'Add Market Return Item' ?></h2>
             <p>This entry is stored separately from Stock Aging data while using the same division permissions.</p>
         </div>
-        <a class="btn ghost" href="<?= e(url('/market-return')) ?>">Back to Market Return Store</a>
+        <a class="btn ghost" href="<?= e($isEdit ? $returnUrl : url('/market-return')) ?>">Back to Market Return Store</a>
     </div>
     <form method="post" action="<?= e(url($isEdit ? '/market-return/update' : '/market-return/store')) ?>" class="market-return-entry-form">
         <?= csrf_field() ?>
         <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= (int)$item['id'] ?>"><?php endif; ?>
+        <?php if ($isEdit): ?>
+            <?php foreach ($marketReturnHiddenMap as $returnKey => $returnInputName): ?>
+                <?php if (array_key_exists($returnKey, $returnParams)): ?>
+                    <input type="hidden" name="<?= e($returnInputName) ?>" value="<?= e((string)$returnParams[$returnKey]) ?>">
+                <?php endif; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
         <input type="hidden" name="source_sheet" value="<?= e($item['source_sheet'] ?? 'Manual Entry') ?>">
 
         <div class="market-return-form-grid">
@@ -82,7 +100,7 @@ $reportDateDisplay = format_app_date($item['report_date'] ?? '', '');
             </label>
         </div>
         <div class="form-actions">
-            <a class="btn ghost" href="<?= e(url('/market-return')) ?>">Cancel</a>
+            <a class="btn ghost" href="<?= e($isEdit ? $returnUrl : url('/market-return')) ?>">Cancel</a>
             <button class="btn primary" type="submit"><?= $isEdit ? 'Save Changes' : 'Add Item' ?></button>
         </div>
     </form>

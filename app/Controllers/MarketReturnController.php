@@ -17,6 +17,61 @@ class MarketReturnController
         return in_array($user['role'] ?? '', ['super_admin', 'division_admin'], true);
     }
 
+    private function marketReturnReturnParams(array $source): array
+    {
+        $params = [];
+
+        $q = trim((string)($source['return_q'] ?? ''));
+        if ($q !== '') $params['q'] = $q;
+
+        $divisionId = (int)($source['return_division_id'] ?? 0);
+        if ($divisionId > 0) $params['division_id'] = $divisionId;
+
+        $category = trim((string)($source['return_category'] ?? ''));
+        if ($category !== '') $params['category'] = $category;
+
+        $expiryBucket = trim((string)($source['return_expiry_bucket'] ?? ''));
+        if (in_array($expiryBucket, ['a','b','c','expired','no_expiry'], true)) {
+            $params['expiry_bucket'] = $expiryBucket;
+        }
+
+        $valueStatus = trim((string)($source['return_value_status'] ?? ''));
+        if (in_array($valueStatus, ['valued','unvalued'], true)) {
+            $params['value_status'] = $valueStatus;
+        }
+
+        $page = max(1, (int)($source['return_page'] ?? 1));
+        if ($page > 1) $params['page'] = $page;
+
+        return $params;
+    }
+
+    private function marketReturnReturnPath(array $params): string
+    {
+        return '/market-return' . ($params ? '?' . http_build_query($params) : '');
+    }
+
+    private function marketReturnInputParams(array $params): array
+    {
+        $result = [];
+        $map = [
+            'q' => 'return_q',
+            'division_id' => 'return_division_id',
+            'category' => 'return_category',
+            'expiry_bucket' => 'return_expiry_bucket',
+            'value_status' => 'return_value_status',
+            'page' => 'return_page',
+        ];
+
+        foreach ($map as $key => $inputName) {
+            if (array_key_exists($key, $params)) {
+                $result[$inputName] = $params[$key];
+            }
+        }
+
+        return $result;
+    }
+
     private function marketReturnCategories(array $user, ?int $divisionId = null): array
     {
         $categories = MarketReturnImporter::CATEGORIES;
@@ -305,6 +360,8 @@ class MarketReturnController
             View::render('errors/404', ['title' => 'Not Found']);
             return;
         }
+        $returnParams = $this->marketReturnReturnParams($_GET);
+
         View::render('market_return/form', [
             'title' => 'Edit Market Return Item',
             'user' => $user,
@@ -313,6 +370,7 @@ class MarketReturnController
             'item' => $item,
             'selectedDivisionId' => (int)$item['division_id'],
             'selectedCategory' => $item['category_code'],
+            'returnParams' => $returnParams,
         ]);
     }
 
@@ -322,6 +380,12 @@ class MarketReturnController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+        $returnParams = $this->marketReturnReturnParams($_POST);
+        $returnPath = $this->marketReturnReturnPath($returnParams);
+        $editReturnQuery = http_build_query(
+            array_merge(['id' => $id], $this->marketReturnInputParams($returnParams))
+        );
+
         $model = new MarketReturnItem();
         $before = $model->findAccessible($id, $user);
         if (!$before) $this->forbidden();
@@ -329,7 +393,7 @@ class MarketReturnController
         $error = $this->validate($data);
         if ($error) {
             flash('error', $error);
-            redirect('/market-return/edit?id=' . $id);
+            redirect('/market-return/edit?' . $editReturnQuery);
         }
         try {
             $model->save($data, $user, $id);
@@ -338,7 +402,7 @@ class MarketReturnController
         } catch (\Throwable $e) {
             flash('error', 'Unable to update the item.');
         }
-        redirect('/market-return');
+        redirect($returnPath);
     }
 
     public function delete(): void
@@ -347,6 +411,9 @@ class MarketReturnController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+        $returnParams = $this->marketReturnReturnParams($_POST);
+        $returnPath = $this->marketReturnReturnPath($returnParams);
+
         $model = new MarketReturnItem();
         $row = $model->findAccessible($id, $user);
         if ($row) {
@@ -354,7 +421,7 @@ class MarketReturnController
             AuditLogger::log('MARKET_RETURN_DELETE', 'Deleted market-return item ' . ($row['product_name'] ?? '') . '.', 'market_return_item', $id, $row, $user, (int)$row['division_id'], $row['division_code'] ?? null);
             flash('success', 'Market Return item deleted.');
         }
-        redirect('/market-return');
+        redirect($returnPath);
     }
 
     public function bulkDelete(): void
