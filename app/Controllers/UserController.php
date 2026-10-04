@@ -199,7 +199,7 @@ class UserController
         if (!$passwordRequired && $data['password'] !== '' && strlen($data['password']) < 8) {
             throw new \RuntimeException('New password must be at least 8 characters.');
         }
-        if (!in_array($data['role'], ['super_admin','division_admin','user'], true)) {
+        if (!in_array($data['role'], ['super_admin','store_manager','division_admin','user'], true)) {
             throw new \RuntimeException('Invalid role.');
         }
         if ($data['role'] === 'division_admin' && !(int)$data['division_id']) {

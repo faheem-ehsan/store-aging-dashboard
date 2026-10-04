@@ -25,7 +25,7 @@ $initials = static function (string $name): string {
         <div class="card-head user-form-head">
             <div>
                 <h2><?= $isEdit ? 'Edit User' : 'Create User' ?></h2>
-                <p><?= $isEdit ? 'Update account access, division and profile picture.' : 'Create a division-based account and assign its access level.' ?></p>
+                <p><?= $isEdit ? 'Update account access, division and profile picture.' : 'Create an account and assign its access level.' ?></p>
             </div>
             <?php if ($isEdit): ?><a class="btn ghost" href="<?= e(url('/users')) ?>">Cancel</a><?php endif; ?>
         </div>
@@ -64,6 +64,7 @@ $initials = static function (string $name): string {
                 </label>
                 <label>Role
                     <select name="role" id="roleSelect" required>
+                        <option value="store_manager" <?= $formRoleValue === 'store_manager' ? 'selected' : '' ?>>Store Manager — All Divisions</option>
                         <option value="division_admin" <?= $formRoleValue === 'division_admin' ? 'selected' : '' ?>>Division Admin</option>
                         <option value="user" <?= $formRoleValue === 'user' ? 'selected' : '' ?>>Read-only User — Division</option>
                         <option value="read_only_all" <?= $formRoleValue === 'read_only_all' ? 'selected' : '' ?>>Read-only User — All Divisions</option>
@@ -116,7 +117,7 @@ $initials = static function (string $name): string {
                             ?>
                             <?= e($userRoleLabel) ?>
                         </td>
-                        <td><?= e($u['division_code'] ?? (($u['role'] ?? '') === 'user' ? 'All Divisions' : 'All')) ?></td>
+                        <td><?= e($u['division_code'] ?? (in_array(($u['role'] ?? ''), ['super_admin','store_manager'], true) || (($u['role'] ?? '') === 'user' && empty($u['division_id'])) ? 'All Divisions' : '—')) ?></td>
                         <td><?= $u['is_active'] ? '<span class="status on">Active</span>' : '<span class="status off">Disabled</span>' ?></td>
                         <td class="user-actions">
                             <a href="<?= e(url('/users/edit?id=' . (int)$u['id'])) ?>">Edit</a>
@@ -145,9 +146,10 @@ $initials = static function (string $name): string {
     const emptyOption = document.getElementById('divisionEmptyOption');
     function syncDivision() {
         const isSuper = role.value === 'super_admin';
+        const isStoreManager = role.value === 'store_manager';
         const isAllDivisionReadOnly = role.value === 'read_only_all';
         const needsDivision = role.value === 'division_admin' || role.value === 'user';
-        const disableDivision = isSuper || isAllDivisionReadOnly;
+        const disableDivision = isSuper || isStoreManager || isAllDivisionReadOnly;
 
         field.classList.toggle('muted-field', disableDivision);
         division.disabled = disableDivision;
@@ -156,6 +158,9 @@ $initials = static function (string $name): string {
         if (isSuper) {
             division.value = '';
             if (emptyOption) emptyOption.textContent = 'None / Super Admin';
+        } else if (isStoreManager) {
+            division.value = '';
+            if (emptyOption) emptyOption.textContent = 'All Divisions / Store Manager';
         } else if (isAllDivisionReadOnly) {
             division.value = '';
             if (emptyOption) emptyOption.textContent = 'All Divisions';

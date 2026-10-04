@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Core\Database;
+use App\Core\Auth;
 
 class StockBatch
 {
@@ -19,8 +20,7 @@ class StockBatch
         $sql = $this->baseSelect() . ' WHERE 1=1';
         $params = [];
 
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
 
         if (!$canReadAllDivisions) {
             $sql .= ' AND sb.division_id=?';
@@ -53,8 +53,7 @@ class StockBatch
                 WHERE sb.updated_at IS NOT NULL';
         $params = [];
 
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
 
         if (!$canReadAllDivisions) {
             $sql .= ' AND sb.division_id=?';
@@ -78,8 +77,7 @@ class StockBatch
         $sql = 'SELECT MAX(sb.updated_at) FROM stock_batches sb WHERE 1=1';
         $params = [];
 
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
 
         if (!$canReadAllDivisions) {
             $sql .= ' AND sb.division_id=?';
@@ -100,8 +98,7 @@ class StockBatch
     {
         $sql = $this->baseSelect() . ' WHERE sb.id=?';
         $params = [$id];
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) {
             $sql .= ' AND sb.division_id=?';
             $params[] = (int)$user['division_id'];
@@ -127,7 +124,7 @@ class StockBatch
     public function save(array $data, array $user, ?int $id = null): int
     {
         $pdo = Database::connection();
-        $divisionId = $user['role'] === 'super_admin' ? (int)$data['division_id'] : (int)$user['division_id'];
+        $divisionId = Auth::isGlobalOperator($user) ? (int)$data['division_id'] : (int)$user['division_id'];
         $pdo->beginTransaction();
         try {
             $stmt = $pdo->prepare('SELECT id FROM materials WHERE division_id=? AND material_code=? LIMIT 1');
@@ -178,7 +175,7 @@ class StockBatch
 
     public function upsertImport(array $data, array $user): string
     {
-        $divisionId = $user['role'] === 'super_admin' ? (int)$data['division_id'] : (int)$user['division_id'];
+        $divisionId = Auth::isGlobalOperator($user) ? (int)$data['division_id'] : (int)$user['division_id'];
         $materialCode = trim((string)$data['material_code']);
         $batchNo = trim((string)$data['batch_no']);
 

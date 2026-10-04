@@ -36,7 +36,7 @@ $marketReturnHiddenMap = [
 
         <div class="market-return-form-grid">
             <label>Division
-                <?php if ($user['role'] === 'super_admin'): ?>
+                <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true)): ?>
                     <select name="division_id" required>
                         <option value="">Select division</option>
                         <?php foreach ($divisions as $division): ?>

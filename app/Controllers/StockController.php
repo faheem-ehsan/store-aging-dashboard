@@ -12,7 +12,7 @@ class StockController
 {
     private function canManage(array $user): bool
     {
-        return in_array($user['role'], ['super_admin','division_admin'], true);
+        return Auth::canManageOperational($user);
     }
 
     private function stockReturnParams(array $source): array
@@ -89,8 +89,7 @@ class StockController
             'division_id' => isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null,
             'grade' => trim($_GET['grade'] ?? ''),
         ];
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $grader = new GradeService();
@@ -160,13 +159,13 @@ class StockController
 
         $divisionModel = new Division();
         $divisions = $divisionModel->all(true);
-        $selectedDivisionId = $user['role'] === 'super_admin'
+        $selectedDivisionId = Auth::isGlobalOperator($user)
             ? (int)($_GET['division_id'] ?? 0)
             : (int)$user['division_id'];
         $selectedDivision = $selectedDivisionId > 0 ? $divisionModel->find($selectedDivisionId) : null;
         if ($selectedDivision && !(int)$selectedDivision['is_active']) $selectedDivision = null;
 
-        $divisionCode = $user['role'] === 'super_admin'
+        $divisionCode = Auth::isGlobalOperator($user)
             ? ($selectedDivision['code'] ?? '')
             : ($user['division_code'] ?? '');
         $title = $divisionCode !== '' ? $divisionCode . ' Add Batch' : 'Division Add Batch';
@@ -322,7 +321,7 @@ class StockController
     public function deleteSelected(): void
     {
         verify_csrf();
-        $user = Auth::requireSuperAdmin();
+        $user = Auth::requireGlobalOperator();
 
         $returnParams = $this->stockReturnParams($_POST);
         $returnPath = $this->stockReturnPath($returnParams);
@@ -483,7 +482,7 @@ class StockController
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'result' => null,
-            'preselectedDivisionId' => $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
+            'preselectedDivisionId' => Auth::isGlobalOperator($user) ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
         ]);
     }
 
@@ -500,7 +499,7 @@ class StockController
         }
 
         $divisionModel = new Division();
-        $targetDivisionId = $user['role'] === 'super_admin'
+        $targetDivisionId = Auth::isGlobalOperator($user)
             ? (int)($_POST['target_division_id'] ?? 0)
             : (int)$user['division_id'];
         $targetDivision = null;
@@ -512,7 +511,7 @@ class StockController
                 $this->renderImportResult($user, $result);
                 return;
             }
-            if ($user['role'] !== 'super_admin' && $targetDivisionId !== (int)$user['division_id']) {
+            if (!Auth::isGlobalOperator($user) && $targetDivisionId !== (int)$user['division_id']) {
                 $result['failed'] = 1;
                 $result['errors'][] = 'Target division does not match your login division.';
                 $this->renderImportResult($user, $result);
@@ -576,7 +575,7 @@ class StockController
 
         $required = ['material_no','material_description','current_qty','uom','stock_value','batch_no','manufacture_date','expiry_date','receiving_store'];
         $missing = array_values(array_filter($required, fn($h) => !in_array($h, $headers, true)));
-        if ($user['role'] === 'super_admin' && $targetDivisionId === 0 && !in_array('division', $headers, true)) {
+        if (Auth::isGlobalOperator($user) && $targetDivisionId === 0 && !in_array('division', $headers, true)) {
             $missing[] = 'division (or choose a Target Division before importing)';
         }
         if ($missing) {
@@ -605,7 +604,7 @@ class StockController
             }
 
             try {
-                if ($user['role'] === 'super_admin') {
+                if (Auth::isGlobalOperator($user)) {
                     if ($targetDivisionId > 0) {
                         $divisionId = $targetDivisionId;
                     } else {
@@ -681,7 +680,7 @@ class StockController
     {
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
-        $division = $user['role'] === 'super_admin' ? 'SNW' : ($user['division_code'] ?? 'SNW');
+        $division = Auth::isGlobalOperator($user) ? 'SNW' : ($user['division_code'] ?? 'SNW');
 
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="qarshi_dispatch_stock_import_template.csv"');
@@ -702,7 +701,7 @@ class StockController
 
     private function renderImportResult(array $user, array $result): void
     {
-        $targetDivisionId = $user['role'] === 'super_admin'
+        $targetDivisionId = Auth::isGlobalOperator($user)
             ? (int)($_POST['target_division_id'] ?? 0)
             : (int)$user['division_id'];
         $targetDivision = $targetDivisionId > 0 ? (new Division())->find($targetDivisionId) : null;
@@ -745,7 +744,7 @@ class StockController
     private function payload(array $user): array
     {
         return [
-            'division_id' => $user['role'] === 'super_admin' ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'],
+            'division_id' => Auth::isGlobalOperator($user) ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'],
             'material_code' => trim($_POST['material_code'] ?? ''),
             'material_description' => trim($_POST['material_description'] ?? ''),
             'batch_no' => trim($_POST['batch_no'] ?? ''),

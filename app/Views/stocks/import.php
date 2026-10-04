@@ -18,7 +18,7 @@
             <p><b>Excel note:</b> CSV files cannot store a cell number format. The downloaded template keeps example dates as text so Excel shows the full four-digit year (for example 18/Sep/2026). The importer removes the text marker automatically before saving.</p>
             <p><b>Fixed CSV date format:</b> DD/MON/YYYY for Manufacturing Date, Expiry Date and Last Receipt Date.</p>
             <p>This matches the uploaded Stock Aging Report layout. Aging columns may be blank because the system calculates them automatically. Preferred CSV date format is DD/MON/YYYY (for example 18/Sep/2026). If Excel rewrites it as 18-Sep-26 or 18-Sep-2026, the importer accepts it automatically and converts it to SQL YYYY-MM-DD. The source code SNMW is also accepted as SNW.</p>
-            <?php if ($user['role'] !== 'super_admin'): ?>
+            <?php if (!in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true)): ?>
                 <p>Your login is restricted to <b><?= e($user['division_code'] ?? '') ?></b>. The importer automatically assigns every row to this division. A Division column is optional.</p>
             <?php else: ?>
                 <p><b>Single-division file:</b> choose a Target Division below. The Division column may then be blank or omitted. <b>Mixed-division file:</b> leave Target Division as “Use Division from CSV” and put JSD, SNW, RTD, etc. in every row.</p>
@@ -37,7 +37,7 @@
                 <small>Use “Add New Batches Only” to preserve previously imported stock. Existing Batch Nos. are skipped; only new Batch Nos. are added.</small>
             </label>
 
-            <?php if ($user['role'] === 'super_admin'): ?>
+            <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true)): ?>
             <label class="csv-target-division">
                 <span>Target Division</span>
                 <select name="target_division_id">

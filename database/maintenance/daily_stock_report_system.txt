@@ -1,0 +1,50 @@
+DAILY STOCK RECORD REPORT SYSTEM
+================================
+
+Purpose
+-------
+Preserve a permanent daily snapshot of Finish Goods stock so Super Admin and
+Division Admins can cross-check stock Quantity and Stock Retail Value without
+historical reports changing when live stock is edited later.
+
+Access
+------
+Super Admin:
+- All Divisions summary
+- Any individual Division
+- Generate/refresh today's snapshot
+- Export CSV
+- Compare dates
+- Verify reports
+
+Division Admin:
+- Assigned Division only
+- Generate/refresh today's snapshot
+- Export CSV
+- Compare dates
+- Verify assigned Division report
+
+Snapshot rules
+--------------
+- One snapshot per Division per Report Date.
+- Batch details are copied into daily_stock_report_items.
+- Historical reports do not read live stock after they are created.
+- A verified report is locked against manual refresh.
+- Any automatic 11:59 PM closing refresh clears an earlier verification so the
+  final closing snapshot can be verified again.
+
+Automatic schedule
+------------------
+Run once as Administrator on the XAMPP server:
+  bin\install_daily_stock_report_task.bat
+
+The task runs:
+  bin\generate_daily_stock_reports.php
+
+Daily schedule:
+  11:59 PM (Asia/Karachi application timezone)
+
+Database
+--------
+Migration:
+  database\migrations\013_add_daily_stock_reports.sql

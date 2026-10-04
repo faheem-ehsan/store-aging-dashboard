@@ -30,6 +30,33 @@ class Auth
         return $user;
     }
 
+    public static function isGlobalOperator(array $user): bool
+    {
+        return in_array($user['role'] ?? '', ['super_admin', 'store_manager'], true);
+    }
+
+    public static function canReadAllDivisions(array $user): bool
+    {
+        return self::isGlobalOperator($user)
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+    }
+
+    public static function canManageOperational(array $user): bool
+    {
+        return in_array($user['role'] ?? '', ['super_admin', 'store_manager', 'division_admin'], true);
+    }
+
+    public static function requireGlobalOperator(): array
+    {
+        $user = self::requireLogin();
+        if (!self::isGlobalOperator($user)) {
+            http_response_code(403);
+            View::render('errors/403', ['title' => 'Forbidden']);
+            exit;
+        }
+        return $user;
+    }
+
     public static function requireSuperAdmin(): array
     {
         $user = self::requireLogin();

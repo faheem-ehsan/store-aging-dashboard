@@ -202,7 +202,7 @@ $marketReturnEditUrl = static function (int $id) use ($marketReturnReturnFields)
             <input id="marketReturnSearch" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product, remarks, section, expiry...">
         </div>
 
-        <?php if ($user['role'] === 'super_admin' || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
+        <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
             <div class="stock-filter-field">
                 <label for="marketReturnDivision">Division</label>
                 <select id="marketReturnDivision" name="division_id">
