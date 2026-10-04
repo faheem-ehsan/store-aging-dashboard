@@ -52,10 +52,14 @@ $dashboardActualMoney = static function ($value): string {
     $formatted = rtrim(rtrim(number_format($number, 2, '.', ','), '0'), '.');
     return 'Rs/ ' . $formatted;
 };
-$dashboardCalendarAgingPeriod = static function ($startDate, $endDate): string {
+$dashboardCalendarAgingPeriod = static function ($startDate, $endDate, bool $inclusiveEnd = false): string {
     try {
         $start = new \DateTimeImmutable((string)$startDate);
         $end = new \DateTimeImmutable((string)$endDate);
+
+        if ($inclusiveEnd && $end > $start) {
+            $end = $end->modify('+1 day');
+        }
     } catch (\Throwable $e) {
         return '—';
     }
@@ -426,7 +430,7 @@ ksort($modalLocations);
                         <td><?= e(format_app_date($r['manufacture_date'])) ?></td>
                         <td><?= e(format_app_date($r['expiry_date'])) ?></td>
                         <td class="num aging-period"><?= e($dashboardCalendarAgingPeriod($r['manufacture_date'], $dashboardAgingReferenceDate)) ?></td>
-                        <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($dashboardCalendarAgingPeriod($dashboardAgingReferenceDate, $r['expiry_date'])) ?></td>
+                        <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($dashboardCalendarAgingPeriod($dashboardAgingReferenceDate, $r['expiry_date'], (int)($r['remaining_days'] ?? 0) > 0)) ?></td>
                         <td><?= e($r['receiving_store'] ?? '') ?></td>
                         <td><span class="grade-bar <?= e($r['grade']['color_class']) ?>"></span></td>
                     </tr>

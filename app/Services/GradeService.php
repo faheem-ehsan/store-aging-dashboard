@@ -28,9 +28,27 @@ class GradeService
         $mfg = new \DateTimeImmutable($batch['manufacture_date']);
         $expiry = new \DateTimeImmutable($batch['expiry_date']);
 
-        $batch['aging_days'] = (int)$mfg->diff($today)->format('%r%a');
-        $batch['remaining_days'] = (int)$today->diff($expiry)->format('%r%a');
-        $batch['shelf_life_days'] = max(0, (int)$mfg->diff($expiry)->format('%r%a'));
+        $agingDays = (int)$mfg->diff($today)->format('%r%a');
+        $rawRemainingDays = (int)$today->diff($expiry)->format('%r%a');
+        $rawShelfLifeDays = (int)$mfg->diff($expiry)->format('%r%a');
+
+        // Calendar-day convention used by the UI:
+        // Aging = elapsed days since Manufacturing Date.
+        // Remaining = current live day through Expiry Date, inclusive.
+        //
+        // Example:
+        //   MFG 01/Oct/2026, as-of 04/Oct/2026, EXP 31/Oct/2026
+        //   Aging = 3, Remaining = 28, Total calendar shelf-life = 31.
+        //
+        // On the actual Expiry Date the batch is already Expired, so remaining
+        // stays 0 instead of becoming 1.
+        $batch['aging_days'] = $agingDays;
+        $batch['remaining_days'] = $rawRemainingDays > 0
+            ? $rawRemainingDays + 1
+            : $rawRemainingDays;
+        $batch['shelf_life_days'] = $rawShelfLifeDays >= 0
+            ? $rawShelfLifeDays + 1
+            : 0;
         $batch['grade'] = $this->gradeForBatch($mfg, $expiry, (int)($batch['division_id'] ?? 0), $today);
         $batch['shelf_life_remaining_percent'] = $batch['grade']['remaining_percent'];
         $batch['shelf_life_used_percent'] = $batch['grade']['used_percent'];

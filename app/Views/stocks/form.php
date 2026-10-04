@@ -79,7 +79,7 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
                 required>
         </label>
         <label>Aging (Days)<input id="aging_days_preview" value="" readonly tabindex="-1"></label>
-        <label>Aging Remaining (Days)<input id="remaining_days_preview" value="" readonly tabindex="-1"></label>
+        <label>Expiry Remaining (Days)<input id="remaining_days_preview" value="" readonly tabindex="-1"></label>
         <label class="span-2">Stock Location<input name="receiving_store" value="<?= e($batch['receiving_store'] ?? '') ?>" placeholder="e.g. FW02" required></label>
 
         <div class="form-actions span-2">
@@ -161,7 +161,17 @@ $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode .
         const mfgUtc = dateOnly(mfg.value);
         const expUtc = dateOnly(exp.value);
         aging.value = mfgUtc === null ? '' : Math.floor((todayUtc - mfgUtc) / dayMs);
-        remaining.value = expUtc === null ? '' : Math.floor((expUtc - todayUtc) / dayMs);
+
+        if (expUtc === null) {
+            remaining.value = '';
+        } else {
+            const rawRemaining = Math.floor((expUtc - todayUtc) / dayMs);
+
+            // Count remaining live calendar days inclusively.
+            // Example: 04/Oct through 31/Oct = 28 calendar days.
+            // On Expiry Date itself, remaining is 0 because the batch is expired.
+            remaining.value = rawRemaining > 0 ? rawRemaining + 1 : rawRemaining;
+        }
     }
 
     [mfg, exp].forEach(function (input) {

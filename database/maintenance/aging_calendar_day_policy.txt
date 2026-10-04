@@ -1,0 +1,14 @@
+AGING / EXPIRY REMAINING CALENDAR-DAY POLICY
+============================================
+Aging Days = elapsed days from Manufacturing Date to the as-of date.
+Expiry Remaining Days = live calendar days from the as-of date through Expiry Date, inclusive.
+On the actual Expiry Date the batch is Expired, so Expiry Remaining = 0.
+
+Example as-of 04/Oct/2026:
+Manufacturing Date: 01/Oct/2026
+Expiry Date:        31/Oct/2026
+Aging Days:         3
+Expiry Remaining:   28
+Total calendar shelf-life: 31 days
+
+Grade percentage calculation is intentionally unchanged so existing division grading thresholds do not shift.

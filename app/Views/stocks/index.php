@@ -17,10 +17,16 @@ $stockValueActual = static function ($value): string {
     $formatted = rtrim(rtrim(number_format($number, 2, '.', ','), '0'), '.');
     return 'Rs/ ' . $formatted;
 };
-$calendarAgingPeriod = static function ($startDate, $endDate): string {
+$calendarAgingPeriod = static function ($startDate, $endDate, bool $inclusiveEnd = false): string {
     try {
         $start = new \DateTimeImmutable((string)$startDate);
         $end = new \DateTimeImmutable((string)$endDate);
+
+        // For live Expiry Remaining, include the expiry calendar date itself.
+        // We do this by diffing to the day after expiry.
+        if ($inclusiveEnd && $end > $start) {
+            $end = $end->modify('+1 day');
+        }
     } catch (\Throwable $e) {
         return '—';
     }
@@ -283,7 +289,7 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
     <td><?= e(format_app_date($r['manufacture_date'])) ?></td>
     <td><?= e(format_app_date($r['expiry_date'])) ?></td>
     <td class="num aging-period"><?= e($calendarAgingPeriod($r['manufacture_date'], $agingReferenceDate)) ?></td>
-    <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($calendarAgingPeriod($agingReferenceDate, $r['expiry_date'])) ?></td>
+    <td class="num aging-period <?= $r['remaining_days'] <= 0 ? 'text-danger' : '' ?>"><?= e($calendarAgingPeriod($agingReferenceDate, $r['expiry_date'], (int)($r['remaining_days'] ?? 0) > 0)) ?></td>
     <td><?= e($r['receiving_store'] ?? '') ?></td>
     <td>
         <span class="grade-bar-wrap" title="<?= e($r['grade']['grade_code']) ?> · <?= e($r['grade']['criteria_text']) ?>">
