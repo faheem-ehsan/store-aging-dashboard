@@ -6667,3 +6667,33 @@ body.stock-bulk-modal-open{overflow:hidden}
         grid-template-columns:1fr;
     }
 }
+
+
+/* ==========================================================
+   Dashboard grade focus popup - wider desktop layout
+   Keep Stock Value + Million on one line.
+   ========================================================== */
+@media (min-width: 901px){
+    .grade-hover-focus-cloud{
+        width:min(1040px,calc(100vw - 80px)) !important;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-metrics{
+        grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+        gap:16px !important;
+        padding-left:34px !important;
+        padding-right:34px !important;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-metric{
+        min-width:0;
+        padding-left:18px !important;
+        padding-right:18px !important;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-metric:nth-child(3) strong{
+        white-space:nowrap !important;
+        overflow-wrap:normal !important;
+        word-break:normal !important;
+    }
+}
