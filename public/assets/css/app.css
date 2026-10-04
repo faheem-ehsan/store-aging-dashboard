@@ -5175,3 +5175,855 @@ body.stock-bulk-modal-open{overflow:hidden}
     .grade-email-test-mode-box{grid-template-columns:1fr}
     .grade-email-actions-grid-3{grid-template-columns:1fr}
 }
+
+
+/* ==========================================================
+   Dashboard Grade Hover Cloud - quick grade intelligence
+   ========================================================== */
+.dashboard-variant2-grade-shell .grade-summary-table-cards{
+    isolation:isolate;
+}
+.dashboard-variant2-grade-shell .grade-detail-card{
+    --grade-hover-accent:#153b7c;
+    --grade-hover-accent-text:#fff;
+    position:relative;
+    transition:transform .18s ease, box-shadow .18s ease;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-aplus{
+    --grade-hover-accent:#153b7c;
+    --grade-hover-accent-text:#fff;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-a{
+    --grade-hover-accent:#8fce4c;
+    --grade-hover-accent-text:#17320b;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b{
+    --grade-hover-accent:#f2e600;
+    --grade-hover-accent-text:#282500;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-c{
+    --grade-hover-accent:#ff1a1a;
+    --grade-hover-accent-text:#fff;
+}
+.dashboard-variant2-grade-shell .grade-detail-card.grade-ex{
+    --grade-hover-accent:#111;
+    --grade-hover-accent-text:#fff;
+}
+
+.dashboard-variant2-grade-shell .grade-detail-card:hover,
+.dashboard-variant2-grade-shell .grade-detail-card:focus-visible{
+    z-index:45;
+    transform:translateY(-3px);
+    box-shadow:0 16px 34px rgba(16,24,40,.16) !important;
+    outline:none;
+}
+.dashboard-variant2-grade-shell .grade-detail-card:focus-visible{
+    box-shadow:0 0 0 3px rgba(164,18,24,.12),0 16px 34px rgba(16,24,40,.16) !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud{
+    position:absolute;
+    z-index:60;
+    top:61px;
+    left:50%;
+    width:min(310px,calc(100% + 22px));
+    padding:13px;
+    border:1px solid rgba(208,215,225,.92);
+    border-radius:16px;
+    background:rgba(255,255,255,.97);
+    box-shadow:0 22px 48px rgba(16,24,40,.20),0 5px 14px rgba(16,24,40,.08);
+    backdrop-filter:blur(14px);
+    -webkit-backdrop-filter:blur(14px);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transform:translate(-50%,-8px) scale(.96);
+    transform-origin:50% 0;
+    transition:opacity .16s ease, transform .18s cubic-bezier(.2,.8,.2,1), visibility .16s ease;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud::before{
+    content:"";
+    position:absolute;
+    inset:0 0 auto 0;
+    height:4px;
+    border-radius:16px 16px 0 0;
+    background:var(--grade-hover-accent);
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-pointer{
+    position:absolute;
+    top:-7px;
+    left:50%;
+    width:14px;
+    height:14px;
+    border-left:1px solid rgba(208,215,225,.92);
+    border-top:1px solid rgba(208,215,225,.92);
+    background:#fff;
+    transform:translateX(-50%) rotate(45deg);
+}
+.dashboard-variant2-grade-shell .grade-detail-card:hover .grade-hover-cloud,
+.dashboard-variant2-grade-shell .grade-detail-card:focus-visible .grade-hover-cloud,
+.dashboard-variant2-grade-shell .grade-detail-card:focus-within .grade-hover-cloud{
+    opacity:1;
+    visibility:visible;
+    transform:translate(-50%,0) scale(1);
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-head{
+    display:flex;
+    align-items:center;
+    gap:9px;
+    min-width:0;
+    padding:2px 1px 10px;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-badge{
+    display:grid !important;
+    place-items:center;
+    min-width:34px;
+    height:34px;
+    padding:0 8px;
+    border-radius:10px;
+    background:var(--grade-hover-accent);
+    color:var(--grade-hover-accent-text) !important;
+    font-size:11px !important;
+    font-weight:900;
+    letter-spacing:.02em;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.22);
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-head>div{
+    display:grid;
+    gap:1px;
+    min-width:0;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-head strong{
+    margin:0 !important;
+    color:#172033 !important;
+    font-size:13px !important;
+    font-weight:800 !important;
+    line-height:1.2;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-head small{
+    color:#98a2b3 !important;
+    font-size:9px !important;
+    font-weight:700;
+    line-height:1.2;
+    letter-spacing:.04em;
+    text-transform:uppercase;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-metrics{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:8px;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric{
+    display:grid;
+    grid-template-columns:31px minmax(0,1fr);
+    align-items:center;
+    gap:8px;
+    min-width:0;
+    min-height:63px;
+    padding:9px;
+    border:1px solid #e7ebf0;
+    border-radius:12px;
+    background:linear-gradient(180deg,#fff 0%,#fafbfd 100%);
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-icon{
+    display:grid !important;
+    place-items:center;
+    width:31px;
+    height:31px;
+    border-radius:9px;
+    background:color-mix(in srgb,var(--grade-hover-accent) 12%,white);
+    color:var(--grade-hover-accent) !important;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-icon svg{
+    width:16px;
+    height:16px;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric>span:last-child{
+    display:grid;
+    gap:3px;
+    min-width:0;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric small{
+    color:#7a8699 !important;
+    font-size:8px !important;
+    font-weight:700;
+    line-height:1.2;
+    text-transform:uppercase;
+    letter-spacing:.025em;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric strong{
+    margin:0 !important;
+    overflow:hidden;
+    color:#101828 !important;
+    font-size:11.5px !important;
+    font-weight:850 !important;
+    line-height:1.25;
+    text-overflow:ellipsis;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-foot{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:8px;
+    margin-top:9px;
+    padding:8px 9px 0;
+    border-top:1px solid #edf0f4;
+    color:#667085;
+    font-size:9px;
+    font-weight:650;
+}
+.dashboard-variant2-grade-shell .grade-hover-cloud-foot span:last-child{
+    display:grid;
+    place-items:center;
+    width:20px;
+    height:20px;
+    border-radius:7px;
+    background:var(--grade-hover-accent);
+    color:var(--grade-hover-accent-text);
+    font-size:11px;
+}
+
+/* Keep the floating cloud inside smaller layouts without losing content. */
+@media(max-width:760px){
+    .dashboard-variant2-grade-shell .grade-hover-cloud{
+        width:calc(100% - 18px);
+        top:61px;
+    }
+    .dashboard-variant2-grade-shell .grade-hover-cloud-metrics{
+        grid-template-columns:1fr;
+    }
+}
+
+@media(prefers-reduced-motion:reduce){
+    .dashboard-variant2-grade-shell .grade-detail-card,
+    .dashboard-variant2-grade-shell .grade-hover-cloud{
+        transition:none !important;
+    }
+}
+
+
+/* ==========================================================
+   Dashboard Grade Hover Focus
+   Large centered cloud with full-screen blur
+   ========================================================== */
+.grade-hover-focus-backdrop{
+    position:fixed;
+    inset:0;
+    z-index:9950;
+    background:rgba(15,23,42,.34);
+    backdrop-filter:blur(8px) saturate(.86);
+    -webkit-backdrop-filter:blur(8px) saturate(.86);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .22s ease, visibility .22s ease;
+}
+
+.grade-hover-focus-backdrop.is-visible{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+}
+
+/* The popup is controlled by JS, not by the old local card hover rule. */
+.dashboard-variant2-grade-shell .grade-detail-card:hover .grade-hover-cloud,
+.dashboard-variant2-grade-shell .grade-detail-card:focus-visible .grade-hover-cloud,
+.dashboard-variant2-grade-shell .grade-detail-card:focus-within .grade-hover-cloud{
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud{
+    position:fixed !important;
+    z-index:10020 !important;
+    top:50% !important;
+    left:50% !important;
+    width:min(720px,calc(100vw - 56px)) !important;
+    max-width:720px;
+    padding:0 !important;
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.84) !important;
+    border-radius:26px !important;
+    background:rgba(255,255,255,.985) !important;
+    box-shadow:
+        0 38px 90px rgba(15,23,42,.30),
+        0 12px 30px rgba(15,23,42,.16),
+        inset 0 0 0 1px rgba(255,255,255,.65) !important;
+    backdrop-filter:blur(22px) saturate(1.08);
+    -webkit-backdrop-filter:blur(22px) saturate(1.08);
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transform:translate(-50%,-50%) scale(.92) !important;
+    transform-origin:center center !important;
+    transition:
+        opacity .20s ease,
+        transform .26s cubic-bezier(.2,.82,.2,1),
+        visibility .20s ease !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud::before{
+    height:7px !important;
+    border-radius:26px 26px 0 0 !important;
+    background:var(--grade-hover-accent) !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-pointer{
+    display:none !important;
+}
+
+.dashboard-variant2-grade-shell .grade-detail-card.is-hover-focus{
+    z-index:auto !important;
+    transform:none !important;
+    box-shadow:none !important;
+}
+
+.dashboard-variant2-grade-shell .grade-detail-card.is-hover-focus .grade-hover-cloud,
+.dashboard-variant2-grade-shell .grade-detail-card.is-hover-focus:hover .grade-hover-cloud,
+.dashboard-variant2-grade-shell .grade-detail-card.is-hover-focus:focus-within .grade-hover-cloud{
+    opacity:1 !important;
+    visibility:visible !important;
+    pointer-events:auto !important;
+    transform:translate(-50%,-50%) scale(1) !important;
+}
+
+/* Premium header */
+.dashboard-variant2-grade-shell .grade-hover-cloud-head{
+    display:flex !important;
+    align-items:center !important;
+    gap:16px !important;
+    min-width:0;
+    padding:27px 30px 20px !important;
+    border-bottom:1px solid #edf0f4;
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb,var(--grade-hover-accent) 8%,white) 0%,
+            #fff 55%,
+            color-mix(in srgb,var(--grade-hover-accent) 4%,white) 100%
+        );
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-badge{
+    display:grid !important;
+    place-items:center !important;
+    min-width:58px !important;
+    height:58px !important;
+    padding:0 14px !important;
+    border-radius:17px !important;
+    background:var(--grade-hover-accent) !important;
+    color:var(--grade-hover-accent-text) !important;
+    font-size:15px !important;
+    font-weight:900 !important;
+    letter-spacing:.02em;
+    box-shadow:
+        0 10px 24px color-mix(in srgb,var(--grade-hover-accent) 24%,transparent),
+        inset 0 0 0 1px rgba(255,255,255,.24) !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-head>div{
+    display:grid !important;
+    gap:4px !important;
+    min-width:0;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-head strong{
+    margin:0 !important;
+    color:#111827 !important;
+    font-size:18px !important;
+    font-weight:800 !important;
+    line-height:1.15 !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-head small{
+    color:#7b8798 !important;
+    font-size:10px !important;
+    font-weight:800 !important;
+    line-height:1.2 !important;
+    letter-spacing:.075em !important;
+    text-transform:uppercase !important;
+}
+
+/* Big Total Quantity / Total Stock Value panels */
+.dashboard-variant2-grade-shell .grade-hover-cloud-metrics{
+    display:grid !important;
+    grid-template-columns:1fr 1fr !important;
+    gap:16px !important;
+    padding:24px 30px 26px !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric{
+    display:grid !important;
+    grid-template-columns:54px minmax(0,1fr) !important;
+    align-items:center !important;
+    gap:14px !important;
+    min-width:0;
+    min-height:118px !important;
+    padding:19px 20px !important;
+    border:1px solid #e4e9ef !important;
+    border-radius:19px !important;
+    background:
+        linear-gradient(145deg,#fff 0%,#f8fafc 100%) !important;
+    box-shadow:
+        0 8px 22px rgba(16,24,40,.055),
+        inset 0 1px 0 rgba(255,255,255,.85);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric:hover{
+    transform:translateY(-2px);
+    border-color:color-mix(in srgb,var(--grade-hover-accent) 36%,#dfe5ec) !important;
+    box-shadow:
+        0 14px 28px rgba(16,24,40,.10),
+        inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-icon{
+    display:grid !important;
+    place-items:center !important;
+    width:54px !important;
+    height:54px !important;
+    border-radius:16px !important;
+    background:color-mix(in srgb,var(--grade-hover-accent) 11%,white) !important;
+    color:var(--grade-hover-accent) !important;
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--grade-hover-accent) 14%,transparent);
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-icon svg{
+    width:25px !important;
+    height:25px !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric>span:last-child{
+    display:grid !important;
+    gap:7px !important;
+    min-width:0;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric small{
+    color:#667085 !important;
+    font-size:10px !important;
+    font-weight:800 !important;
+    line-height:1.2 !important;
+    letter-spacing:.045em !important;
+    text-transform:uppercase !important;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-metric strong{
+    overflow-wrap:anywhere;
+    color:#101828 !important;
+    font-size:19px !important;
+    font-weight:850 !important;
+    line-height:1.18 !important;
+}
+
+/* Bottom action strip */
+.dashboard-variant2-grade-shell .grade-hover-cloud-foot{
+    display:flex !important;
+    align-items:center !important;
+    justify-content:center !important;
+    gap:9px !important;
+    min-height:54px !important;
+    padding:12px 24px !important;
+    border-top:1px solid #edf0f4 !important;
+    background:color-mix(in srgb,var(--grade-hover-accent) 5%,#fbfcfe) !important;
+    color:#475467 !important;
+    font-size:11px !important;
+    font-weight:750 !important;
+    letter-spacing:.01em;
+    cursor:pointer;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud-foot span:last-child{
+    display:grid;
+    place-items:center;
+    width:24px;
+    height:24px;
+    border-radius:50%;
+    background:var(--grade-hover-accent);
+    color:var(--grade-hover-accent-text);
+    font-size:12px;
+    transition:transform .18s ease;
+}
+
+.dashboard-variant2-grade-shell .grade-hover-cloud:hover .grade-hover-cloud-foot span:last-child{
+    transform:translate(2px,-2px);
+}
+
+/* Keep the B-grade popup readable over yellow. */
+.dashboard-variant2-grade-shell .grade-detail-card.grade-b .grade-hover-cloud-badge{
+    color:#111 !important;
+}
+
+/* Small-screen fallback */
+@media(max-width:760px){
+    .grade-hover-focus-backdrop{
+        backdrop-filter:blur(5px);
+        -webkit-backdrop-filter:blur(5px);
+    }
+
+    .dashboard-variant2-grade-shell .grade-hover-cloud{
+        width:calc(100vw - 28px) !important;
+        max-height:calc(100vh - 30px);
+        overflow:auto;
+        border-radius:21px !important;
+    }
+
+    .dashboard-variant2-grade-shell .grade-hover-cloud-head{
+        padding:22px 20px 17px !important;
+    }
+
+    .dashboard-variant2-grade-shell .grade-hover-cloud-metrics{
+        grid-template-columns:1fr !important;
+        gap:11px !important;
+        padding:17px 20px 20px !important;
+    }
+
+    .dashboard-variant2-grade-shell .grade-hover-cloud-metric{
+        min-height:92px !important;
+    }
+}
+
+@media(prefers-reduced-motion:reduce){
+    .grade-hover-focus-backdrop,
+    .dashboard-variant2-grade-shell .grade-hover-cloud,
+    .dashboard-variant2-grade-shell .grade-hover-cloud-metric,
+    .dashboard-variant2-grade-shell .grade-hover-cloud-foot span:last-child{
+        transition:none !important;
+    }
+}
+
+
+/* Grade hover focus is intentionally available only in All Divisions view. */
+.dashboard-variant2-grade-shell:not(.grade-hover-focus-enabled) .grade-hover-cloud{
+    display:none !important;
+}
+
+.dashboard-variant2-grade-shell:not(.grade-hover-focus-enabled) .grade-detail-card:hover,
+.dashboard-variant2-grade-shell:not(.grade-hover-focus-enabled) .grade-detail-card:focus-visible,
+.dashboard-variant2-grade-shell:not(.grade-hover-focus-enabled) .grade-detail-card:focus-within{
+    transform:none !important;
+    box-shadow:none !important;
+}
+
+/* Keep the normal clickable grade-card behavior in a selected Division view. */
+.dashboard-variant2-grade-shell:not(.grade-hover-focus-enabled) .grade-detail-card{
+    cursor:pointer;
+}
+
+
+/* ==========================================================
+   FIX: Grade hover focus portal
+   The centered cloud is rendered in its own top-level layer,
+   above the blurred backdrop, so it cannot disappear behind
+   the Grade Summary card stacking context.
+   ========================================================== */
+.grade-hover-focus-portal{
+    position:fixed;
+    inset:0;
+    z-index:10050;
+    display:grid;
+    place-items:center;
+    padding:28px;
+    opacity:0;
+    visibility:hidden;
+    pointer-events:none;
+    transition:opacity .20s ease, visibility .20s ease;
+}
+
+.grade-hover-focus-portal.is-visible{
+    opacity:1;
+    visibility:visible;
+    pointer-events:auto;
+}
+
+.grade-hover-focus-cloud{
+    --grade-hover-accent:#153b7c;
+    --grade-hover-accent-text:#fff;
+
+    position:relative;
+    width:min(760px,calc(100vw - 70px));
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.9);
+    border-radius:28px;
+    background:rgba(255,255,255,.985);
+    box-shadow:
+        0 42px 100px rgba(15,23,42,.34),
+        0 16px 38px rgba(15,23,42,.18),
+        inset 0 0 0 1px rgba(255,255,255,.7);
+    transform:translateY(12px) scale(.95);
+    transition:transform .26s cubic-bezier(.2,.82,.2,1);
+    cursor:pointer;
+    outline:none;
+}
+
+.grade-hover-focus-portal.is-visible .grade-hover-focus-cloud{
+    transform:translateY(0) scale(1);
+}
+
+.grade-hover-focus-cloud::before{
+    content:"";
+    display:block;
+    height:8px;
+    background:var(--grade-hover-accent);
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-pointer{
+    display:none;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-head{
+    display:flex;
+    align-items:center;
+    gap:18px;
+    padding:30px 32px 22px;
+    border-bottom:1px solid #edf0f4;
+    background:
+        linear-gradient(
+            135deg,
+            color-mix(in srgb,var(--grade-hover-accent) 8%,white) 0%,
+            #fff 58%,
+            color-mix(in srgb,var(--grade-hover-accent) 4%,white) 100%
+        );
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-badge{
+    display:grid;
+    place-items:center;
+    min-width:64px;
+    height:64px;
+    padding:0 15px;
+    border-radius:18px;
+    background:var(--grade-hover-accent);
+    color:var(--grade-hover-accent-text);
+    font-size:17px;
+    font-weight:900;
+    box-shadow:
+        0 12px 26px color-mix(in srgb,var(--grade-hover-accent) 24%,transparent),
+        inset 0 0 0 1px rgba(255,255,255,.22);
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-head>div{
+    display:grid;
+    gap:5px;
+    min-width:0;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-head strong{
+    color:#101828;
+    font-size:23px;
+    font-weight:850;
+    line-height:1.15;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-head small{
+    color:#7b8798;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metrics{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:18px;
+    padding:26px 32px 30px;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metric{
+    display:grid;
+    grid-template-columns:58px minmax(0,1fr);
+    align-items:center;
+    gap:16px;
+    min-height:126px;
+    padding:20px 22px;
+    border:1px solid #e3e8ef;
+    border-radius:20px;
+    background:linear-gradient(145deg,#fff 0%,#f8fafc 100%);
+    box-shadow:0 10px 26px rgba(16,24,40,.065);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metric:hover{
+    transform:translateY(-3px);
+    border-color:color-mix(in srgb,var(--grade-hover-accent) 35%,#dfe5ec);
+    box-shadow:0 17px 32px rgba(16,24,40,.11);
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-icon{
+    display:grid;
+    place-items:center;
+    width:58px;
+    height:58px;
+    border-radius:17px;
+    background:color-mix(in srgb,var(--grade-hover-accent) 11%,white);
+    color:var(--grade-hover-accent);
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--grade-hover-accent) 14%,transparent);
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-icon svg{
+    width:27px;
+    height:27px;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metric>span:last-child{
+    display:grid;
+    gap:8px;
+    min-width:0;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metric small{
+    color:#667085;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.05em;
+    text-transform:uppercase;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metric strong{
+    color:#101828;
+    font-size:22px;
+    font-weight:850;
+    line-height:1.18;
+    overflow-wrap:anywhere;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-foot{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:10px;
+    min-height:58px;
+    padding:13px 26px;
+    border-top:1px solid #edf0f4;
+    background:color-mix(in srgb,var(--grade-hover-accent) 5%,#fbfcfe);
+    color:#475467;
+    font-size:12px;
+    font-weight:750;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-foot span:last-child{
+    display:grid;
+    place-items:center;
+    width:26px;
+    height:26px;
+    border-radius:50%;
+    background:var(--grade-hover-accent);
+    color:var(--grade-hover-accent-text);
+    transition:transform .18s ease;
+}
+
+.grade-hover-focus-cloud:hover .grade-hover-cloud-foot span:last-child{
+    transform:translate(2px,-2px);
+}
+
+/* The original per-card cloud is only a hidden data/template source. */
+.grade-hover-focus-enabled .grade-detail-card .grade-hover-cloud{
+    display:none !important;
+}
+
+/* Very subtle source-card emphasis beneath the blur. */
+.grade-hover-focus-enabled .grade-detail-card.is-hover-focus-source{
+    outline:2px solid color-mix(in srgb,var(--grade-hover-accent) 45%,transparent);
+    outline-offset:2px;
+}
+
+/* Backdrop remains below portal. */
+.grade-hover-focus-backdrop{
+    z-index:10000 !important;
+}
+
+/* B-grade popup keeps dark text on yellow accent. */
+.grade-hover-focus-cloud[style*="242"] .grade-hover-cloud-badge{
+    color:#111;
+}
+
+@media(max-width:760px){
+    .grade-hover-focus-portal{
+        padding:14px;
+    }
+
+    .grade-hover-focus-cloud{
+        width:100%;
+        max-height:calc(100vh - 28px);
+        overflow:auto;
+        border-radius:22px;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-head{
+        padding:22px 20px 18px;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-head strong{
+        font-size:20px;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-metrics{
+        grid-template-columns:1fr;
+        gap:12px;
+        padding:18px 20px 22px;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-metric{
+        min-height:96px;
+    }
+}
+
+@media(prefers-reduced-motion:reduce){
+    .grade-hover-focus-portal,
+    .grade-hover-focus-cloud,
+    .grade-hover-focus-cloud .grade-hover-cloud-metric,
+    .grade-hover-focus-cloud .grade-hover-cloud-foot span:last-child{
+        transition:none !important;
+    }
+}
+
+
+/* Grade hover popup: 3 summary metrics */
+.grade-hover-focus-cloud .grade-hover-cloud-metrics{
+    grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+    gap:14px !important;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metric{
+    grid-template-columns:48px minmax(0,1fr) !important;
+    gap:12px !important;
+    min-height:118px !important;
+    padding:18px 16px !important;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-icon{
+    width:48px !important;
+    height:48px !important;
+    border-radius:15px !important;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-icon svg{
+    width:23px !important;
+    height:23px !important;
+}
+
+.grade-hover-focus-cloud .grade-hover-cloud-metric strong{
+    font-size:18px !important;
+}
+
+/* Popup receives interaction focus automatically when displayed. */
+.grade-hover-focus-cloud:focus{
+    outline:3px solid color-mix(in srgb,var(--grade-hover-accent) 28%,transparent);
+    outline-offset:5px;
+}
+
+@media(max-width:900px){
+    .grade-hover-focus-cloud .grade-hover-cloud-metrics{
+        grid-template-columns:1fr !important;
+    }
+
+    .grade-hover-focus-cloud .grade-hover-cloud-metric{
+        min-height:88px !important;
+    }
+}

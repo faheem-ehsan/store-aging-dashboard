@@ -302,7 +302,8 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
 </div>
 </section>
 
-<section class="dashboard-variant2-grade-shell">
+<?php $gradeHoverFocusEnabled = empty($selectedDivision); ?>
+<section class="dashboard-variant2-grade-shell<?= $gradeHoverFocusEnabled ? ' grade-hover-focus-enabled' : '' ?>">
 <div class="dashboard-grade-section-head">
     <div>
         <h2>Grade Summary</h2>
@@ -311,10 +312,58 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
 
 <div class="metric-grid dashboard-grade-metrics dashboard-grade-metrics-refreshed grade-summary-table-cards">
     <?php foreach ($gradeSeries as $gs): ?>
-        <div class="metric <?= e($gs['class']) ?> grade-click-card grade-detail-card" role="button" tabindex="0" data-grade="<?= e($gs['key']) ?>" data-grade-label="<?= e($gs['label']) ?>" aria-label="Open <?= e($gs['label']) ?> grade stock details">
+        <div class="metric <?= e($gs['class']) ?> grade-click-card grade-detail-card" role="button" tabindex="0" data-grade="<?= e($gs['key']) ?>" data-grade-label="<?= e($gs['label']) ?>" aria-label="Open <?= e($gs['label']) ?> grade stock details"<?= $gradeHoverFocusEnabled ? ' aria-describedby="gradeHover-' . e($gs['class']) . '"' : '' ?>>
             <div class="grade-card-topline">
                 <span class="grade-card-title"><?= e($gs['label']) ?><?= $gs['key'] !== 'EX' ? ' Grade' : '' ?></span>
                 <span class="grade-uom-count"><?= number_format(count($gs['uoms'])) ?> Unit<?= count($gs['uoms']) === 1 ? '' : 's' ?></span>
+            </div>
+
+            <div class="grade-hover-cloud" id="gradeHover-<?= e($gs['class']) ?>" role="tooltip" aria-hidden="true">
+                <span class="grade-hover-cloud-pointer" aria-hidden="true"></span>
+                <div class="grade-hover-cloud-head">
+                    <span class="grade-hover-cloud-badge"><?= e($gs['label']) ?></span>
+                    <div>
+                        <strong><?= e($gs['label']) ?><?= $gs['key'] !== 'EX' ? ' Grade' : '' ?></strong>
+                        
+                    </div>
+                </div>
+
+                <div class="grade-hover-cloud-metrics">
+                    <div class="grade-hover-cloud-metric">
+                        <span class="grade-hover-cloud-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5 12 4l7 3.5-7 3.5-7-3.5Zm0 0v4L12 15l7-3.5v-4M5 11.5v4L12 19l7-3.5v-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span>
+                            <small>Total Quantity</small>
+                            <strong><?= $dashboardPlainNumber($gs['qty']) ?></strong>
+                        </span>
+                    </div>
+
+                    <div class="grade-hover-cloud-metric">
+                        <span class="grade-hover-cloud-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M6 5.5h12v13H6v-13ZM9 3.5h6v4H9v-4Zm0 8h6M9 15h4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span>
+                            <small>Total No. of Batches</small>
+                            <strong><?= number_format((int)$gs['batches']) ?></strong>
+                        </span>
+                    </div>
+
+                    <div class="grade-hover-cloud-metric">
+                        <span class="grade-hover-cloud-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v9H4v-9Zm3 4.5h.01M17 12h.01M12 9.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </span>
+                        <span>
+                            <small>Total Stock Value</small>
+                            <strong>Rs/ <?= $dashboardStockValue($gs['value']) ?></strong>
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grade-hover-cloud-foot">
+                    <span>Click to open detailed batches</span>
+                    <span aria-hidden="true">↗</span>
+                </div>
             </div>
 
             <div class="grade-unit-table" role="table" aria-label="<?= e($gs['label']) ?> unit summary">
@@ -352,6 +401,13 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </div>
     <?php endforeach; ?>
 </div>
+
+<?php if ($gradeHoverFocusEnabled): ?>
+<div class="grade-hover-focus-backdrop" id="gradeHoverFocusBackdrop" aria-hidden="true"></div>
+<div class="grade-hover-focus-portal" id="gradeHoverFocusPortal" aria-hidden="true">
+    <div class="grade-hover-focus-cloud" id="gradeHoverFocusCloud" role="dialog" aria-modal="false" tabindex="0"></div>
+</div>
+<?php endif; ?>
 
 <div class="grade-legend">
     <?php foreach ($legendItems as $item): ?>
@@ -675,6 +731,7 @@ ksort($modalLocations);
     }
 
     function openModal(card) {
+        closeHoverFocus();
         activeGrade = card.dataset.grade || '';
         title.textContent = card.dataset.gradeLabel || activeGrade;
         if (modalDialog) modalDialog.setAttribute('data-grade-theme', activeGrade);
@@ -695,6 +752,163 @@ ksort($modalLocations);
         modal.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('modal-open');
         if (lastFocused && typeof lastFocused.focus === 'function') lastFocused.focus();
+    }
+
+    const hoverFocusEnabled = <?= $gradeHoverFocusEnabled ? 'true' : 'false' ?>;
+    const hoverBackdrop = document.getElementById('gradeHoverFocusBackdrop');
+    const hoverPortal = document.getElementById('gradeHoverFocusPortal');
+    const hoverPortalCloud = document.getElementById('gradeHoverFocusCloud');
+    let hoverFocusCard = null;
+    let hoverFocusCloseTimer = null;
+
+    function clearHoverFocusTimer() {
+        if (hoverFocusCloseTimer) {
+            window.clearTimeout(hoverFocusCloseTimer);
+            hoverFocusCloseTimer = null;
+        }
+    }
+
+    function openHoverFocus(card) {
+        if (
+            !hoverFocusEnabled ||
+            !card ||
+            !hoverPortal ||
+            !hoverPortalCloud ||
+            modal.classList.contains('is-open')
+        ) return;
+
+        clearHoverFocusTimer();
+
+        const sourceCloud = card.querySelector('.grade-hover-cloud');
+        if (!sourceCloud) return;
+
+        hoverFocusCard = card;
+
+        const cardStyle = window.getComputedStyle(card);
+        hoverPortalCloud.style.setProperty(
+            '--grade-hover-accent',
+            cardStyle.getPropertyValue('--grade-hover-accent').trim() || '#153b7c'
+        );
+        hoverPortalCloud.style.setProperty(
+            '--grade-hover-accent-text',
+            cardStyle.getPropertyValue('--grade-hover-accent-text').trim() || '#fff'
+        );
+
+        hoverPortalCloud.innerHTML = sourceCloud.innerHTML;
+        hoverPortalCloud.setAttribute(
+            'aria-label',
+            (card.dataset.label || card.dataset.grade || 'Grade') + ' summary'
+        );
+
+        hoverFocusCard.classList.add('is-hover-focus-source');
+
+        if (hoverBackdrop) {
+            hoverBackdrop.classList.add('is-visible');
+            hoverBackdrop.setAttribute('aria-hidden', 'false');
+        }
+
+        hoverPortal.classList.add('is-visible');
+        hoverPortal.setAttribute('aria-hidden', 'false');
+
+        document.body.classList.add('grade-hover-focus-mode');
+
+        // Browsers intentionally block web pages from moving the user's
+        // physical mouse pointer. Give the centered popup immediate focus
+        // instead, so keyboard/action focus is moved to the popup.
+        window.requestAnimationFrame(function () {
+            clearHoverFocusTimer();
+            try {
+                hoverPortalCloud.focus({preventScroll: true});
+            } catch (e) {
+                hoverPortalCloud.focus();
+            }
+        });
+    }
+
+    function closeHoverFocus() {
+        clearHoverFocusTimer();
+
+        if (hoverFocusCard) {
+            hoverFocusCard.classList.remove('is-hover-focus-source');
+        }
+
+        hoverFocusCard = null;
+
+        if (hoverBackdrop) {
+            hoverBackdrop.classList.remove('is-visible');
+            hoverBackdrop.setAttribute('aria-hidden', 'true');
+        }
+
+        if (hoverPortal) {
+            hoverPortal.classList.remove('is-visible');
+            hoverPortal.setAttribute('aria-hidden', 'true');
+        }
+
+        if (hoverPortalCloud) {
+            hoverPortalCloud.innerHTML = '';
+            hoverPortalCloud.removeAttribute('aria-label');
+        }
+
+        document.body.classList.remove('grade-hover-focus-mode');
+    }
+
+    function scheduleHoverFocusClose(delay) {
+        clearHoverFocusTimer();
+        hoverFocusCloseTimer = window.setTimeout(closeHoverFocus, delay || 650);
+    }
+
+    if (hoverFocusEnabled) {
+        cards.forEach(function (card) {
+            card.addEventListener('mouseenter', function () {
+                openHoverFocus(card);
+            });
+
+            card.addEventListener('mouseleave', function () {
+                // Allow time for the pointer to move from the card to the
+                // centered popup without the popup disappearing immediately.
+                scheduleHoverFocusClose(750);
+            });
+
+            card.addEventListener('focusin', function () {
+                openHoverFocus(card);
+            });
+
+            card.addEventListener('focusout', function (event) {
+                if (!card.contains(event.relatedTarget)) {
+                    scheduleHoverFocusClose(260);
+                }
+            });
+        });
+
+        if (hoverPortalCloud) {
+            hoverPortalCloud.addEventListener('mouseenter', clearHoverFocusTimer);
+            hoverPortalCloud.addEventListener('focusin', clearHoverFocusTimer);
+
+            hoverPortalCloud.addEventListener('mouseleave', function () {
+                scheduleHoverFocusClose(300);
+            });
+
+            hoverPortalCloud.addEventListener('click', function (event) {
+                event.stopPropagation();
+
+                const card = hoverFocusCard;
+                closeHoverFocus();
+
+                if (card) {
+                    openModal(card);
+                }
+            });
+        }
+
+        if (hoverBackdrop) {
+            hoverBackdrop.addEventListener('click', closeHoverFocus);
+        }
+
+        if (hoverPortal) {
+            hoverPortal.addEventListener('click', function (event) {
+                if (event.target === hoverPortal) closeHoverFocus();
+            });
+        }
     }
 
     cards.forEach(function (card) {
@@ -721,7 +935,16 @@ ksort($modalLocations);
         button.addEventListener('click', closeModal);
     });
     document.addEventListener('keydown', function (event) {
-        if (event.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+        if (event.key !== 'Escape') return;
+
+        if (modal.classList.contains('is-open')) {
+            closeModal();
+            return;
+        }
+
+        if (hoverFocusCard) {
+            closeHoverFocus();
+        }
     });
 })();
 </script>
