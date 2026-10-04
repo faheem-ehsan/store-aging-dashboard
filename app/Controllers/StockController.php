@@ -15,6 +15,72 @@ class StockController
         return in_array($user['role'], ['super_admin','division_admin'], true);
     }
 
+    private function stockReturnParams(array $source): array
+    {
+        $params = [];
+
+        $q = trim((string)($source['return_q'] ?? ''));
+        if ($q !== '') $params['q'] = $q;
+
+        $divisionId = (int)($source['return_division_id'] ?? 0);
+        if ($divisionId > 0) $params['division_id'] = $divisionId;
+
+        $grade = trim((string)($source['return_grade'] ?? ''));
+        if (in_array($grade, ['A+','A','B','C','EX'], true)) {
+            $params['grade'] = $grade;
+        }
+
+        $allowedSorts = [
+            'division','product_code','product_name','current_stock','uom',
+            'stock_value','batch_no','manufacturing_date','expiry_date',
+            'aging','expiry_remaining','stock_location','grade',
+        ];
+        $sort = trim((string)($source['return_sort'] ?? ''));
+        if (in_array($sort, $allowedSorts, true)) {
+            $params['sort'] = $sort;
+            $params['dir'] = strtolower((string)($source['return_dir'] ?? 'asc')) === 'desc'
+                ? 'desc'
+                : 'asc';
+        }
+
+        $perPage = (int)($source['return_per_page'] ?? 50);
+        if (in_array($perPage, [25, 50, 100], true)) {
+            $params['per_page'] = $perPage;
+        }
+
+        $page = max(1, (int)($source['return_page'] ?? 1));
+        if ($page > 1) $params['page'] = $page;
+
+        return $params;
+    }
+
+    private function stockReturnPath(array $params): string
+    {
+        return '/stocks' . ($params ? '?' . http_build_query($params) : '');
+    }
+
+    private function stockReturnInputParams(array $params): array
+    {
+        $result = [];
+        $map = [
+            'q' => 'return_q',
+            'division_id' => 'return_division_id',
+            'grade' => 'return_grade',
+            'sort' => 'return_sort',
+            'dir' => 'return_dir',
+            'per_page' => 'return_per_page',
+            'page' => 'return_page',
+        ];
+
+        foreach ($map as $key => $inputName) {
+            if (array_key_exists($key, $params)) {
+                $result[$inputName] = $params[$key];
+            }
+        }
+
+        return $result;
+    }
+
     public function index(): void
     {
         $user = Auth::requireLogin();
@@ -23,10 +89,13 @@ class StockController
             'division_id' => isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null,
             'grade' => trim($_GET['grade'] ?? ''),
         ];
-        if ($user['role'] !== 'super_admin') $filters['division_id'] = (int)$user['division_id'];
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $grader = new GradeService();
-        $rows = array_map(fn($r) => $grader->enrich($r), (new StockBatch())->allAccessible($user, $filters));
+        $stockBatchModel = new StockBatch();
+        $rows = array_map(fn($r) => $grader->enrich($r), $stockBatchModel->allAccessible($user, $filters));
         if ($filters['grade'] !== '') {
             $rows = array_values(array_filter($rows, fn($r) => $r['grade']['grade_code'] === $filters['grade']));
         }
@@ -39,7 +108,7 @@ class StockController
         ];
 
         $selectedDivisionLabel = 'All Divisions';
-        if ($user['role'] !== 'super_admin') {
+        if (!$canReadAllDivisions) {
             $selectedDivisionLabel = trim((string)($user['division_code'] ?? 'Division')) ?: 'Division';
         } elseif (!empty($filters['division_id'])) {
             foreach ($divisions as $division) {
@@ -61,10 +130,13 @@ class StockController
             ? ($gradeLabels[$filters['grade']] ?? $filters['grade'])
             : 'All Grades';
 
-        $criteriaDivisionId = $user['role'] !== 'super_admin'
-            ? (int)$user['division_id']
-            : (int)($filters['division_id'] ?? 0);
-        $selectedCriteria = $criteriaDivisionId > 0 ? $grader->settingsForDivision($criteriaDivisionId) : null;
+        $gradeCriteria = !empty($filters['division_id'])
+            ? $grader->criteriaForDivision((int)$filters['division_id'])
+            : null;
+
+        $bulkDeleteStats = $user['role'] === 'super_admin'
+            ? $stockBatchModel->bulkDeleteDivisionStats()
+            : [];
 
         View::render('stocks/index', [
             'title' => 'Stock Aging Dashboard',
@@ -76,7 +148,8 @@ class StockController
             'summary' => $summary,
             'selectedDivisionLabel' => $selectedDivisionLabel,
             'selectedGradeLabel' => $selectedGradeLabel,
-            'selectedCriteria' => $selectedCriteria,
+            'gradeCriteria' => $gradeCriteria,
+            'bulkDeleteStats' => $bulkDeleteStats,
         ]);
     }
 
@@ -155,11 +228,15 @@ class StockController
         $id = (int)($_GET['id'] ?? 0);
         $batch = (new StockBatch())->findAccessible($id, $user);
         if (!$batch) { http_response_code(404); View::render('errors/404', ['title'=>'Not Found']); return; }
+
+        $returnParams = $this->stockReturnParams($_GET);
+
         View::render('stocks/form', [
             'title' => 'Edit Batch',
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'batch' => $batch,
+            'returnParams' => $returnParams,
         ]);
     }
 
@@ -169,11 +246,18 @@ class StockController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+
+        $returnParams = $this->stockReturnParams($_POST);
+        $returnPath = $this->stockReturnPath($returnParams);
+        $editReturnQuery = http_build_query(
+            array_merge(['id' => $id], $this->stockReturnInputParams($returnParams))
+        );
+
         $data = $this->payload($user);
         $error = $this->validate($data);
         if ($error) {
             flash('error', $error);
-            redirect('/stocks/edit?id=' . $id);
+            redirect('/stocks/edit?' . $editReturnQuery);
         }
         try {
             $model = new StockBatch();
@@ -204,7 +288,7 @@ class StockController
         } catch (\Throwable $e) {
             flash('error', 'Unable to update batch. Run database/migrations/002_add_dispatch_stock_fields.sql if needed.');
         }
-        redirect('/stocks');
+        redirect($returnPath);
     }
 
     public function delete(): void
@@ -213,6 +297,9 @@ class StockController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+        $returnParams = $this->stockReturnParams($_POST);
+        $returnPath = $this->stockReturnPath($returnParams);
+
         $model = new StockBatch();
         $before = $model->findAccessible($id, $user);
         $model->delete($id, $user);
@@ -229,6 +316,161 @@ class StockController
             );
         }
         flash('success', 'Batch deleted.');
+        redirect($returnPath);
+    }
+
+    public function deleteSelected(): void
+    {
+        verify_csrf();
+        $user = Auth::requireSuperAdmin();
+
+        $returnParams = $this->stockReturnParams($_POST);
+        $returnPath = $this->stockReturnPath($returnParams);
+
+        $ids = $_POST['ids'] ?? [];
+        if (!is_array($ids)) $ids = [];
+
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $ids),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$ids) {
+            flash('error', 'Select at least one Finish Goods record to delete.');
+            redirect($returnPath);
+        }
+
+        try {
+            $model = new StockBatch();
+            $result = $model->deleteSelectedByIds($ids);
+            $rows = $result['rows'] ?? [];
+
+            // Record one clear audit event per affected Division.
+            $divisionGroups = [];
+            foreach ($rows as $row) {
+                $divisionId = (int)($row['division_id'] ?? 0);
+                if ($divisionId <= 0) continue;
+
+                if (!isset($divisionGroups[$divisionId])) {
+                    $divisionGroups[$divisionId] = [
+                        'division_code' => $row['division_code'] ?? '',
+                        'count' => 0,
+                        'quantity' => 0.0,
+                        'stock_value' => 0.0,
+                        'batch_ids' => [],
+                        'batch_nos' => [],
+                    ];
+                }
+
+                $divisionGroups[$divisionId]['count']++;
+                $divisionGroups[$divisionId]['quantity'] += (float)($row['current_qty'] ?? 0);
+                $divisionGroups[$divisionId]['stock_value'] += (float)($row['stock_value'] ?? 0);
+                $divisionGroups[$divisionId]['batch_ids'][] = (int)$row['id'];
+                $divisionGroups[$divisionId]['batch_nos'][] = (string)($row['batch_no'] ?? '');
+            }
+
+            foreach ($divisionGroups as $divisionId => $group) {
+                AuditLogger::log(
+                    'BATCH_MULTI_DELETE',
+                    'Deleted ' . number_format((int)$group['count']) .
+                        ' selected Finish Goods batch record(s) for division ' .
+                        ($group['division_code'] ?: (string)$divisionId) . '.',
+                    'stock_batch_multi_delete',
+                    (string)$divisionId,
+                    [
+                        'deleted_batches' => (int)$group['count'],
+                        'total_quantity' => (float)$group['quantity'],
+                        'stock_value' => (float)$group['stock_value'],
+                        'batch_ids' => $group['batch_ids'],
+                        'batch_nos' => $group['batch_nos'],
+                        'deleted_stock_movements_total_operation' => (int)($result['deleted_movements'] ?? 0),
+                    ],
+                    $user,
+                    (int)$divisionId,
+                    $group['division_code'] ?: null
+                );
+            }
+
+            $deleted = (int)($result['deleted_batches'] ?? 0);
+
+            if ($deleted > 0) {
+                flash(
+                    'success',
+                    number_format($deleted) . ' selected Finish Goods record(s) deleted successfully.'
+                );
+            } else {
+                flash('error', 'The selected Finish Goods records were not found.');
+            }
+        } catch (\Throwable $e) {
+            flash('error', 'Selected records could not be deleted. No partial deletion was saved.');
+        }
+
+        redirect($returnPath);
+    }
+
+    public function bulkDelete(): void
+    {
+        verify_csrf();
+        $user = Auth::requireSuperAdmin();
+
+        $divisionIds = $_POST['division_ids'] ?? [];
+        if (!is_array($divisionIds)) $divisionIds = [];
+
+        $divisionIds = array_values(array_unique(array_filter(
+            array_map('intval', $divisionIds),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$divisionIds) {
+            flash('error', 'Select at least one Division for bulk deletion.');
+            redirect('/stocks');
+        }
+
+        if (strtoupper(trim((string)($_POST['confirm_text'] ?? ''))) !== 'DELETE') {
+            flash('error', 'Bulk delete was not completed. Type DELETE to confirm.');
+            redirect('/stocks');
+        }
+
+        try {
+            $model = new StockBatch();
+            $result = $model->bulkDeleteByDivisions($divisionIds);
+
+            foreach ($result['divisions'] as $division) {
+                $batchCount = (int)($division['batch_count'] ?? 0);
+                if ($batchCount <= 0) continue;
+
+                AuditLogger::log(
+                    'BATCH_BULK_DELETE',
+                    'Bulk deleted ' . number_format($batchCount) . ' Finish Goods batch(es) for division ' .
+                        ($division['division_code'] ?? '') . '.',
+                    'stock_division_bulk_delete',
+                    (string)($division['division_id'] ?? ''),
+                    [
+                        'deleted_batches' => $batchCount,
+                        'total_quantity' => (float)($division['total_qty'] ?? 0),
+                        'stock_value' => (float)($division['stock_value'] ?? 0),
+                        'deleted_stock_movements_total_operation' => (int)($result['deleted_movements'] ?? 0),
+                    ],
+                    $user,
+                    (int)($division['division_id'] ?? 0),
+                    $division['division_code'] ?? null
+                );
+            }
+
+            $deleted = (int)($result['deleted_batches'] ?? 0);
+            if ($deleted > 0) {
+                flash(
+                    'success',
+                    number_format($deleted) . ' Finish Goods batch record(s) deleted from the selected Division(s). ' .
+                    'Divisions, users, grading criteria and Market Return data were not deleted.'
+                );
+            } else {
+                flash('success', 'No Finish Goods batches were found in the selected Division(s).');
+            }
+        } catch (\Throwable $e) {
+            flash('error', 'Bulk delete could not be completed. No partial deletion was saved.');
+        }
+
         redirect('/stocks');
     }
 
@@ -251,7 +493,12 @@ class StockController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
 
-        $result = ['inserted' => 0, 'updated' => 0, 'failed' => 0, 'errors' => []];
+        $result = ['inserted' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => []];
+        $importMode = trim((string)($_POST['import_mode'] ?? 'new_only'));
+        if (!in_array($importMode, ['new_only', 'update_existing'], true)) {
+            $importMode = 'new_only';
+        }
+
         $divisionModel = new Division();
         $targetDivisionId = $user['role'] === 'super_admin'
             ? (int)($_POST['target_division_id'] ?? 0)
@@ -398,6 +645,21 @@ class StockController
 
                 $error = $this->validate($data);
                 if ($error) throw new \RuntimeException($error);
+
+                if ($importMode === 'new_only') {
+                    $existing = $stockModel->findByNaturalKey(
+                        (int)$data['division_id'],
+                        (string)$data['material_code'],
+                        (string)$data['batch_no']
+                    );
+                    if ($existing) {
+                        // Preserve the previously imported batch exactly as it is.
+                        // Only a genuinely new Batch No. for this Division + Product is inserted.
+                        $result['skipped']++;
+                        continue;
+                    }
+                }
+
                 $mode = $stockModel->upsertImport($data, $user);
                 $result[$mode]++;
             } catch (\Throwable $e) {
@@ -426,12 +688,14 @@ class StockController
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'wb');
         fputcsv($out, [
-            'Division','Product Code','Product Name','Current Stock','UoM','Stock Value','Batch No',
+            'Division','Product Code','Product Name','Current Stock','UoM','Retail Stock Value','Batch No',
             'Manufacturing Date','Expiry Date','Aging (Days)','Aging Remaining (Days)','Stock Location'
         ]);
         // Example row follows the uploaded stock-aging report layout. Aging columns are
         // intentionally blank because the system calculates them when the file is imported.
-        fputcsv($out, [$division,'100409','SPRINGLEY 500 ML (1*12)','2085','CS','505946.10','SP180926','2026-09-18','2027-09-18','','','FW02']);
+        // Leading TAB keeps DD/MON/YYYY visible exactly as written when the CSV is opened in Excel.
+        // normalizeCsvDate() trims it before converting to SQL YYYY-MM-DD.
+        fputcsv($out, [$division,'100409','SPRINGLEY 500 ML (1*12)','2085','CS','505946.10','SP180926',"\t18/Sep/2026","\t18/Sep/2027",'','','FW02']);
         fclose($out);
         exit;
     }
@@ -446,9 +710,10 @@ class StockController
         AuditLogger::log(
             'CSV_IMPORT',
             sprintf(
-                'CSV import completed: %d inserted, %d updated, %d failed.',
+                'CSV import completed: %d inserted, %d updated, %d skipped existing, %d failed.',
                 (int)($result['inserted'] ?? 0),
                 (int)($result['updated'] ?? 0),
+                (int)($result['skipped'] ?? 0),
                 (int)($result['failed'] ?? 0)
             ),
             'csv_import',
@@ -456,8 +721,10 @@ class StockController
             [
                 'file_name' => $fileName ?: null,
                 'target_division' => $targetDivision['code'] ?? ($targetDivisionId === 0 ? 'From CSV rows' : null),
+                'import_mode' => trim((string)($_POST['import_mode'] ?? 'new_only')),
                 'inserted' => (int)($result['inserted'] ?? 0),
                 'updated' => (int)($result['updated'] ?? 0),
+                'skipped_existing' => (int)($result['skipped'] ?? 0),
                 'failed' => (int)($result['failed'] ?? 0),
                 'errors' => array_slice((array)($result['errors'] ?? []), 0, 10),
             ],
@@ -482,9 +749,11 @@ class StockController
             'material_code' => trim($_POST['material_code'] ?? ''),
             'material_description' => trim($_POST['material_description'] ?? ''),
             'batch_no' => trim($_POST['batch_no'] ?? ''),
-            'manufacture_date' => $_POST['manufacture_date'] ?? '',
-            'expiry_date' => $_POST['expiry_date'] ?? '',
-            'last_receipt_date' => !empty($_POST['last_receipt_date']) ? $_POST['last_receipt_date'] : null,
+            'manufacture_date' => $this->normalizeManualDate($_POST['manufacture_date'] ?? ''),
+            'expiry_date' => $this->normalizeManualDate($_POST['expiry_date'] ?? ''),
+            'last_receipt_date' => !empty($_POST['last_receipt_date'])
+                ? $this->normalizeManualDate($_POST['last_receipt_date'])
+                : null,
             'current_qty' => $_POST['current_qty'] ?? '',
             'stock_value' => $_POST['stock_value'] ?? '0',
             'receiving_store' => trim($_POST['receiving_store'] ?? ''),
@@ -498,14 +767,23 @@ class StockController
             return 'Division, product code, product name and batch number are required.';
         }
         foreach (['manufacture_date','expiry_date'] as $f) {
-            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$d[$f])) return 'Manufacture and expiry dates are required.';
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$d[$f])) {
+                return 'Manufacturing Date and Expiry Date must use DD/MON/YYYY, for example 18/Sep/2026.';
+            }
         }
         if ($d['manufacture_date'] > $d['expiry_date']) return 'Manufacture date cannot be after expiry date.';
         if (!is_numeric($d['current_qty']) || (float)$d['current_qty'] < 0) return 'Current Stock must be zero or greater.';
-        if (!is_numeric($d['stock_value']) || (float)$d['stock_value'] < 0) return 'Stock value must be zero or greater.';
+        if (!is_numeric($d['stock_value']) || (float)$d['stock_value'] < 0) return 'Retail stock value must be zero or greater.';
         if (trim((string)$d['uom']) === '') return 'UoM is required.';
         if (trim((string)$d['receiving_store']) === '') return 'Stock Location is required.';
         return null;
+    }
+
+    private function normalizeManualDate(string $value): string
+    {
+        $value = trim($value);
+        if ($value === '') return '';
+        return \parse_app_date($value) ?? $value;
     }
 
     private function canonicalHeader(string $header): string
@@ -519,7 +797,7 @@ class StockController
             'material_no' => 'material_no', 'material_number' => 'material_no', 'material' => 'material_no', 'material_code' => 'material_no', 'product_code' => 'material_no', 'product_no' => 'material_no',
             'material_des' => 'material_description', 'material_description' => 'material_description', 'description' => 'material_description', 'product_name' => 'material_description', 'product_description' => 'material_description',
             'current_qty' => 'current_qty', 'current_quantity' => 'current_qty', 'current_stock' => 'current_qty', 'qty' => 'current_qty', 'stock_qty' => 'current_qty',
-            'stock_value' => 'stock_value', 'value' => 'stock_value',
+            'stock_value' => 'stock_value', 'retail_stock_value' => 'stock_value', 'retail_value' => 'stock_value', 'value' => 'stock_value',
             'batch_no' => 'batch_no', 'batch_number' => 'batch_no', 'batch' => 'batch_no',
             'date_of_manufactuer' => 'manufacture_date', 'date_of_manufacturer' => 'manufacture_date', 'date_of_manufacture' => 'manufacture_date', 'manufacture_date' => 'manufacture_date', 'manufacturing_date' => 'manufacture_date', 'mfg_date' => 'manufacture_date',
             'expiry_date' => 'expiry_date', 'expiration_date' => 'expiry_date',
@@ -549,22 +827,12 @@ class StockController
     private function normalizeCsvDate(string $value): string
     {
         $value = trim($value);
-        if ($value === '') throw new \RuntimeException('Date is missing.');
-
-        if (is_numeric($value) && (float)$value > 20000 && (float)$value < 100000) {
-            $unix = ((int)$value - 25569) * 86400;
-            return gmdate('Y-m-d', $unix);
+        if ($value === '') throw new \RuntimeException('Date is required. Use DD/MON/YYYY.');
+        $sqlDate = \parse_app_date($value);
+        if ($sqlDate === null) {
+            throw new \RuntimeException('Invalid date "' . $value . '". Preferred CSV format is DD/MON/YYYY (25/Sep/2026). Excel-exported DD-MON-YY dates such as 25-Sep-26 are also accepted automatically.');
         }
-
-        $formats = ['Y-m-d','d.m.Y','d/m/Y','d-m-Y','m/d/Y','m-d-Y','Y/m/d'];
-        foreach ($formats as $format) {
-            $dt = \DateTimeImmutable::createFromFormat('!' . $format, $value);
-            $errors = \DateTimeImmutable::getLastErrors();
-            if ($dt && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
-                return $dt->format('Y-m-d');
-            }
-        }
-        throw new \RuntimeException('Invalid date "' . $value . '". Use YYYY-MM-DD or DD.MM.YYYY.');
+        return $sqlDate;
     }
 
     private function normalizeNumber(string $value): string

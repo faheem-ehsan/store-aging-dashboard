@@ -66,10 +66,10 @@ class SimpleXlsxReader
         $xml = $readEntry('xl/sharedStrings.xml');
         if ($xml === false) return [];
         $strings = [];
-        if (!preg_match_all('/<si\b[^>]*>(.*?)<\/si>/si', (string)$xml, $matches)) return [];
+        if (!preg_match_all('/<(?:[A-Za-z0-9_]+:)?si\b[^>]*>(.*?)<\/(?:[A-Za-z0-9_]+:)?si>/si', (string)$xml, $matches)) return [];
         foreach ($matches[1] as $si) {
             $parts = [];
-            if (preg_match_all('/<t\b[^>]*>(.*?)<\/t>/si', $si, $texts)) {
+            if (preg_match_all('/<(?:[A-Za-z0-9_]+:)?t\b[^>]*>(.*?)<\/(?:[A-Za-z0-9_]+:)?t>/si', $si, $texts)) {
                 foreach ($texts[1] as $text) $parts[] = $this->xmlText($text);
             }
             $strings[] = implode('', $parts);
@@ -91,7 +91,7 @@ class SimpleXlsxReader
     private function readWorkbookSheets(string $xml): array
     {
         $sheets = [];
-        if (!preg_match_all('/<sheet\b([^>]*)\/?\s*>/si', $xml, $matches)) return $sheets;
+        if (!preg_match_all('/<(?:[A-Za-z0-9_]+:)?sheet\b([^>]*)\/?\s*>/si', $xml, $matches)) return $sheets;
         foreach ($matches[1] as $attrsText) {
             $attrs = $this->attributes($attrsText);
             $name = $attrs['name'] ?? null;
@@ -113,10 +113,10 @@ class SimpleXlsxReader
     private function readWorksheetRows(string $xml, array $sharedStrings): array
     {
         $rows = [];
-        if (!preg_match_all('/<row\b[^>]*>(.*?)<\/row>/si', $xml, $rowMatches)) return $rows;
+        if (!preg_match_all('/<(?:[A-Za-z0-9_]+:)?row\b[^>]*>(.*?)<\/(?:[A-Za-z0-9_]+:)?row>/si', $xml, $rowMatches)) return $rows;
         foreach ($rowMatches[1] as $rowXml) {
             $sparse = [];
-            if (preg_match_all('/<c\b([^>]*?)(?:\/>|>(.*?)<\/c>)/si', $rowXml, $cellMatches, PREG_SET_ORDER)) {
+            if (preg_match_all('/<(?:[A-Za-z0-9_]+:)?c\b([^>]*?)(?:\/>|>(.*?)<\/(?:[A-Za-z0-9_]+:)?c>)/si', $rowXml, $cellMatches, PREG_SET_ORDER)) {
                 foreach ($cellMatches as $cellMatch) {
                     $attrs = $this->attributes($cellMatch[1]);
                     $cellXml = $cellMatch[2] ?? '';
@@ -127,13 +127,13 @@ class SimpleXlsxReader
 
                     if ($type === 'inlineStr') {
                         $parts = [];
-                        if (preg_match_all('/<t\b[^>]*>(.*?)<\/t>/si', $cellXml, $texts)) {
+                        if (preg_match_all('/<(?:[A-Za-z0-9_]+:)?t\b[^>]*>(.*?)<\/(?:[A-Za-z0-9_]+:)?t>/si', $cellXml, $texts)) {
                             foreach ($texts[1] as $text) $parts[] = $this->xmlText($text);
                         }
                         $value = implode('', $parts);
                     } else {
                         $raw = '';
-                        if (preg_match('/<v\b[^>]*>(.*?)<\/v>/si', $cellXml, $v)) $raw = $this->xmlText($v[1]);
+                        if (preg_match('/<(?:[A-Za-z0-9_]+:)?v\b[^>]*>(.*?)<\/(?:[A-Za-z0-9_]+:)?v>/si', $cellXml, $v)) $raw = $this->xmlText($v[1]);
                         if ($type === 's') {
                             $value = $sharedStrings[(int)$raw] ?? '';
                         } elseif ($type === 'b') {

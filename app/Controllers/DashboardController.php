@@ -13,9 +13,14 @@ class DashboardController
     {
         $user = Auth::requireLogin();
         $divisionId = isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null;
-        if ($user['role'] !== 'super_admin') $divisionId = (int)$user['division_id'];
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        if (!$canReadAllDivisions) $divisionId = (int)$user['division_id'];
 
-        $rows = (new StockBatch())->allAccessible($user, ['division_id' => $divisionId]);
+        $stockBatchModel = new StockBatch();
+        $rows = $stockBatchModel->allAccessible($user, ['division_id' => $divisionId]);
+        $lastStockUpdateInfo = $stockBatchModel->latestUpdateInfo($user, $divisionId);
+        $lastStockUpdatedAt = $lastStockUpdateInfo['updated_at'] ?? null;
         $grader = new GradeService();
         $rows = array_map(fn($r) => $grader->enrich($r), $rows);
 
@@ -23,12 +28,13 @@ class DashboardController
             'batches' => count($rows),
             'stock_qty' => 0.0,
             'stock_value' => 0.0,
+            'uoms' => [],
             'grades' => [
-                'A+' => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0],
-                'A'  => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0],
-                'B'  => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0],
-                'C'  => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0],
-                'EX' => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0],
+                'A+' => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0, 'uoms' => []],
+                'A'  => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0, 'uoms' => []],
+                'B'  => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0, 'uoms' => []],
+                'C'  => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0, 'uoms' => []],
+                'EX' => ['batches' => 0, 'qty' => 0.0, 'value' => 0.0, 'uoms' => []],
             ],
         ];
         foreach ($rows as $row) {
@@ -37,13 +43,36 @@ class DashboardController
             $metrics['stock_qty'] += $qty;
             $metrics['stock_value'] += $value;
 
+            $uom = strtoupper(trim((string)($row['uom'] ?? '')));
+            if ($uom === '') $uom = 'UNSPECIFIED';
+            if (!isset($metrics['uoms'][$uom])) {
+                $metrics['uoms'][$uom] = ['qty' => 0.0, 'batches' => 0, 'value' => 0.0];
+            }
+            $metrics['uoms'][$uom]['qty'] += $qty;
+            $metrics['uoms'][$uom]['batches']++;
+            $metrics['uoms'][$uom]['value'] += $value;
+
             $code = (string)$row['grade']['grade_code'];
             if (isset($metrics['grades'][$code])) {
                 $metrics['grades'][$code]['batches']++;
                 $metrics['grades'][$code]['qty'] += $qty;
                 $metrics['grades'][$code]['value'] += $value;
+                if (!isset($metrics['grades'][$code]['uoms'][$uom])) {
+                    $metrics['grades'][$code]['uoms'][$uom] = ['qty' => 0.0, 'batches' => 0, 'value' => 0.0];
+                }
+                $metrics['grades'][$code]['uoms'][$uom]['qty'] += $qty;
+                $metrics['grades'][$code]['uoms'][$uom]['batches']++;
+                $metrics['grades'][$code]['uoms'][$uom]['value'] += $value;
             }
         }
+
+        ksort($metrics['uoms'], SORT_NATURAL | SORT_FLAG_CASE);
+        foreach ($metrics['grades'] as &$gradeMetric) {
+            if (!empty($gradeMetric['uoms'])) {
+                ksort($gradeMetric['uoms'], SORT_NATURAL | SORT_FLAG_CASE);
+            }
+        }
+        unset($gradeMetric);
 
         // Keep the dashboard stock table aligned with the Stock Aging Dashboard.
         // The model already returns records in FEFO order (earliest expiry first).
@@ -56,8 +85,6 @@ class DashboardController
             0,
             12
         );
-
-        $selectedCriteria = $divisionId ? $grader->settingsForDivision((int)$divisionId) : null;
 
         $divisionModel = new Division();
         $divisions = $divisionModel->all(true);
@@ -74,6 +101,8 @@ class DashboardController
             }
         }
 
+        $gradeCriteria = $divisionId ? $grader->criteriaForDivision((int)$divisionId) : null;
+
         View::render('dashboard/index', [
             'title' => 'Dashboard',
             'user' => $user,
@@ -83,7 +112,9 @@ class DashboardController
             'metrics' => $metrics,
             'rows' => $tableRows,
             'alerts' => $alerts,
-            'selectedCriteria' => $selectedCriteria,
+            'gradeCriteria' => $gradeCriteria,
+            'lastStockUpdatedAt' => $lastStockUpdatedAt,
+            'lastStockUpdateInfo' => $lastStockUpdateInfo,
         ]);
     }
 }

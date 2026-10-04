@@ -16,23 +16,23 @@ A lightweight PHP MVC dispatch-store dashboard for division-based stores. It fol
 - Dispatch stock fields: division, material number, material description, current quantity, stock value, batch number, manufacturing date, expiry date, aging days, remaining days and receiving store.
 - CSV import for all active divisions. Super Admin can import multiple divisions in one file; Division Admins can import only their own division.
 - FEFO-style alert ordering by earliest expiry.
-- Five common grades across all divisions: **A+**, **A**, **B**, **C**, and **Expired**. Manufacture-date thresholds are configurable in days separately for every division by Super Admin.
+- Five common grades across all divisions: **A+**, **A**, **B**, **C**, and **Expired**. Each batch is graded from the percentage of its own Manufacture Date → Expiry Date shelf life used, with percentage thresholds configurable separately for every division by Super Admin.
 - CSRF protection, password hashing, session regeneration, output escaping, authorization checks.
 - `stock_movements` table included as the audit foundation for receipts/issues/adjustments.
 
 ## Default grading
 
-Grades are calculated from the **Expiry Date** using division-specific day thresholds. The default settings are:
+Grades are calculated from the percentage of each batch's **own total shelf life already used**, where total shelf life is the period from **Manufacturing Date to Expiry Date**. Recommended starting settings are:
 
 | Grade | Color | Default rule |
 |---|---|---|
-| A+ | Dark Blue | First 30 days from manufacture |
-| A | Green | After A+ through day 60 |
-| B | Yellow | After A through day 90 |
-| C | Red | After B; default C threshold day 120, then remains C until expiry |
+| A+ | Dark Blue | 0–25% shelf life used |
+| A | Green | >25–50% shelf life used |
+| B | Yellow | >50–75% shelf life used |
+| C | Red | >75% shelf life used until expiry |
 | Expired | Black | On the Expiry Date and afterwards |
 
-Super Admin can open **Grading Criteria** and enter the day thresholds independently for every division. The colors stay fixed across all divisions. Threshold values must progress **A+ < A < B < C**. Expired is always determined by the actual Expiry Date, not by a configured day value.
+Super Admin can open **Grading Criteria** and change the percentage thresholds independently for every division. The colors stay fixed across all divisions. Threshold values must progress **A+ < A < B < C** and remain between 0 and 100. Because the percentage is calculated independently from each batch's Manufacturing Date and Expiry Date, products in the same division can have different shelf lives without separate product day rules.
 
 ## XAMPP / Windows setup
 
@@ -206,6 +206,17 @@ database/migrations/006_change_grading_criteria_to_days.sql
 
 It adds **A+ Days, A Days, B Days, and C Days** for each division and converts the existing month settings to initial day values. Super Admin can then edit the exact day thresholds from **Grading Criteria**. Grade colors are unchanged.
 
+
+## Product shelf-life percentage grading upgrade
+
+For an existing database, import this migration once in phpMyAdmin:
+
+```text
+database/migrations/010_add_shelf_life_percent_grading.sql
+```
+
+It adds **A+ / A / B / C maximum shelf-life-used percentage** settings for every division and initializes them to **25% / 50% / 75% / 100%**. Grading then uses each batch's own Manufacturing Date and Expiry Date, so different products in one division can have different shelf lives. Expired always starts on the actual Expiry Date.
+
 ## Market Return Store module
 
 A separate Market Return Store module is available at `/market-return`. It does not change the existing Home/Dashboard calculations or Stock Aging data tables.
@@ -258,3 +269,33 @@ The original workbook sheet/category remains available as a separate Source Cate
 
 ## Market Return expiry grouping
 Market Return Store uses only four expiry cards: B (365+ days remaining), C (1-364 days remaining), Expired (on the Expiry Date and after), and Other / No Expiry (blank, N.A, Not Found, or invalid expiry). Source workbook categories remain separate filters.
+
+
+## Product-aware shelf-life grading
+
+Finish Goods grades are calculated from each batch's own Manufacture Date and Expiry Date instead of division-specific day thresholds. This supports multiple products with different shelf lives inside the same division.
+
+- **A+**: 0–25% shelf life used (75–100% remaining)
+- **A**: >25–50% used (50–<75% remaining)
+- **B**: >50–75% used (25–<50% remaining)
+- **C**: >75% used and not yet expired
+- **Expired**: Expiry Date and after
+
+Formula: `Remaining % = (Expiry Date - Today) / (Expiry Date - Manufacture Date) * 100`.
+
+This automatically handles the supplied shelf-life patterns such as 180 days, 1 year, 1.5 years, 2 years, 2.5 years, 3 years and 4 years.
+
+
+## Grade Email Alerts (Super Admin)
+
+The Administration -> Grade Email Alerts page can send automatic email warnings one day before a Finish Goods batch moves to the next configured grade (A+ -> A -> B -> C -> Expired).
+
+1. Save SMTP settings and recipient emails in Administration -> Grade Email Alerts.
+2. Send a test email.
+3. Run `bin/install_grade_email_task.bat` once on the Windows/XAMPP server to create a daily 08:00 Task Scheduler job, or schedule this command manually:
+
+```
+C:\xampp\php\php.exe C:\xampp\htdocs\store-aging-dashboard\bin\send_grade_alerts.php
+```
+
+Alerts are grouped by Division. Active Division Admin users can be included automatically; additional Division Head addresses and global Value Chain / Supply Marketing Head addresses can be configured by Super Admin. Successfully sent batch alerts are de-duplicated so repeated scheduler runs do not resend the same transition warning.

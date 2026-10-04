@@ -24,7 +24,13 @@ class AuthController
         $email = trim($_POST['email'] ?? '');
         $password = $_POST['password'] ?? '';
         $divisionRaw = $_POST['division_id'] ?? '';
-        $divisionId = $divisionRaw === 'super' ? null : (int)$divisionRaw;
+        if ($divisionRaw === 'super') {
+            $divisionId = null;
+        } elseif ($divisionRaw === 'all') {
+            $divisionId = 0;
+        } else {
+            $divisionId = (int)$divisionRaw;
+        }
 
         $user = (new User())->authenticate($email, $password, $divisionId);
         if (!$user) {

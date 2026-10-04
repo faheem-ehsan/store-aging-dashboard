@@ -1,0 +1,7 @@
+MANUAL DATE ENTRY
+=================
+Add/Edit Batch form: DD/MON/YYYY
+CSV import: DD/MON/YYYY
+MySQL DATE storage: YYYY-MM-DD
+
+The application converts manual and CSV date formats to native SQL DATE values before saving.

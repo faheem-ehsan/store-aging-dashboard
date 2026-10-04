@@ -78,6 +78,8 @@ class MarketReturnImporter
             $items = [];
             $categories = [];
             $rowNo = 1;
+            $previousCategory = null;
+            $inheritedCategoryRows = 0;
             while (($values = fgetcsv($handle, 0, $delimiter)) !== false) {
                 $rowNo++;
                 if ($this->rowIsEmpty($values)) continue;
@@ -88,31 +90,85 @@ class MarketReturnImporter
 
                 $category = null;
                 $categoryRaw = trim((string)($row['category_code'] ?? ''));
-                if ($categoryRaw !== '') $category = $this->normalizeCategoryCode($categoryRaw);
+                $sourceRaw = trim((string)($row['source_sheet'] ?? ''));
+                $sectionRaw = trim((string)($row['section_name'] ?? ''));
+
+                // 1) Explicit Category column.
+                if ($categoryRaw !== '') {
+                    $category = $this->normalizeCategoryCode($categoryRaw);
+                    if (!$category) $category = $this->dynamicCategoryCode($categoryRaw);
+                }
+
+                // 2) Source Category / Source Sheet column.
+                if (!$category && $sourceRaw !== '') {
+                    $category = $this->normalizeCategoryCode($sourceRaw)
+                        ?: $this->categoryForSheet($sourceRaw)
+                        ?: $this->dynamicCategoryCode($sourceRaw);
+                }
+
+                // 3) Section text can also establish a category when Category is blank.
+                if (!$category && $sectionRaw !== '') {
+                    $category = $this->normalizeCategoryCode($sectionRaw)
+                        ?: $this->dynamicCategoryCode($sectionRaw);
+                }
+
+                // 4) Recognized category in the CSV filename.
+                if (!$category) {
+                    $category = $fileCategory;
+                }
+
+                // 5) CSV files often show a category once at the start of a block and
+                // leave the following rows blank. In that case inherit the previous
+                // recognized category instead of failing on the blank row.
+                $categoryFieldsAreBlank = $categoryRaw === '' && $sourceRaw === '' && $sectionRaw === '';
+                if (!$category && $categoryFieldsAreBlank && $previousCategory) {
+                    $category = $previousCategory;
+                    $inheritedCategoryRows++;
+                }
+
+                // If the CSV contains a new Category that is not in the original
+                // fixed list, create a stable category code automatically. This means
+                // new Category + Section combinations can be imported without any
+                // prior configuration.
+                if (!$category) {
+                    $dynamicLabel = $categoryRaw !== ''
+                        ? $categoryRaw
+                        : ($sourceRaw !== '' ? $sourceRaw : $sectionRaw);
+
+                    if ($dynamicLabel !== '') {
+                        $category = $this->dynamicCategoryCode($dynamicLabel);
+                    }
+                }
 
                 if (!$category) {
-                    $sourceRaw = trim((string)($row['source_sheet'] ?? ''));
-                    if ($sourceRaw !== '') $category = $this->normalizeCategoryCode($sourceRaw) ?: $this->categoryForSheet($sourceRaw);
-                }
-
-                if (!$category) $category = $fileCategory;
-                if (!$category || !isset(self::CATEGORIES[$category])) {
                     throw new \RuntimeException(
-                        'Row ' . $rowNo . ': category could not be detected automatically. Put a recognized value in the Category column, for example Fresh Saleable Stock, Utilizable Stock, Cabinets, RawalKot Stock, Export Stock, Promotion Items, Tablet / Loose Items, or Expired Stock.'
+                        'Row ' . $rowNo . ': Category is blank and no previous Category can be inherited. Add a Category value on the first row of each new category block.'
                     );
                 }
+
+                $previousCategory = $category;
 
                 $product = trim((string)($row['product_name'] ?? ''));
                 if ($product === '') throw new \RuntimeException('Row ' . $rowNo . ': product name is missing.');
                 $qty = $this->numberOrNull($row['quantity'] ?? '');
                 if ($qty === null) throw new \RuntimeException('Row ' . $rowNo . ': quantity is invalid.');
-                [$expiryRaw, $expiryDate] = $this->normalizeExpiry($row['expiry_raw'] ?? '');
+                [$expiryRaw, $expiryDate] = $this->normalizeCsvExpiry($row['expiry_raw'] ?? '', $rowNo);
                 $retail = $this->numberOrNull($row['retail_price'] ?? '');
                 $amount = $this->numberOrNull($row['total_amount'] ?? '');
                 $amountText = $amount === null ? trim((string)($row['total_amount'] ?? '')) : '';
-                $reportDate = $this->normalizeDate($row['report_date'] ?? '');
+                $reportDate = $this->normalizeCsvDate($row['report_date'] ?? '', $rowNo, true);
                 $sourceSheet = trim((string)($row['source_sheet'] ?? ''));
-                if ($sourceSheet === '') $sourceSheet = self::CATEGORIES[$category]['sheet'];
+                if ($sourceSheet === '') {
+                    if ($categoryRaw !== '') {
+                        $sourceSheet = $categoryRaw;
+                    } elseif (isset(self::CATEGORIES[$category])) {
+                        $sourceSheet = self::CATEGORIES[$category]['sheet'];
+                    } elseif ($sectionRaw !== '') {
+                        $sourceSheet = $sectionRaw;
+                    } else {
+                        $sourceSheet = $category;
+                    }
+                }
 
                 $items[] = [
                     'division_hint' => trim((string)($row['division_hint'] ?? '')),
@@ -142,6 +198,9 @@ class MarketReturnImporter
         if (!$items) throw new \RuntimeException('No item rows were found in the CSV file.');
         if ($fileCategory && !$hasCategoryColumn) {
             $warnings[] = 'CSV category was detected automatically from the filename: ' . self::CATEGORIES[$fileCategory]['label'] . '.';
+        }
+        if ($inheritedCategoryRows > 0) {
+            $warnings[] = $inheritedCategoryRows . ' CSV row(s) had blank category fields and inherited the previous recognized category in the same block.';
         }
         return ['items' => $items, 'categories' => array_keys($categories), 'warnings' => $warnings];
     }
@@ -245,15 +304,67 @@ class MarketReturnImporter
         return null;
     }
 
+    private function dynamicCategoryCode(string $value): string
+    {
+        $raw = trim($value);
+        $slug = strtolower($raw);
+        $slug = preg_replace('/[^a-z0-9]+/i', '_', $slug) ?? '';
+        $slug = trim($slug, '_');
+
+        if ($slug === '') {
+            $slug = 'category_' . substr(sha1($raw), 0, 10);
+        }
+
+        // market_return_items.category_code is VARCHAR(40).
+        if (strlen($slug) > 40) {
+            $slug = substr($slug, 0, 31) . '_' . substr(sha1($raw), 0, 8);
+        }
+
+        return $slug;
+    }
+
     private function normalizeCategoryCode(string $value): ?string
     {
         $normalized = $this->normalizeText($value);
+        if ($normalized === '') return null;
+
         foreach (self::CATEGORIES as $code => $meta) {
-            if ($this->normalizeText($code) === $normalized || $this->normalizeText($meta['label']) === $normalized || $this->normalizeText($meta['sheet']) === $normalized) {
+            if (
+                $this->normalizeText($code) === $normalized
+                || $this->normalizeText($meta['label']) === $normalized
+                || $this->normalizeText($meta['sheet']) === $normalized
+            ) {
                 return $code;
             }
         }
-        return null;
+
+        // Common CSV/export variations.
+        $aliases = [
+            'freshsaleable' => 'fresh_saleable',
+            'freshsaleablestock' => 'fresh_saleable',
+            'freshsaleablestockfinal' => 'fresh_saleable',
+            'utilizable' => 'utilizable',
+            'utilizablestock' => 'utilizable',
+            'cabinet' => 'cabinets',
+            'cabinets' => 'cabinets',
+            'rawalkot' => 'rawalkot',
+            'rawalkotstock' => 'rawalkot',
+            'export' => 'export',
+            'exportstock' => 'export',
+            'promotion' => 'promotion',
+            'promotionitem' => 'promotion',
+            'promotionitems' => 'promotion',
+            'tabletstrip' => 'tablet_strips',
+            'tabletstrips' => 'tablet_strips',
+            'tabletlooseitem' => 'tablet_strips',
+            'tabletlooseitems' => 'tablet_strips',
+            'looseitem' => 'tablet_strips',
+            'looseitems' => 'tablet_strips',
+            'expired' => 'expired',
+            'expiredstock' => 'expired',
+        ];
+
+        return $aliases[$normalized] ?? null;
     }
 
     private function isHeaderRow(array $row): bool
@@ -328,66 +439,52 @@ class MarketReturnImporter
         return null;
     }
 
+    private function normalizeCsvDate(mixed $value, int $rowNo, bool $allowBlank = false): ?string
+    {
+        $raw = trim((string)$value);
+        if ($raw === '') {
+            if ($allowBlank) return null;
+            throw new \RuntimeException('Row ' . $rowNo . ': date is required. Use DD/MON/YYYY.');
+        }
+        $date = \parse_app_date($raw);
+        if ($date === null) {
+            throw new \RuntimeException('Row ' . $rowNo . ': invalid date "' . $raw . '". Preferred CSV format is DD/MON/YYYY (01/Sep/2026). Excel-exported DD-MON-YY values such as 01-Sep-26 are also accepted automatically.');
+        }
+        return $date;
+    }
+
+    private function normalizeCsvExpiry(mixed $value, int $rowNo): array
+    {
+        $raw = trim((string)$value);
+        if ($raw === '') return ['', null];
+
+        $date = $this->normalizeCsvDate($raw, $rowNo, false);
+        return [\format_app_date($date), $date];
+    }
+
     private function normalizeExpiry(mixed $value): array
     {
         if ($value === null || trim((string)$value) === '') return ['', null];
         if (is_numeric($value) && (float)$value > 20000 && (float)$value < 100000) {
             $date = $this->excelSerialToDate((float)$value);
-            return [$date ? (new \DateTimeImmutable($date))->format('d.m.Y') : (string)$value, $date];
+            return [$date ? \format_app_date($date) : (string)$value, $date];
         }
         $raw = preg_replace('/\s+/u', ' ', trim((string)$value));
         if (preg_match('/^(expired|n\.?a\.?|not found)$/i', $raw)) return [$raw, null];
-        $date = $this->normalizeDate($raw, true);
-        return [$raw, $date];
+        $date = \parse_app_date($raw);
+        if ($date === null) {
+            throw new \RuntimeException('Invalid XLSX Expiry date "' . $raw . '". Use DD/MON/YYYY, for example 01/Sep/2026, or use a real Excel date cell formatted as dd/mmm/yyyy.');
+        }
+        return [\format_app_date($date), $date];
     }
 
     private function normalizeDate(mixed $value, bool $monthYearAllowed = false): ?string
     {
+        if ($value === null) return null;
         $value = trim((string)$value);
         if ($value === '') return null;
         if (is_numeric($value) && (float)$value > 20000 && (float)$value < 100000) return $this->excelSerialToDate((float)$value);
-
-        // IMPORTANT: Market Return files frequently use month/year only (for example
-        // "Apr 2029" or "Sept.26"). Parse those BEFORE the permissive full-date
-        // formats below. PHP can otherwise interpret "Apr 2029" as 20-Apr-0029.
-        if ($monthYearAllowed) {
-            $clean = preg_replace('/[.,\-\/]+/', ' ', $value);
-            $clean = preg_replace('/\s+/', ' ', trim((string)$clean));
-            if (preg_match('/^([A-Za-z]+)\s+(\d{2,4})$/', $clean, $m)) {
-                $monthNames = [
-                    'jan'=>1,'january'=>1,'feb'=>2,'february'=>2,'mar'=>3,'march'=>3,'apr'=>4,'april'=>4,'may'=>5,'jun'=>6,'june'=>6,
-                    'jul'=>7,'july'=>7,'aug'=>8,'august'=>8,'sep'=>9,'sept'=>9,'september'=>9,'oct'=>10,'october'=>10,'nov'=>11,'november'=>11,'dec'=>12,'december'=>12,
-                ];
-                $month = $monthNames[strtolower($m[1])] ?? null;
-                if ($month) {
-                    $year = (int)$m[2];
-                    if ($year < 100) $year += 2000;
-                    $first = new \DateTimeImmutable(sprintf('%04d-%02d-01', $year, $month));
-                    return $first->modify('last day of this month')->format('Y-m-d');
-                }
-            }
-        }
-
-        $formats = ['Y-m-d','d-m-Y','d.m.Y','d/m/Y','m/d/Y','d-M-Y','d M Y','M d Y'];
-        foreach ($formats as $format) {
-            $dt = \DateTimeImmutable::createFromFormat('!' . $format, $value);
-            $errors = \DateTimeImmutable::getLastErrors();
-            if ($dt && ($errors === false || ($errors['warning_count'] === 0 && $errors['error_count'] === 0))) {
-                // Guard against impossible ancient years caused by ambiguous parsing.
-                if ((int)$dt->format('Y') < 2000 && preg_match('/\b20\d{2}\b/', $value)) continue;
-                return $dt->format('Y-m-d');
-            }
-        }
-
-        if ($monthYearAllowed) {
-            $timestamp = strtotime($value);
-            if ($timestamp !== false) {
-                $parsed = new \DateTimeImmutable('@' . $timestamp);
-                $parsed = $parsed->setTimezone(new \DateTimeZone(date_default_timezone_get()));
-                if ((int)$parsed->format('Y') >= 2000) return $parsed->format('Y-m-d');
-            }
-        }
-        return null;
+        return \parse_app_date($value);
     }
 
     private function excelSerialToDate(float $serial): ?string

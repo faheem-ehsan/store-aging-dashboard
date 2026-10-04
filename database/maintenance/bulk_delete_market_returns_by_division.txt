@@ -1,0 +1,9 @@
+MARKET RETURN BULK DELETE
+=========================
+Access: Super Admin only.
+Location: Market Returns -> Bulk Delete.
+
+The operation deletes market_return_items for the selected Division(s).
+It does NOT delete Finish Goods batches, Divisions, Users, Market Return import history,
+or Market Return Division Mapping.
+Each affected division is recorded in Activity Logs with action MARKET_RETURN_BULK_DELETE.

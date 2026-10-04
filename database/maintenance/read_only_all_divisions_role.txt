@@ -1,0 +1,4 @@
+Read-only User — All Divisions uses the existing users.role='user' with division_id=NULL.
+No database migration is required.
+Create the account from User Management by choosing 'Read-only User — All Divisions'.
+At login choose 'All Divisions — Read-only User'.

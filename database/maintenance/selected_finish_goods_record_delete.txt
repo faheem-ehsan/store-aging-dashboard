@@ -1,0 +1,11 @@
+SELECTED FINISH GOODS RECORD DELETE
+===================================
+Access: Super Admin only.
+Location: Finish Goods Aging detail table.
+
+Super Admin can select one or multiple visible table rows using checkboxes.
+The header checkbox selects all rows on the current pagination page.
+Delete Selected removes only the exact selected stock_batch IDs.
+Related stock_movements for those exact batches are removed first when present.
+Divisions, materials, grading criteria, users and Market Return records are unchanged.
+The operation is recorded in Activity Logs as BATCH_MULTI_DELETE per affected Division.

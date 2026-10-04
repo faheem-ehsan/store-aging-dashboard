@@ -1,0 +1,11 @@
+STRICT DATE CONVERSION
+======================
+CSV format is always DD/MON/YYYY.
+
+02/Sep/2026 -> SQL DATE 2026-09-02
+09/Feb/2026 -> SQL DATE 2026-02-09
+25/Sep/2026 -> SQL DATE 2026-09-25
+31/Dec/2026 -> SQL DATE 2026-12-31
+
+MySQL DATE columns natively display YYYY-MM-DD. This is expected and is not a day/month swap.
+The application displays these values back to users as DD/MON/YYYY.

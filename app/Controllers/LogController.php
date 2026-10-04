@@ -56,7 +56,7 @@ class LogController
             $rows = $model->search($filters, 500, $offset);
             foreach ($rows as $row) {
                 fputcsv($out, [
-                    $row['created_at'], $row['actor_name'], $row['actor_email'], $row['actor_role'],
+                    format_app_datetime($row['created_at']), $row['actor_name'], $row['actor_email'], $row['actor_role'],
                     $row['division_code'], $row['action'], $row['entity_type'], $row['entity_id'],
                     $row['description'], $row['ip_address'], $row['details_json'],
                 ]);
@@ -77,8 +77,8 @@ class LogController
             'action' => trim((string)($_GET['action'] ?? '')),
             'user_id' => (int)($_GET['user_id'] ?? 0),
             'division_id' => (int)($_GET['division_id'] ?? 0),
-            'date_from' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom) ? $dateFrom : '',
-            'date_to' => preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo) ? $dateTo : '',
+            'date_from' => parse_app_date($dateFrom) ?? (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateFrom) ? $dateFrom : ''),
+            'date_to' => parse_app_date($dateTo) ?? (preg_match('/^\d{4}-\d{2}-\d{2}$/', $dateTo) ? $dateTo : ''),
         ];
     }
 }

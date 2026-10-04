@@ -1,0 +1,13 @@
+AUTO FILTERS + EDIT RETURN CONTEXT
+==================================
+Finish Goods Aging:
+- Division and Grade submit immediately on change.
+- Search submits automatically after a 450 ms typing pause.
+- Apply Filters button removed; Reset remains in the filter row.
+- Edit, Update, Cancel and single-record Delete preserve the current Division/Search/Grade/Sort/Page Size/Page context.
+
+Market Returns:
+- Division, Source Category, Expiry Group and Valuation Status submit immediately on change.
+- Search submits automatically after a 450 ms typing pause.
+- Apply Filters button removed; Reset remains in the filter row.
+- Edit, Update, Cancel and single-record Delete preserve the current filter/page context.

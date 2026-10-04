@@ -71,10 +71,10 @@ unset($query['page']);
             </select>
         </label>
         <label>From
-            <input type="date" name="date_from" value="<?= e($filters['date_from']) ?>">
+            <input type="text" name="date_from" value="<?= e(format_app_date($filters['date_from'], '')) ?>" placeholder="DD/MON/YYYY" maxlength="11" pattern="\d{2}/[A-Za-z]{3}/\d{4}">
         </label>
         <label>To
-            <input type="date" name="date_to" value="<?= e($filters['date_to']) ?>">
+            <input type="text" name="date_to" value="<?= e(format_app_date($filters['date_to'], '')) ?>" placeholder="DD/MON/YYYY" maxlength="11" pattern="\d{2}/[A-Za-z]{3}/\d{4}">
         </label>
         <div class="log-filter-actions">
             <button class="btn primary" type="submit">Filter</button>
@@ -95,7 +95,7 @@ unset($query['page']);
             <?php foreach ($logs as $log): ?>
                 <?php $details = !empty($log['details_json']) ? json_decode($log['details_json'], true) : null; ?>
                 <tr>
-                    <td class="log-time"><strong><?= e(date('d M Y', strtotime($log['created_at']))) ?></strong><small><?= e(date('h:i:s A', strtotime($log['created_at']))) ?></small></td>
+                    <td class="log-time"><strong><?= e(format_app_date($log['created_at'])) ?></strong><small><?= e(date('h:i:s A', strtotime($log['created_at']))) ?></small></td>
                     <td><strong><?= e($log['actor_name'] ?: 'Unknown / Guest') ?></strong><small class="log-subtext"><?= e($log['actor_email'] ?: '—') ?></small></td>
                     <td><?= $log['division_code'] ? '<span class="division-tag">' . e($log['division_code']) . '</span>' : '<span class="subtle">All / N/A</span>' ?></td>
                     <td><span class="log-action <?= e($actionClass($log['action'])) ?>"><?= e($actionLabels[$log['action']] ?? $log['action']) ?></span></td>

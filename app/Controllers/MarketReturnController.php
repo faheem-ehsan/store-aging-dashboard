@@ -17,14 +17,101 @@ class MarketReturnController
         return in_array($user['role'] ?? '', ['super_admin', 'division_admin'], true);
     }
 
+    private function marketReturnReturnParams(array $source): array
+    {
+        $params = [];
+
+        $q = trim((string)($source['return_q'] ?? ''));
+        if ($q !== '') $params['q'] = $q;
+
+        $divisionId = (int)($source['return_division_id'] ?? 0);
+        if ($divisionId > 0) $params['division_id'] = $divisionId;
+
+        $category = trim((string)($source['return_category'] ?? ''));
+        if ($category !== '') $params['category'] = $category;
+
+        $expiryBucket = trim((string)($source['return_expiry_bucket'] ?? ''));
+        if (in_array($expiryBucket, ['a','b','c','expired','no_expiry'], true)) {
+            $params['expiry_bucket'] = $expiryBucket;
+        }
+
+        $valueStatus = trim((string)($source['return_value_status'] ?? ''));
+        if (in_array($valueStatus, ['valued','unvalued'], true)) {
+            $params['value_status'] = $valueStatus;
+        }
+
+        $page = max(1, (int)($source['return_page'] ?? 1));
+        if ($page > 1) $params['page'] = $page;
+
+        return $params;
+    }
+
+    private function marketReturnReturnPath(array $params): string
+    {
+        return '/market-return' . ($params ? '?' . http_build_query($params) : '');
+    }
+
+    private function marketReturnInputParams(array $params): array
+    {
+        $result = [];
+        $map = [
+            'q' => 'return_q',
+            'division_id' => 'return_division_id',
+            'category' => 'return_category',
+            'expiry_bucket' => 'return_expiry_bucket',
+            'value_status' => 'return_value_status',
+            'page' => 'return_page',
+        ];
+
+        foreach ($map as $key => $inputName) {
+            if (array_key_exists($key, $params)) {
+                $result[$inputName] = $params[$key];
+            }
+        }
+
+        return $result;
+    }
+
+    private function marketReturnCategories(array $user, ?int $divisionId = null): array
+    {
+        $categories = MarketReturnImporter::CATEGORIES;
+
+        try {
+            $dynamic = (new MarketReturnItem())->categoryOptions($user, $divisionId);
+            foreach ($dynamic as $row) {
+                $code = trim((string)($row['category_code'] ?? ''));
+                if ($code === '') continue;
+
+                if (!isset($categories[$code])) {
+                    $label = trim((string)($row['category_label'] ?? ''));
+                    $categories[$code] = [
+                        'label' => $label !== '' ? $label : $code,
+                        'sheet' => $label !== '' ? $label : $code,
+                        'class' => 'default',
+                    ];
+                }
+            }
+        } catch (\Throwable $e) {
+            // Keep the original built-in list when the module tables are not installed yet.
+        }
+
+        return $categories;
+    }
+
     private function expiryBuckets(): array
     {
         return [
+            'a' => [
+                'label' => 'A · 2+ Years',
+                'short' => 'A',
+                'class' => 'grade-a',
+                'range' => '730+ days remaining to Expiry Date',
+            ],
             'b' => [
-                'label' => 'B · 1+ Year',
+                'label' => 'B · 1–2 Years',
                 'short' => 'B',
                 'class' => 'grade-b',
-                'range' => '365+ days remaining to Expiry Date',
+                'range' => '365–729 days remaining to Expiry Date',
             ],
             'c' => [
                 'label' => 'C · Less Than 1 Year',
@@ -58,6 +145,7 @@ class MarketReturnController
         $today = new \DateTimeImmutable('today');
         $days = (int)$today->diff($expiry)->format('%r%a');
         if ($days <= 0) return 'expired';
+        if ($days >= 730) return 'a';
         if ($days >= 365) return 'b';
         return 'c';
     }
@@ -109,10 +197,12 @@ class MarketReturnController
             'value_status' => trim((string)($_GET['value_status'] ?? '')),
             'expiry_bucket' => trim((string)($_GET['expiry_bucket'] ?? '')),
         ];
-        if ($user['role'] !== 'super_admin') $filters['division_id'] = (int)$user['division_id'];
+        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $divisions = (new Division())->all(true);
-        $categories = MarketReturnImporter::CATEGORIES;
+        $categories = $this->marketReturnCategories($user, $filters['division_id']);
         $expiryBuckets = $this->expiryBuckets();
         if ($filters['expiry_bucket'] !== '' && !isset($expiryBuckets[$filters['expiry_bucket']])) {
             $filters['expiry_bucket'] = '';
@@ -120,22 +210,32 @@ class MarketReturnController
 
         $baseRows = [];
         $rows = [];
+        $bulkDeleteStats = [];
         $databaseReady = true;
         $databaseError = null;
+        $marketReturnModel = new MarketReturnItem();
         try {
             // Expiry grouping is calculated at runtime so existing Market Return data needs no migration.
             $dbFilters = $filters;
             unset($dbFilters['expiry_bucket']);
-            $baseRows = (new MarketReturnItem())->allAccessible($user, $dbFilters);
+            $baseRows = $marketReturnModel->allAccessible($user, $dbFilters);
 
             foreach ($baseRows as &$row) {
                 $row['expiry_bucket'] = $this->expiryBucket($row);
+                $resolvedExpiry = $this->effectiveExpiryDate($row);
+                $row['expiry_display'] = $resolvedExpiry
+                    ? $resolvedExpiry->format('d/M/Y')
+                    : (trim((string)($row['expiry_raw'] ?? '')) ?: '—');
             }
             unset($row);
 
             $rows = $filters['expiry_bucket'] === ''
                 ? $baseRows
                 : array_values(array_filter($baseRows, fn(array $row): bool => ($row['expiry_bucket'] ?? '') === $filters['expiry_bucket']));
+
+            if (($user['role'] ?? '') === 'super_admin') {
+                $bulkDeleteStats = $marketReturnModel->bulkDeleteDivisionStats();
+            }
 
             usort($rows, function (array $a, array $b): int {
                 $aExpiry = $this->effectiveExpiryDate($a);
@@ -179,8 +279,10 @@ class MarketReturnController
             else $metrics['unvalued']++;
         }
 
-        $selectedDivisionLabel = $user['role'] === 'super_admin' ? 'All Divisions' : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
-        if ($user['role'] === 'super_admin' && !empty($filters['division_id'])) {
+        $selectedDivisionLabel = $canReadAllDivisions
+            ? 'All Divisions'
+            : (($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? ''));
+        if ($canReadAllDivisions && !empty($filters['division_id'])) {
             foreach ($divisions as $division) {
                 if ((int)$division['id'] === (int)$filters['division_id']) {
                     $selectedDivisionLabel = $division['code'] . ' — ' . $division['name'];
@@ -193,6 +295,7 @@ class MarketReturnController
             'title' => 'Market Return Store',
             'user' => $user,
             'rows' => $rows,
+            'baseRows' => $baseRows,
             'filters' => $filters,
             'divisions' => $divisions,
             'categories' => $categories,
@@ -203,6 +306,7 @@ class MarketReturnController
             'selectedDivisionLabel' => trim($selectedDivisionLabel, ' —'),
             'databaseReady' => $databaseReady,
             'databaseError' => $databaseError,
+            'bulkDeleteStats' => $bulkDeleteStats,
         ]);
     }
 
@@ -214,7 +318,10 @@ class MarketReturnController
             'title' => 'Add Market Return Item',
             'user' => $user,
             'divisions' => (new Division())->all(true),
-            'categories' => MarketReturnImporter::CATEGORIES,
+            'categories' => $this->marketReturnCategories(
+                $user,
+                $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) ?: null : (int)$user['division_id']
+            ),
             'item' => null,
             'selectedDivisionId' => $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
             'selectedCategory' => trim((string)($_GET['category'] ?? '')),
@@ -253,14 +360,17 @@ class MarketReturnController
             View::render('errors/404', ['title' => 'Not Found']);
             return;
         }
+        $returnParams = $this->marketReturnReturnParams($_GET);
+
         View::render('market_return/form', [
             'title' => 'Edit Market Return Item',
             'user' => $user,
             'divisions' => (new Division())->all(true),
-            'categories' => MarketReturnImporter::CATEGORIES,
+            'categories' => $this->marketReturnCategories($user, (int)$item['division_id']),
             'item' => $item,
             'selectedDivisionId' => (int)$item['division_id'],
             'selectedCategory' => $item['category_code'],
+            'returnParams' => $returnParams,
         ]);
     }
 
@@ -270,6 +380,12 @@ class MarketReturnController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+        $returnParams = $this->marketReturnReturnParams($_POST);
+        $returnPath = $this->marketReturnReturnPath($returnParams);
+        $editReturnQuery = http_build_query(
+            array_merge(['id' => $id], $this->marketReturnInputParams($returnParams))
+        );
+
         $model = new MarketReturnItem();
         $before = $model->findAccessible($id, $user);
         if (!$before) $this->forbidden();
@@ -277,7 +393,7 @@ class MarketReturnController
         $error = $this->validate($data);
         if ($error) {
             flash('error', $error);
-            redirect('/market-return/edit?id=' . $id);
+            redirect('/market-return/edit?' . $editReturnQuery);
         }
         try {
             $model->save($data, $user, $id);
@@ -286,7 +402,7 @@ class MarketReturnController
         } catch (\Throwable $e) {
             flash('error', 'Unable to update the item.');
         }
-        redirect('/market-return');
+        redirect($returnPath);
     }
 
     public function delete(): void
@@ -295,6 +411,9 @@ class MarketReturnController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
+        $returnParams = $this->marketReturnReturnParams($_POST);
+        $returnPath = $this->marketReturnReturnPath($returnParams);
+
         $model = new MarketReturnItem();
         $row = $model->findAccessible($id, $user);
         if ($row) {
@@ -302,6 +421,72 @@ class MarketReturnController
             AuditLogger::log('MARKET_RETURN_DELETE', 'Deleted market-return item ' . ($row['product_name'] ?? '') . '.', 'market_return_item', $id, $row, $user, (int)$row['division_id'], $row['division_code'] ?? null);
             flash('success', 'Market Return item deleted.');
         }
+        redirect($returnPath);
+    }
+
+    public function bulkDelete(): void
+    {
+        verify_csrf();
+        $user = Auth::requireSuperAdmin();
+
+        $divisionIds = $_POST['division_ids'] ?? [];
+        if (!is_array($divisionIds)) $divisionIds = [];
+
+        $divisionIds = array_values(array_unique(array_filter(
+            array_map('intval', $divisionIds),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$divisionIds) {
+            flash('error', 'Select at least one Division for Market Return bulk deletion.');
+            redirect('/market-return');
+        }
+
+        if (strtoupper(trim((string)($_POST['confirm_text'] ?? ''))) !== 'DELETE') {
+            flash('error', 'Bulk delete was not completed. Type DELETE to confirm.');
+            redirect('/market-return');
+        }
+
+        try {
+            $model = new MarketReturnItem();
+            $result = $model->bulkDeleteByDivisions($divisionIds);
+
+            foreach (($result['divisions'] ?? []) as $division) {
+                $itemCount = (int)($division['item_count'] ?? 0);
+                if ($itemCount <= 0) continue;
+
+                AuditLogger::log(
+                    'MARKET_RETURN_BULK_DELETE',
+                    'Bulk deleted ' . number_format($itemCount) . ' Market Return item(s) for division ' .
+                        ($division['division_code'] ?? '') . '.',
+                    'market_return_division_bulk_delete',
+                    (string)($division['division_id'] ?? ''),
+                    [
+                        'deleted_items' => $itemCount,
+                        'total_quantity' => (float)($division['total_qty'] ?? 0),
+                        'stock_retail_value' => (float)($division['stock_value'] ?? 0),
+                    ],
+                    $user,
+                    (int)($division['division_id'] ?? 0),
+                    $division['division_code'] ?? null
+                );
+            }
+
+            $deleted = (int)($result['deleted_items'] ?? 0);
+
+            if ($deleted > 0) {
+                flash(
+                    'success',
+                    number_format($deleted) . ' Market Return record(s) deleted from the selected Division(s). ' .
+                    'Finish Goods stock, Divisions, Users, Import History and Division Mapping were not deleted.'
+                );
+            } else {
+                flash('success', 'No Market Return records were found in the selected Division(s).');
+            }
+        } catch (\Throwable $e) {
+            flash('error', 'Market Return bulk delete could not be completed. No partial deletion was saved.');
+        }
+
         redirect('/market-return');
     }
 
@@ -324,7 +509,7 @@ class MarketReturnController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $divisions = (new Division())->all(true);
-        $categories = MarketReturnImporter::CATEGORIES;
+        $categories = $this->marketReturnCategories($user);
         $result = [
             'inserted' => 0,
             'deleted_previous' => 0,
@@ -493,9 +678,9 @@ class MarketReturnController
         header('Content-Disposition: attachment; filename="market_return_store_auto_import_template.csv"');
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'wb');
-        fputcsv($out, ['Division','Category','Section','S. No.','Product Name','Quantity','Unit','Expiry','Retail Price','Total Amount','Remarks','Aux Label','Aux Value','Report Date']);
-        fputcsv($out, ['JSD','Utilizable Stock','Utilizable Stock - Market Return Store','1','Jam-e-Shirin 500ml','10','Bottles','Aug 2027','750','7500','','','','2026-09-24']);
-        fputcsv($out, ['SNW','Fresh Saleable Stock','Fresh Saleable Stock','2','Springley 500ml','24','Bottles','Apr 2029','100','2400','','','','2026-09-24']);
+        fputcsv($out, ['Division','Category','Section','Product Name','Quantity','Unit','Expiry','Retail Price','Total Amount','Remarks','Aux Label','Aux Value','Report Date']);
+        fputcsv($out, ['JSD','Utilizable Stock','Utilizable Stock - Market Return Store','Jam-e-Shirin 500ml','10','Bottles',"\t31/Aug/2027",'750','7500','','','',"\t24/Sep/2026"]);
+        fputcsv($out, ['SNW','Fresh Saleable Stock','Fresh Saleable Stock','Springley 500ml','24','Bottles',"\t30/Apr/2029",'100','2400','','','',"\t24/Sep/2026"]);
         fclose($out);
         exit;
     }
@@ -515,25 +700,37 @@ class MarketReturnController
             'quantity' => $this->number($_POST['quantity'] ?? '0'),
             'unit' => trim((string)($_POST['unit'] ?? 'Nos')) ?: 'Nos',
             'expiry_raw' => trim((string)($_POST['expiry_raw'] ?? '')),
-            'expiry_date' => trim((string)($_POST['expiry_date'] ?? '')) ?: null,
+            'expiry_date' => $this->normalizeManualDate($_POST['expiry_date'] ?? ''),
             'retail_price' => $retail === '' ? null : $this->number($retail),
             'total_amount' => $amount === '' ? null : $this->number($amount),
             'amount_text' => trim((string)($_POST['amount_text'] ?? '')),
             'remarks' => trim((string)($_POST['remarks'] ?? '')),
             'aux_label' => trim((string)($_POST['aux_label'] ?? '')),
             'aux_value' => trim((string)($_POST['aux_value'] ?? '')),
-            'report_date' => trim((string)($_POST['report_date'] ?? '')) ?: null,
+            'report_date' => $this->normalizeManualDate($_POST['report_date'] ?? ''),
         ];
     }
 
     private function validate(array $data): ?string
     {
         if ((int)$data['division_id'] <= 0) return 'Division is required.';
-        if (!isset(MarketReturnImporter::CATEGORIES[$data['category_code']])) return 'Choose a valid Market Return category.';
+        if (trim((string)$data['category_code']) === '') return 'Category is required.';
         if ($data['product_name'] === '') return 'Product Name / Description is required.';
         if ((float)$data['quantity'] < 0) return 'Quantity cannot be negative.';
         if ($data['unit'] === '') return 'Unit is required.';
+        foreach (['expiry_date' => 'Expiry Date', 'report_date' => 'Report Date'] as $field => $label) {
+            if ($data[$field] !== null && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string)$data[$field])) {
+                return $label . ' must use DD/MON/YYYY, for example 01/Sep/2026.';
+            }
+        }
         return null;
+    }
+
+    private function normalizeManualDate(mixed $value): mixed
+    {
+        $value = trim((string)$value);
+        if ($value === '') return null;
+        return \parse_app_date($value) ?? $value;
     }
 
     private function number(mixed $value): float
