@@ -6,6 +6,9 @@ $formUser = $editUser ?? [
     'email' => '',
     'role' => 'division_admin',
     'division_id' => '',
+    'can_add' => 1,
+    'can_edit' => 1,
+    'can_delete' => 1,
     'avatar_path' => null,
 ];
 $formRoleValue = (($formUser['role'] ?? '') === 'user' && empty($formUser['division_id']))
@@ -79,6 +82,42 @@ $initials = static function (string $name): string {
                         <?php endforeach; ?>
                     </select>
                 </label>
+
+                <div class="span-2 division-admin-permissions" id="divisionAdminPermissions">
+                    <div class="division-admin-permissions-head">
+                        <div>
+                            <strong>Division Admin Operational Rights</strong>
+                            <small>These permissions apply only inside the assigned Division. Viewing access remains available.</small>
+                        </div>
+                        <span>Granular Access</span>
+                    </div>
+
+                    <div class="division-admin-permission-grid">
+                        <label class="permission-toggle-card">
+                            <input type="checkbox" name="can_add" value="1" <?= !empty($formUser['can_add']) ? 'checked' : '' ?>>
+                            <span>
+                                <b>Add</b>
+                                <small>Add batches/items and import new records.</small>
+                            </span>
+                        </label>
+
+                        <label class="permission-toggle-card">
+                            <input type="checkbox" name="can_edit" value="1" <?= !empty($formUser['can_edit']) ? 'checked' : '' ?>>
+                            <span>
+                                <b>Edit</b>
+                                <small>Edit existing Finish Goods and Market Return records.</small>
+                            </span>
+                        </label>
+
+                        <label class="permission-toggle-card permission-danger">
+                            <input type="checkbox" name="can_delete" value="1" <?= !empty($formUser['can_delete']) ? 'checked' : '' ?>>
+                            <span>
+                                <b>Delete</b>
+                                <small>Delete records and use selected-record deletion in the assigned Division.</small>
+                            </span>
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="user-form-actions">
@@ -92,7 +131,7 @@ $initials = static function (string $name): string {
         <div class="card-head padded"><div><h2>Users</h2><p>Account access, profile pictures and division assignment.</p></div></div>
         <div class="table-wrap">
             <table class="users-table">
-                <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Division</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>User</th><th>Email</th><th>Role</th><th>Division</th><th>Access Rights</th><th>Status</th><th>Action</th></tr></thead>
                 <tbody>
                 <?php foreach ($users as $u): ?>
                     <tr>
@@ -118,14 +157,33 @@ $initials = static function (string $name): string {
                             <?= e($userRoleLabel) ?>
                         </td>
                         <td><?= e($u['division_code'] ?? (in_array(($u['role'] ?? ''), ['super_admin','store_manager'], true) || (($u['role'] ?? '') === 'user' && empty($u['division_id'])) ? 'All Divisions' : '—')) ?></td>
+                        <td>
+                            <?php if (($u['role'] ?? '') === 'division_admin'): ?>
+                                <div class="user-permission-pills">
+                                    <span class="<?= !empty($u['can_add']) ? 'on' : 'off' ?>">Add</span>
+                                    <span class="<?= !empty($u['can_edit']) ? 'on' : 'off' ?>">Edit</span>
+                                    <span class="<?= !empty($u['can_delete']) ? 'on danger' : 'off' ?>">Delete</span>
+                                </div>
+                            <?php elseif (in_array(($u['role'] ?? ''), ['super_admin','store_manager'], true)): ?>
+                                <span class="user-access-label full">Full Operational</span>
+                            <?php else: ?>
+                                <span class="user-access-label readonly">Read Only</span>
+                            <?php endif; ?>
+                        </td>
                         <td><?= $u['is_active'] ? '<span class="status on">Active</span>' : '<span class="status off">Disabled</span>' ?></td>
                         <td class="user-actions">
                             <a href="<?= e(url('/users/edit?id=' . (int)$u['id'])) ?>">Edit</a>
                             <?php if ((int)$u['id'] !== (int)$current['id']): ?>
-                                <form method="post" action="<?= e(url('/users/toggle')) ?>">
+                                <form method="post" action="<?= e(url('/users/toggle')) ?>" onsubmit="return confirm('<?= $u['is_active'] ? 'Disable' : 'Enable' ?> this user account?')">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
                                     <button class="link-button" type="submit"><?= $u['is_active'] ? 'Disable' : 'Enable' ?></button>
+                                </form>
+
+                                <form method="post" action="<?= e(url('/users/delete')) ?>" onsubmit="return confirm('Permanently delete this user account? This cannot be undone.')">
+                                    <?= csrf_field() ?>
+                                    <input type="hidden" name="id" value="<?= (int)$u['id'] ?>">
+                                    <button class="danger-link" type="submit">Delete</button>
                                 </form>
                             <?php endif; ?>
                         </td>
@@ -144,6 +202,9 @@ $initials = static function (string $name): string {
     const field = document.getElementById('divisionField');
     if (!role || !division || !field) return;
     const emptyOption = document.getElementById('divisionEmptyOption');
+    const permissions = document.getElementById('divisionAdminPermissions');
+    const permissionInputs = permissions ? Array.from(permissions.querySelectorAll('input[type="checkbox"]')) : [];
+
     function syncDivision() {
         const isSuper = role.value === 'super_admin';
         const isStoreManager = role.value === 'store_manager';
@@ -167,6 +228,12 @@ $initials = static function (string $name): string {
         } else {
             if (emptyOption) emptyOption.textContent = 'Select Division';
         }
+
+        const isDivisionAdmin = role.value === 'division_admin';
+        if (permissions) permissions.hidden = !isDivisionAdmin;
+        permissionInputs.forEach(function (input) {
+            input.disabled = !isDivisionAdmin;
+        });
     }
     role.addEventListener('change', syncDivision);
     syncDivision();

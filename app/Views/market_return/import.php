@@ -52,10 +52,16 @@
                 <input type="file" name="market_return_file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" required>
             </label>
 
+            <?php if (!empty($canDelete)): ?>
             <label class="market-return-replace-option">
                 <input type="checkbox" name="replace_existing" value="1" <?= !isset($_POST['replace_existing']) || $_POST['replace_existing'] === '1' ? 'checked' : '' ?>>
                 <span><b>Replace existing records for the identified Division + Category + Section groups</b><small>A new Category or Section is added as a new group. Existing data in other Sections is not removed.</small></span>
             </label>
+            <?php else: ?>
+            <div class="market-return-replace-option permission-readonly-note">
+                <span><b>Append-only import</b><small>Your Division Admin account does not have Delete permission, so existing Market Return records cannot be replaced.</small></span>
+            </div>
+            <?php endif; ?>
 
             <div class="form-actions">
                 <a class="btn ghost" href="<?= e(url('/market-return')) ?>">Back to Module Dashboard</a>

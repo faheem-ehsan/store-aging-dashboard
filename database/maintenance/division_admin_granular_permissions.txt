@@ -1,0 +1,47 @@
+DIVISION ADMIN GRANULAR OPERATIONAL PERMISSIONS
+================================================
+
+Super Admin can assign three independent permissions when creating or editing
+a Division Admin account:
+
+- Add
+  * Add Finish Goods batches
+  * Add Market Return items
+  * Import new Finish Goods / Market Return rows
+
+- Edit
+  * Edit existing Finish Goods batches
+  * Edit existing Market Return items
+  * Allows Finish Goods "Update Existing Batches + Add New" import mode
+
+- Delete
+  * Delete Finish Goods batches
+  * Delete multiple selected Finish Goods records inside the assigned Division
+  * Delete Market Return items
+  * Allows Market Return "Replace Existing" import mode
+
+Scope
+-----
+Division Admin remains locked to the Division assigned to the account.
+The permissions are enforced by controllers/server-side checks, not only by
+hiding buttons.
+
+Super Admin and Store Manager retain full operational Add/Edit/Delete access.
+Read-only users retain zero operational write permissions.
+
+USER MANAGEMENT SECURITY
+------------------------
+Super Admin can:
+- Edit users
+- Enable / Disable users
+- Permanently Delete users
+
+Safety:
+- Super Admin cannot disable or delete their own current account.
+- The last active Super Admin cannot be disabled, deleted, or changed to a
+  non-Super-Admin role.
+- User permission changes and user deletion are written to Activity Logs.
+
+Required migration
+------------------
+database/migrations/015_add_division_admin_permissions.sql

@@ -66,6 +66,7 @@ $router->get('/users/edit', [UserController::class, 'edit']);
 $router->post('/users/store', [UserController::class, 'store']);
 $router->post('/users/update', [UserController::class, 'update']);
 $router->post('/users/toggle', [UserController::class, 'toggle']);
+$router->post('/users/delete', [UserController::class, 'delete']);
 
 $router->get('/divisions', [DivisionController::class, 'index']);
 $router->post('/divisions/store', [DivisionController::class, 'store']);

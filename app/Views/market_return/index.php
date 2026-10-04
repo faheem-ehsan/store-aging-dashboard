@@ -174,6 +174,11 @@ $marketReturnReturnFields = array_filter(
 $marketReturnEditUrl = static function (int $id) use ($marketReturnReturnFields): string {
     return url('/market-return/edit?' . http_build_query(array_merge(['id' => $id], $marketReturnReturnFields)));
 };
+
+$canAdd = (bool)($canAdd ?? false);
+$canEdit = (bool)($canEdit ?? false);
+$canDelete = (bool)($canDelete ?? false);
+$hasRowActions = $canEdit || $canDelete;
 ?>
 
 <section class="stock-control-panel market-return-control-panel market-return-dashboard-filter" aria-label="Market Return filters and actions">
@@ -181,7 +186,7 @@ $marketReturnEditUrl = static function (int $id) use ($marketReturnReturnFields)
         <div class="stock-control-heading">
             <strong>Market Return Goods</strong>
         </div>
-        <?php if ($canManage && $databaseReady): ?>
+        <?php if ($canAdd && $databaseReady): ?>
             <div class="stock-actions stock-control-actions">
                 <a class="btn ghost" href="<?= e(url('/market-return/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import Market Return File</a>
                 <a class="btn primary" href="<?= e(url('/market-return/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Item</a>
@@ -378,7 +383,7 @@ $marketReturnEditUrl = static function (int $id) use ($marketReturnReturnFields)
                     <th>Remarks</th>
                     <th>Section</th>
                     <th>Report Date</th>
-                    <?php if ($canManage): ?><th>Action</th><?php endif; ?>
+                    <?php if ($hasRowActions): ?><th>Action</th><?php endif; ?>
                 </tr>
             </thead>
             <tbody>
@@ -403,17 +408,21 @@ $marketReturnEditUrl = static function (int $id) use ($marketReturnReturnFields)
                     <td class="market-return-remarks"><?= e($row['remarks'] ?? '') ?><?php if (!empty($row['aux_label']) || !empty($row['aux_value'])): ?><small><?= e(trim(($row['aux_label'] ?? '') . ': ' . ($row['aux_value'] ?? ''), ': ')) ?></small><?php endif; ?></td>
                     <td><?= e($row['section_name'] ?? '') ?></td>
                     <td><?= !empty($row['report_date']) ? e(format_app_date($row['report_date'])) : '—' ?></td>
-                    <?php if ($canManage): ?>
+                    <?php if ($hasRowActions): ?>
                     <td class="actions">
-                        <a href="<?= e($marketReturnEditUrl((int)$row['id'])) ?>">Edit</a>
-                        <form method="post" action="<?= e(url('/market-return/delete')) ?>" onsubmit="return confirm('Delete this Market Return item?')">
-                            <?= csrf_field() ?>
-                            <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
-                            <?php foreach ($marketReturnReturnFields as $returnName => $returnValue): ?>
-                                <input type="hidden" name="<?= e($returnName) ?>" value="<?= e((string)$returnValue) ?>">
-                            <?php endforeach; ?>
-                            <button class="danger-link" type="submit">Delete</button>
-                        </form>
+                        <?php if ($canEdit): ?>
+                            <a href="<?= e($marketReturnEditUrl((int)$row['id'])) ?>">Edit</a>
+                        <?php endif; ?>
+                        <?php if ($canDelete): ?>
+                            <form method="post" action="<?= e(url('/market-return/delete')) ?>" onsubmit="return confirm('Delete this Market Return item?')">
+                                <?= csrf_field() ?>
+                                <input type="hidden" name="id" value="<?= (int)$row['id'] ?>">
+                                <?php foreach ($marketReturnReturnFields as $returnName => $returnValue): ?>
+                                    <input type="hidden" name="<?= e($returnName) ?>" value="<?= e((string)$returnValue) ?>">
+                                <?php endforeach; ?>
+                                <button class="danger-link" type="submit">Delete</button>
+                            </form>
+                        <?php endif; ?>
                     </td>
                     <?php endif; ?>
                 </tr>

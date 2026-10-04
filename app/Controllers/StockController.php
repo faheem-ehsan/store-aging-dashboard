@@ -144,6 +144,9 @@ class StockController
             'filters' => $filters,
             'divisions' => $divisions,
             'canManage' => $this->canManage($user),
+            'canAdd' => Auth::canAddOperational($user),
+            'canEdit' => Auth::canEditOperational($user),
+            'canDelete' => Auth::canDeleteOperational($user),
             'summary' => $summary,
             'selectedDivisionLabel' => $selectedDivisionLabel,
             'selectedGradeLabel' => $selectedGradeLabel,
@@ -155,7 +158,7 @@ class StockController
     public function create(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
 
         $divisionModel = new Division();
         $divisions = $divisionModel->all(true);
@@ -183,7 +186,7 @@ class StockController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         $data = $this->payload($user);
         $error = $this->validate($data);
         if ($error) {
@@ -223,7 +226,7 @@ class StockController
     public function edit(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_GET['id'] ?? 0);
         $batch = (new StockBatch())->findAccessible($id, $user);
         if (!$batch) { http_response_code(404); View::render('errors/404', ['title'=>'Not Found']); return; }
@@ -243,7 +246,7 @@ class StockController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
 
         $returnParams = $this->stockReturnParams($_POST);
@@ -294,7 +297,7 @@ class StockController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canDeleteOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
         $returnParams = $this->stockReturnParams($_POST);
         $returnPath = $this->stockReturnPath($returnParams);
@@ -321,7 +324,8 @@ class StockController
     public function deleteSelected(): void
     {
         verify_csrf();
-        $user = Auth::requireGlobalOperator();
+        $user = Auth::requireLogin();
+        if (!Auth::canDeleteOperational($user)) $this->forbidden();
 
         $returnParams = $this->stockReturnParams($_POST);
         $returnPath = $this->stockReturnPath($returnParams);
@@ -341,6 +345,19 @@ class StockController
 
         try {
             $model = new StockBatch();
+
+            if (($user['role'] ?? '') === 'division_admin') {
+                $allowedIds = [];
+                foreach ($ids as $selectedId) {
+                    $accessible = $model->findAccessible((int)$selectedId, $user);
+                    if (!$accessible || (int)$accessible['division_id'] !== (int)$user['division_id']) {
+                        $this->forbidden();
+                    }
+                    $allowedIds[] = (int)$selectedId;
+                }
+                $ids = $allowedIds;
+            }
+
             $result = $model->deleteSelectedByIds($ids);
             $rows = $result['rows'] ?? [];
 
@@ -476,12 +493,13 @@ class StockController
     public function importForm(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         View::render('stocks/import', [
             'title' => 'CSV Import',
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'result' => null,
+            'canEdit' => Auth::canEditOperational($user),
             'preselectedDivisionId' => Auth::isGlobalOperator($user) ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
         ]);
     }
@@ -490,12 +508,15 @@ class StockController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
 
         $result = ['inserted' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => []];
         $importMode = trim((string)($_POST['import_mode'] ?? 'new_only'));
         if (!in_array($importMode, ['new_only', 'update_existing'], true)) {
             $importMode = 'new_only';
+        }
+        if ($importMode === 'update_existing' && !Auth::canEditOperational($user)) {
+            $this->forbidden();
         }
 
         $divisionModel = new Division();

@@ -302,6 +302,9 @@ class MarketReturnController
             'expiryBuckets' => $expiryBuckets,
             'expiryMetrics' => $expiryMetrics,
             'canManage' => $this->canManage($user),
+            'canAdd' => Auth::canAddOperational($user),
+            'canEdit' => Auth::canEditOperational($user),
+            'canDelete' => Auth::canDeleteOperational($user),
             'selectedDivisionLabel' => trim($selectedDivisionLabel, ' —'),
             'databaseReady' => $databaseReady,
             'databaseError' => $databaseError,
@@ -312,7 +315,7 @@ class MarketReturnController
     public function create(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         View::render('market_return/form', [
             'title' => 'Add Market Return Item',
             'user' => $user,
@@ -331,7 +334,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         $data = $this->payload($user);
         $error = $this->validate($data);
         if ($error) {
@@ -351,7 +354,7 @@ class MarketReturnController
     public function edit(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_GET['id'] ?? 0);
         $item = (new MarketReturnItem())->findAccessible($id, $user);
         if (!$item) {
@@ -377,7 +380,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
         $returnParams = $this->marketReturnReturnParams($_POST);
         $returnPath = $this->marketReturnReturnPath($returnParams);
@@ -408,7 +411,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canDeleteOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
         $returnParams = $this->marketReturnReturnParams($_POST);
         $returnPath = $this->marketReturnReturnPath($returnParams);
@@ -492,13 +495,14 @@ class MarketReturnController
     public function importForm(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         View::render('market_return/import', [
             'title' => 'Market Return Store Import',
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'categories' => MarketReturnImporter::CATEGORIES,
             'result' => null,
+            'canDelete' => Auth::canDeleteOperational($user),
         ]);
     }
 
@@ -506,7 +510,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         $divisions = (new Division())->all(true);
         $categories = $this->marketReturnCategories($user);
         $result = [
@@ -558,6 +562,9 @@ class MarketReturnController
             }
 
             $replaceRequested = isset($_POST['replace_existing']) && $_POST['replace_existing'] === '1';
+            if ($replaceRequested && !Auth::canDeleteOperational($user)) {
+                throw new \RuntimeException('Replace Existing requires Delete permission.');
+            }
             $replace = $replaceRequested;
             if ($replaceRequested && !empty($resolved['unmatched'])) {
                 $replace = false;

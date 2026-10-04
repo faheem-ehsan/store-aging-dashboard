@@ -65,8 +65,12 @@ $gradeOptions = [
 ];
 
 $isSuperAdmin = (($user['role'] ?? '') === 'super_admin');
-$canSelectMultiple = in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true);
-$stockTableColspan = 13 + ($canManage ? 1 : 0) + ($canSelectMultiple ? 1 : 0);
+$canAdd = (bool)($canAdd ?? false);
+$canEdit = (bool)($canEdit ?? false);
+$canDelete = (bool)($canDelete ?? false);
+$hasRowActions = $canEdit || $canDelete;
+$canSelectMultiple = $canDelete;
+$stockTableColspan = 13 + ($hasRowActions ? 1 : 0) + ($canSelectMultiple ? 1 : 0);
 
 // Finish Goods Aging detail-table sorting + pagination.
 // Default page size is 50, with 25 / 50 / 100 row presets.
@@ -193,7 +197,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
         <div class="stock-control-heading">
             <strong>Search Finish Goods</strong>
         </div>
-        <?php if ($canManage): ?>
+        <?php if ($canAdd): ?>
             <div class="stock-actions stock-control-actions">
                 <a class="btn ghost" href="<?= e(url('/stocks/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import CSV</a>
                 <a class="btn primary" href="<?= e(url('/stocks/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Batch</a>
@@ -327,7 +331,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('expiry_remaining')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('expiry_remaining')) ?>"><span>Expiry Remaining</span><b><?= e($sortIndicator('expiry_remaining')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('stock_location')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('stock_location')) ?>"><span>Stock Location</span><b><?= e($sortIndicator('stock_location')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('grade')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('grade')) ?>"><span>Grade</span><b><?= e($sortIndicator('grade')) ?></b></a></th>
-    <?php if ($canManage): ?><th>Action</th><?php endif; ?>
+    <?php if ($hasRowActions): ?><th>Action</th><?php endif; ?>
 </tr></thead>
 <tbody>
 <?php if (!$tableRows): ?><tr><td colspan="<?= (int)$stockTableColspan ?>" class="empty">No stock batches found.</td></tr><?php endif; ?>
@@ -360,16 +364,20 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
             <span class="sr-only">Grade <?= e($r['grade']['grade_code']) ?> - <?= e($r['grade']['grade_name']) ?></span>
         </span>
     </td>
-    <?php if ($canManage): ?><td class="actions">
-        <a href="<?= e($stockEditUrl((int)$r['id'])) ?>">Edit</a>
-        <form method="post" action="<?= e(url('/stocks/delete')) ?>" onsubmit="return confirm('Delete this batch?')">
-            <?= csrf_field() ?>
-            <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
-            <?php foreach ($stockReturnFields as $returnName => $returnValue): ?>
-                <input type="hidden" name="<?= e($returnName) ?>" value="<?= e((string)$returnValue) ?>">
-            <?php endforeach; ?>
-            <button class="danger-link" type="submit">Delete</button>
-        </form>
+    <?php if ($hasRowActions): ?><td class="actions">
+        <?php if ($canEdit): ?>
+            <a href="<?= e($stockEditUrl((int)$r['id'])) ?>">Edit</a>
+        <?php endif; ?>
+        <?php if ($canDelete): ?>
+            <form method="post" action="<?= e(url('/stocks/delete')) ?>" onsubmit="return confirm('Delete this batch?')">
+                <?= csrf_field() ?>
+                <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
+                <?php foreach ($stockReturnFields as $returnName => $returnValue): ?>
+                    <input type="hidden" name="<?= e($returnName) ?>" value="<?= e((string)$returnValue) ?>">
+                <?php endforeach; ?>
+                <button class="danger-link" type="submit">Delete</button>
+            </form>
+        <?php endif; ?>
     </td><?php endif; ?>
 </tr>
 <?php endforeach; ?>

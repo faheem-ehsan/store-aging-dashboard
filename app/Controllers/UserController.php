@@ -68,6 +68,11 @@ class UserController
                     'email' => $data['email'],
                     'role' => $data['role'],
                     'division' => $division['code'] ?? null,
+                    'permissions' => [
+                        'add' => (bool)$data['can_add'],
+                        'edit' => (bool)$data['can_edit'],
+                        'delete' => (bool)$data['can_delete'],
+                    ],
                     'profile_picture' => $avatarPath ? 'uploaded' : 'not uploaded',
                 ],
                 $current,
@@ -97,6 +102,16 @@ class UserController
         $newAvatar = null;
         try {
             $data = $this->validatedUserData(false);
+
+            if (
+                ($existing['role'] ?? '') === 'super_admin'
+                && $data['role'] !== 'super_admin'
+                && (int)($existing['is_active'] ?? 0) === 1
+                && $model->countActiveSuperAdmins() <= 1
+            ) {
+                throw new \RuntimeException('The last active Super Admin cannot be changed to another role.');
+            }
+
             if (!empty($_POST['remove_avatar'])) {
                 $data['avatar_path'] = null;
             }
@@ -127,12 +142,22 @@ class UserController
                         'email' => $existing['email'],
                         'role' => $existing['role'],
                         'division' => $existing['division_code'] ?? null,
+                        'permissions' => [
+                            'add' => (bool)($existing['can_add'] ?? 0),
+                            'edit' => (bool)($existing['can_edit'] ?? 0),
+                            'delete' => (bool)($existing['can_delete'] ?? 0),
+                        ],
                     ],
                     'after' => [
                         'name' => $updated['name'],
                         'email' => $updated['email'],
                         'role' => $updated['role'],
                         'division' => $updated['division_code'] ?? null,
+                        'permissions' => [
+                            'add' => (bool)($updated['can_add'] ?? 0),
+                            'edit' => (bool)($updated['can_edit'] ?? 0),
+                            'delete' => (bool)($updated['can_delete'] ?? 0),
+                        ],
                     ],
                     'password_changed' => !empty($data['password']),
                     'profile_picture_changed' => array_key_exists('avatar_path', $data),
@@ -154,24 +179,127 @@ class UserController
         verify_csrf();
         $current = Auth::requireSuperAdmin();
         $id = (int)($_POST['id'] ?? 0);
+
+        if ($id === (int)$current['id']) {
+            flash('error', 'You cannot disable your own Super Admin account.');
+            redirect('/users');
+        }
+
         $model = new User();
         $before = $model->findAny($id);
+        if (!$before) {
+            flash('error', 'User not found.');
+            redirect('/users');
+        }
+
+        if (
+            ($before['role'] ?? '') === 'super_admin'
+            && (int)$before['is_active'] === 1
+            && $model->countActiveSuperAdmins() <= 1
+        ) {
+            flash('error', 'The last active Super Admin cannot be disabled.');
+            redirect('/users');
+        }
+
         $model->toggle($id, (int)$current['id']);
         $after = $model->findAny($id);
-        if ($before && $after && (int)$before['is_active'] !== (int)$after['is_active']) {
-            $division = !empty($after['division_id']) ? (new Division())->find((int)$after['division_id']) : null;
+
+        if ($after && (int)$before['is_active'] !== (int)$after['is_active']) {
+            $division = !empty($after['division_id'])
+                ? (new Division())->find((int)$after['division_id'])
+                : null;
+
             AuditLogger::log(
                 'USER_STATUS',
                 ($after['is_active'] ? 'Enabled' : 'Disabled') . ' user ' . $after['name'] . '.',
                 'user',
                 $id,
-                ['old_status' => $before['is_active'] ? 'active' : 'disabled', 'new_status' => $after['is_active'] ? 'active' : 'disabled'],
+                [
+                    'old_status' => $before['is_active'] ? 'active' : 'disabled',
+                    'new_status' => $after['is_active'] ? 'active' : 'disabled',
+                ],
                 $current,
                 $division ? (int)$division['id'] : null,
                 $division['code'] ?? null
             );
         }
+
         flash('success', 'User status updated.');
+        redirect('/users');
+    }
+
+    public function delete(): void
+    {
+        verify_csrf();
+        $current = Auth::requireSuperAdmin();
+        $id = (int)($_POST['id'] ?? 0);
+
+        if ($id <= 0) {
+            flash('error', 'Invalid user.');
+            redirect('/users');
+        }
+
+        if ($id === (int)$current['id']) {
+            flash('error', 'You cannot delete your own Super Admin account.');
+            redirect('/users');
+        }
+
+        $model = new User();
+        $target = $model->findAny($id);
+
+        if (!$target) {
+            flash('error', 'User not found.');
+            redirect('/users');
+        }
+
+        if (
+            ($target['role'] ?? '') === 'super_admin'
+            && (int)($target['is_active'] ?? 0) === 1
+            && $model->countActiveSuperAdmins() <= 1
+        ) {
+            flash('error', 'The last active Super Admin cannot be deleted.');
+            redirect('/users');
+        }
+
+        $division = !empty($target['division_id'])
+            ? (new Division())->find((int)$target['division_id'])
+            : null;
+
+        try {
+            $deleted = $model->delete($id, (int)$current['id']);
+            if (!$deleted) throw new \RuntimeException('User could not be deleted.');
+
+            AuditLogger::log(
+                'USER_DELETE',
+                'Deleted user ' . $target['name'] . '.',
+                'user',
+                $id,
+                [
+                    'name' => $target['name'],
+                    'email' => $target['email'],
+                    'role' => $target['role'],
+                    'division' => $target['division_code'] ?? null,
+                    'status' => !empty($target['is_active']) ? 'active' : 'disabled',
+                    'permissions' => [
+                        'add' => (bool)($target['can_add'] ?? 0),
+                        'edit' => (bool)($target['can_edit'] ?? 0),
+                        'delete' => (bool)($target['can_delete'] ?? 0),
+                    ],
+                ],
+                $current,
+                $division ? (int)$division['id'] : null,
+                $division['code'] ?? null
+            );
+
+            if (!empty($target['avatar_path'])) {
+                $this->deleteAvatarFile($target['avatar_path']);
+            }
+
+            flash('success', 'User deleted permanently.');
+        } catch (\Throwable $e) {
+            flash('error', 'Unable to delete this user. The account may still be referenced by protected system records.');
+        }
+
         redirect('/users');
     }
 
@@ -180,14 +308,27 @@ class UserController
         $requestedRole = $_POST['role'] ?? 'user';
         $isAllDivisionReadOnly = $requestedRole === 'read_only_all';
 
+        $storedRole = $isAllDivisionReadOnly ? 'user' : $requestedRole;
+        $isDivisionAdmin = $storedRole === 'division_admin';
+
         $data = [
             'name' => trim($_POST['name'] ?? ''),
             'email' => trim($_POST['email'] ?? ''),
             'password' => $_POST['password'] ?? '',
-            // Keep the existing database ENUM unchanged: global read-only is stored
-            // as role=user with division_id=NULL.
-            'role' => $isAllDivisionReadOnly ? 'user' : $requestedRole,
+            // Keep global read-only stored as role=user with division_id=NULL.
+            'role' => $storedRole,
             'division_id' => $isAllDivisionReadOnly ? '' : ($_POST['division_id'] ?? ''),
+            // Granular write permissions apply only to Division Admin.
+            // Global operational roles always have full operational access.
+            'can_add' => $isDivisionAdmin
+                ? (isset($_POST['can_add']) && $_POST['can_add'] === '1' ? 1 : 0)
+                : (in_array($storedRole, ['super_admin','store_manager'], true) ? 1 : 0),
+            'can_edit' => $isDivisionAdmin
+                ? (isset($_POST['can_edit']) && $_POST['can_edit'] === '1' ? 1 : 0)
+                : (in_array($storedRole, ['super_admin','store_manager'], true) ? 1 : 0),
+            'can_delete' => $isDivisionAdmin
+                ? (isset($_POST['can_delete']) && $_POST['can_delete'] === '1' ? 1 : 0)
+                : (in_array($storedRole, ['super_admin','store_manager'], true) ? 1 : 0),
         ];
 
         if (!$data['name'] || !filter_var($data['email'], FILTER_VALIDATE_EMAIL)) {

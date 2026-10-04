@@ -32,7 +32,9 @@
                 <span>Import Mode</span>
                 <select name="import_mode">
                     <option value="new_only" <?= ($_POST['import_mode'] ?? 'new_only') === 'new_only' ? 'selected' : '' ?>>Add New Batches Only (Recommended)</option>
-                    <option value="update_existing" <?= ($_POST['import_mode'] ?? '') === 'update_existing' ? 'selected' : '' ?>>Update Existing Batches + Add New</option>
+                    <?php if (!empty($canEdit)): ?>
+                        <option value="update_existing" <?= ($_POST['import_mode'] ?? '') === 'update_existing' ? 'selected' : '' ?>>Update Existing Batches + Add New</option>
+                    <?php endif; ?>
                 </select>
                 <small>Use “Add New Batches Only” to preserve previously imported stock. Existing Batch Nos. are skipped; only new Batch Nos. are added.</small>
             </label>

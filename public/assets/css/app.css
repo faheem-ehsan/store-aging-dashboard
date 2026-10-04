@@ -6535,3 +6535,135 @@ body.stock-bulk-modal-open{overflow:hidden}
 
 /* Store Manager role: global operational access without Administration */
 .division-chip{white-space:nowrap;}
+
+
+/* ==========================================================
+   User Management - granular Division Admin permissions
+   ========================================================== */
+.division-admin-permissions{
+    padding:13px;
+    border:1px solid #dde4ec;
+    border-radius:12px;
+    background:#fbfcfe;
+}
+.division-admin-permissions[hidden]{display:none!important}
+.division-admin-permissions-head{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:14px;
+    padding-bottom:10px;
+}
+.division-admin-permissions-head>div{
+    display:grid;
+    gap:3px;
+}
+.division-admin-permissions-head strong{
+    color:#172033;
+    font-size:11px;
+}
+.division-admin-permissions-head small{
+    color:#667085;
+    font-size:9px;
+    line-height:1.4;
+}
+.division-admin-permissions-head>span{
+    flex:0 0 auto;
+    padding:4px 7px;
+    border-radius:999px;
+    background:#fff0f1;
+    color:#b42318;
+    font-size:8px;
+    font-weight:800;
+}
+.division-admin-permission-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:8px;
+}
+.permission-toggle-card{
+    display:flex!important;
+    align-items:flex-start;
+    gap:9px!important;
+    min-height:72px;
+    padding:10px!important;
+    border:1px solid #e2e7ed;
+    border-radius:10px;
+    background:#fff;
+    cursor:pointer;
+}
+.permission-toggle-card input{
+    width:16px!important;
+    height:16px!important;
+    min-height:0!important;
+    margin:2px 0 0!important;
+    accent-color:#d71920;
+}
+.permission-toggle-card>span{
+    display:grid;
+    gap:3px;
+}
+.permission-toggle-card b{
+    color:#172033;
+    font-size:10px;
+}
+.permission-toggle-card small{
+    color:#7b8798;
+    font-size:8px;
+    line-height:1.35;
+}
+.permission-toggle-card.permission-danger{
+    border-color:#f0d8da;
+}
+.user-permission-pills{
+    display:flex;
+    gap:4px;
+    flex-wrap:wrap;
+}
+.user-permission-pills span{
+    display:inline-flex;
+    align-items:center;
+    min-height:21px;
+    padding:3px 6px;
+    border-radius:999px;
+    font-size:7.5px;
+    font-weight:800;
+}
+.user-permission-pills span.on{
+    background:#eafaf0;
+    color:#067647;
+}
+.user-permission-pills span.on.danger{
+    background:#fff0f1;
+    color:#b42318;
+}
+.user-permission-pills span.off{
+    background:#f2f4f7;
+    color:#98a2b3;
+    text-decoration:line-through;
+}
+.user-access-label{
+    display:inline-flex;
+    align-items:center;
+    min-height:22px;
+    padding:3px 7px;
+    border-radius:999px;
+    font-size:8px;
+    font-weight:800;
+}
+.user-access-label.full{
+    background:#edf4ff;
+    color:#175cd3;
+}
+.user-access-label.readonly{
+    background:#f2f4f7;
+    color:#667085;
+}
+.permission-readonly-note{
+    opacity:.82;
+}
+@media(max-width:760px){
+    .division-admin-permission-grid{
+        grid-template-columns:1fr;
+    }
+}
