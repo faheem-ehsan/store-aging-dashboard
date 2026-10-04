@@ -11,10 +11,12 @@ use App\Controllers\LogController;
 use App\Controllers\GradeCriteriaController;
 use App\Controllers\MarketReturnController;
 use App\Controllers\MarketReturnMappingController;
+use App\Controllers\AdminController;
 
 $router = new Router();
 
 $router->get('/', [DashboardController::class, 'index']);
+$router->get('/admin', [AdminController::class, 'index']);
 $router->get('/login', [AuthController::class, 'showLogin']);
 $router->post('/login', [AuthController::class, 'login']);
 $router->post('/logout', [AuthController::class, 'logout']);
@@ -25,6 +27,7 @@ $router->post('/stocks/store', [StockController::class, 'store']);
 $router->get('/stocks/edit', [StockController::class, 'edit']);
 $router->post('/stocks/update', [StockController::class, 'update']);
 $router->post('/stocks/delete', [StockController::class, 'delete']);
+$router->post('/stocks/delete-selected', [StockController::class, 'deleteSelected']);
 $router->post('/stocks/bulk-delete', [StockController::class, 'bulkDelete']);
 $router->get('/stocks/import', [StockController::class, 'importForm']);
 $router->post('/stocks/import', [StockController::class, 'importCsv']);

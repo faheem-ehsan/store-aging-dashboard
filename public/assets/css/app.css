@@ -4457,3 +4457,251 @@ body.stock-bulk-modal-open{overflow:hidden}
     .stock-bulk-division-list{overflow-x:auto}
     .stock-bulk-division-row{min-width:560px}
 }
+
+
+/* Super Admin Administration hub */
+.admin-back-link{
+    display:inline-flex;
+    align-items:center;
+    min-height:30px;
+    margin-left:12px;
+    padding:5px 10px;
+    border:1px solid #ead4d6;
+    border-radius:8px;
+    background:#fff;
+    color:#8f1117;
+    font-size:11px;
+    font-weight:600;
+    text-decoration:none;
+}
+.admin-back-link:hover{
+    background:#fff7f7;
+    border-color:#efb6ba;
+}
+
+.admin-hub{
+    display:grid;
+    gap:18px;
+}
+.admin-hub-hero{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:20px;
+    padding:22px 24px;
+    border:1px solid #dfe5ec;
+    border-radius:16px;
+    background:#fff;
+    box-shadow:0 10px 28px rgba(16,24,40,.045);
+}
+.admin-hub-kicker{
+    display:block;
+    margin-bottom:5px;
+    color:#d71920;
+    font-size:10px;
+    font-weight:800;
+    letter-spacing:.08em;
+}
+.admin-hub-hero h2{
+    margin:0;
+    color:#8f1117;
+    font-size:24px;
+}
+.admin-hub-hero p{
+    max-width:760px;
+    margin:6px 0 0;
+    color:#667085;
+    font-size:12px;
+    line-height:1.5;
+}
+.admin-hub-badge{
+    flex:0 0 auto;
+    padding:9px 12px;
+    border:1px solid #efc9cc;
+    border-radius:10px;
+    background:#fff7f7;
+    color:#9b1118;
+    font-size:11px;
+    font-weight:700;
+}
+.admin-hub-section{
+    padding:18px;
+    border:1px solid #dfe5ec;
+    border-radius:16px;
+    background:#fff;
+}
+.admin-hub-section-head{
+    padding:0 2px 13px;
+    margin-bottom:14px;
+    border-bottom:1px solid #edf0f4;
+}
+.admin-hub-section-head h3{
+    margin:0;
+    color:#172033;
+    font-size:16px;
+}
+.admin-hub-section-head p{
+    margin:4px 0 0;
+    color:#7b8798;
+    font-size:10px;
+}
+.admin-hub-grid{
+    display:grid;
+    grid-template-columns:repeat(3,minmax(0,1fr));
+    gap:12px;
+}
+.admin-hub-grid-two{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+}
+.admin-hub-card{
+    display:grid;
+    grid-template-columns:42px minmax(0,1fr) 24px;
+    align-items:center;
+    gap:12px;
+    min-height:96px;
+    padding:14px;
+    border:1px solid #e2e7ed;
+    border-radius:12px;
+    background:#fbfcfe;
+    color:inherit;
+    text-decoration:none;
+    transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease,background .15s ease;
+}
+.admin-hub-card:hover{
+    transform:translateY(-1px);
+    border-color:#e8b9bd;
+    background:#fff;
+    box-shadow:0 10px 24px rgba(16,24,40,.07);
+}
+.admin-hub-icon{
+    width:42px;
+    height:42px;
+    display:grid;
+    place-items:center;
+    border-radius:11px;
+    background:#fff0f1;
+    color:#d71920;
+}
+.admin-hub-icon svg{
+    width:21px;
+    height:21px;
+}
+.admin-hub-card-copy{
+    display:grid;
+    gap:4px;
+    min-width:0;
+}
+.admin-hub-card-copy strong{
+    color:#172033;
+    font-size:13px;
+}
+.admin-hub-card-copy small{
+    color:#667085;
+    font-size:10px;
+    line-height:1.45;
+}
+.admin-hub-arrow{
+    color:#98a2b3;
+    font-size:18px;
+    font-weight:700;
+    text-align:right;
+}
+.admin-hub-card-danger{
+    border-color:#f2ced1;
+    background:#fffafa;
+}
+.admin-hub-card-danger .admin-hub-icon{
+    background:#feecee;
+    color:#b42318;
+}
+.admin-hub-card-danger .admin-hub-card-copy strong{
+    color:#9b1118;
+}
+
+@media(max-width:1050px){
+    .admin-hub-grid{
+        grid-template-columns:repeat(2,minmax(0,1fr));
+    }
+}
+@media(max-width:720px){
+    .admin-hub-hero{
+        align-items:flex-start;
+        flex-direction:column;
+    }
+    .admin-hub-grid,
+    .admin-hub-grid-two{
+        grid-template-columns:1fr;
+    }
+}
+
+
+/* Finish Goods: Super Admin multi-record selection */
+.stock-selected-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    min-height:52px;
+    padding:8px 12px;
+    border-bottom:1px solid #e5e9ef;
+    background:#fff;
+}
+.stock-selected-summary{
+    display:flex;
+    align-items:baseline;
+    gap:5px;
+    color:#667085;
+    font-size:11px;
+}
+.stock-selected-summary strong{
+    min-width:18px;
+    color:#172033;
+    font-size:14px;
+    font-variant-numeric:tabular-nums;
+}
+.stock-selected-delete-btn{
+    min-height:34px !important;
+    padding:6px 12px !important;
+    border-color:#c81820 !important;
+    background:#c81820 !important;
+    color:#fff !important;
+    font-size:11px !important;
+}
+.stock-selected-delete-btn:hover:not(:disabled){
+    background:#a91118 !important;
+}
+.stock-selected-delete-btn:disabled{
+    opacity:.42;
+    cursor:not-allowed;
+}
+.dispatch-stock-table .stock-select-column{
+    width:36px;
+    min-width:36px;
+    max-width:36px;
+    padding-left:8px !important;
+    padding-right:5px !important;
+    text-align:center !important;
+}
+.stock-row-checkbox{
+    width:15px;
+    height:15px;
+    margin:0;
+    vertical-align:middle;
+    accent-color:#ed1c24;
+    cursor:pointer;
+}
+.dispatch-stock-table tbody tr.stock-row-selected td{
+    background:#fff7f7;
+}
+.dispatch-stock-table tbody tr.stock-row-selected td:first-child{
+    box-shadow:inset 3px 0 0 #ed1c24;
+}
+@media(max-width:760px){
+    .stock-selected-toolbar{
+        align-items:stretch;
+        flex-direction:column;
+    }
+    .stock-selected-delete-btn{
+        width:100%;
+    }
+}

@@ -178,6 +178,95 @@ class StockBatch
         return 'inserted';
     }
 
+    public function findManyByIds(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $ids),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$ids) return [];
+
+        $placeholders = implode(',', array_fill(0, count($ids), '?'));
+        $stmt = Database::connection()->prepare(
+            $this->baseSelect() . " WHERE sb.id IN ($placeholders) ORDER BY d.code, sb.id"
+        );
+        $stmt->execute($ids);
+        return $stmt->fetchAll();
+    }
+
+    public function deleteSelectedByIds(array $ids): array
+    {
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $ids),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$ids) {
+            return [
+                'deleted_batches' => 0,
+                'deleted_movements' => 0,
+                'rows' => [],
+            ];
+        }
+
+        $rows = $this->findManyByIds($ids);
+        if (!$rows) {
+            return [
+                'deleted_batches' => 0,
+                'deleted_movements' => 0,
+                'rows' => [],
+            ];
+        }
+
+        // Delete only IDs that actually exist in stock_batches.
+        $existingIds = array_map(
+            static fn(array $row): int => (int)$row['id'],
+            $rows
+        );
+        $placeholders = implode(',', array_fill(0, count($existingIds), '?'));
+
+        $pdo = Database::connection();
+        $pdo->beginTransaction();
+
+        try {
+            $deletedMovements = 0;
+
+            // Older databases may have a restrictive FK from stock_movements.
+            // Remove only movement rows belonging to the selected batch IDs.
+            try {
+                $tableCheck = $pdo->query("SHOW TABLES LIKE 'stock_movements'");
+                if ((bool)$tableCheck->fetchColumn()) {
+                    $movementDelete = $pdo->prepare(
+                        "DELETE FROM stock_movements WHERE batch_id IN ($placeholders)"
+                    );
+                    $movementDelete->execute($existingIds);
+                    $deletedMovements = $movementDelete->rowCount();
+                }
+            } catch (\Throwable $e) {
+                // If the optional movement table is unavailable, continue with
+                // the normal stock_batches delete.
+            }
+
+            $batchDelete = $pdo->prepare(
+                "DELETE FROM stock_batches WHERE id IN ($placeholders)"
+            );
+            $batchDelete->execute($existingIds);
+            $deletedBatches = $batchDelete->rowCount();
+
+            $pdo->commit();
+
+            return [
+                'deleted_batches' => $deletedBatches,
+                'deleted_movements' => $deletedMovements,
+                'rows' => $rows,
+            ];
+        } catch (\Throwable $e) {
+            if ($pdo->inTransaction()) $pdo->rollBack();
+            throw $e;
+        }
+    }
+
     public function bulkDeleteDivisionStats(): array
     {
         $sql = 'SELECT d.id division_id,

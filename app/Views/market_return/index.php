@@ -167,10 +167,6 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         </div>
         <?php if ($canManage && $databaseReady): ?>
             <div class="stock-actions stock-control-actions">
-                <?php if ($user['role'] === 'super_admin'): ?>
-                    <button class="btn bulk-delete-trigger" type="button" id="openMarketReturnBulkDelete">Bulk Delete</button>
-                    <a class="btn ghost" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a>
-                <?php endif; ?>
                 <a class="btn ghost" href="<?= e(url('/market-return/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import Market Return File</a>
                 <a class="btn primary" href="<?= e(url('/market-return/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Item</a>
             </div>
@@ -925,7 +921,7 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     const submitBtn = document.getElementById('confirmMarketReturnBulkDelete');
     const selectedText = document.getElementById('marketReturnBulkSelectedText');
 
-    if (!modal || !openBtn || !form) return;
+    if (!modal || !form) return;
 
     const checkboxes = Array.from(
         form.querySelectorAll('input[name="division_ids[]"]:not(:disabled)')
@@ -967,10 +963,10 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
         document.body.classList.remove('stock-bulk-modal-open');
         confirmInput.value = '';
         updateState();
-        openBtn.focus();
+        if (openBtn) openBtn.focus();
     }
 
-    openBtn.addEventListener('click', openModal);
+    if (openBtn) openBtn.addEventListener('click', openModal);
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
 
@@ -1015,6 +1011,11 @@ $paginationUrl = static function (int $page) use ($paginationParams): string {
     });
 
     updateState();
+
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('bulk_delete') === '1') {
+        openModal();
+    }
 })();
 </script>
 <?php endif; ?>

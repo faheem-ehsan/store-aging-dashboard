@@ -239,6 +239,92 @@ class StockController
         redirect('/stocks');
     }
 
+    public function deleteSelected(): void
+    {
+        verify_csrf();
+        $user = Auth::requireSuperAdmin();
+
+        $ids = $_POST['ids'] ?? [];
+        if (!is_array($ids)) $ids = [];
+
+        $ids = array_values(array_unique(array_filter(
+            array_map('intval', $ids),
+            static fn(int $id): bool => $id > 0
+        )));
+
+        if (!$ids) {
+            flash('error', 'Select at least one Finish Goods record to delete.');
+            redirect('/stocks');
+        }
+
+        try {
+            $model = new StockBatch();
+            $result = $model->deleteSelectedByIds($ids);
+            $rows = $result['rows'] ?? [];
+
+            // Record one clear audit event per affected Division.
+            $divisionGroups = [];
+            foreach ($rows as $row) {
+                $divisionId = (int)($row['division_id'] ?? 0);
+                if ($divisionId <= 0) continue;
+
+                if (!isset($divisionGroups[$divisionId])) {
+                    $divisionGroups[$divisionId] = [
+                        'division_code' => $row['division_code'] ?? '',
+                        'count' => 0,
+                        'quantity' => 0.0,
+                        'stock_value' => 0.0,
+                        'batch_ids' => [],
+                        'batch_nos' => [],
+                    ];
+                }
+
+                $divisionGroups[$divisionId]['count']++;
+                $divisionGroups[$divisionId]['quantity'] += (float)($row['current_qty'] ?? 0);
+                $divisionGroups[$divisionId]['stock_value'] += (float)($row['stock_value'] ?? 0);
+                $divisionGroups[$divisionId]['batch_ids'][] = (int)$row['id'];
+                $divisionGroups[$divisionId]['batch_nos'][] = (string)($row['batch_no'] ?? '');
+            }
+
+            foreach ($divisionGroups as $divisionId => $group) {
+                AuditLogger::log(
+                    'BATCH_MULTI_DELETE',
+                    'Deleted ' . number_format((int)$group['count']) .
+                        ' selected Finish Goods batch record(s) for division ' .
+                        ($group['division_code'] ?: (string)$divisionId) . '.',
+                    'stock_batch_multi_delete',
+                    (string)$divisionId,
+                    [
+                        'deleted_batches' => (int)$group['count'],
+                        'total_quantity' => (float)$group['quantity'],
+                        'stock_value' => (float)$group['stock_value'],
+                        'batch_ids' => $group['batch_ids'],
+                        'batch_nos' => $group['batch_nos'],
+                        'deleted_stock_movements_total_operation' => (int)($result['deleted_movements'] ?? 0),
+                    ],
+                    $user,
+                    (int)$divisionId,
+                    $group['division_code'] ?: null
+                );
+            }
+
+            $deleted = (int)($result['deleted_batches'] ?? 0);
+
+            if ($deleted > 0) {
+                flash(
+                    'success',
+                    number_format($deleted) . ' selected Finish Goods record(s) deleted successfully.'
+                );
+            } else {
+                flash('error', 'The selected Finish Goods records were not found.');
+            }
+        } catch (\Throwable $e) {
+            flash('error', 'Selected records could not be deleted. No partial deletion was saved.');
+        }
+
+        redirect('/stocks');
+    }
+
     public function bulkDelete(): void
     {
         verify_csrf();

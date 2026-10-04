@@ -64,6 +64,9 @@ $gradeOptions = [
     'EX' => 'Expired · Black',
 ];
 
+$isSuperAdmin = (($user['role'] ?? '') === 'super_admin');
+$stockTableColspan = 13 + ($canManage ? 1 : 0) + ($isSuperAdmin ? 1 : 0);
+
 // Finish Goods Aging detail-table sorting + pagination.
 // Default page size is 50, with 25 / 50 / 100 row presets.
 $allowedPageSizes = [25, 50, 100];
@@ -174,9 +177,6 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
         </div>
         <?php if ($canManage): ?>
             <div class="stock-actions stock-control-actions">
-                <?php if (($user['role'] ?? '') === 'super_admin'): ?>
-                    <button class="btn bulk-delete-trigger" type="button" id="openStockBulkDelete">Bulk Delete</button>
-                <?php endif; ?>
                 <a class="btn ghost" href="<?= e(url('/stocks/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import CSV</a>
                 <a class="btn primary" href="<?= e(url('/stocks/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Batch</a>
             </div>
@@ -257,9 +257,36 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
 </section>
 
 <div class="card flush">
+<?php if ($isSuperAdmin): ?>
+<div class="stock-selected-toolbar" id="stockSelectedToolbar">
+    <div class="stock-selected-summary">
+        <strong id="stockSelectedCount">0</strong>
+        <span>record(s) selected</span>
+    </div>
+
+    <form method="post" action="<?= e(url('/stocks/delete-selected')) ?>" id="stockSelectedDeleteForm">
+        <?= csrf_field() ?>
+        <div id="stockSelectedIds"></div>
+        <button class="btn stock-selected-delete-btn" type="submit" id="stockSelectedDeleteBtn" disabled>
+            Delete Selected
+        </button>
+    </form>
+</div>
+<?php endif; ?>
+
 <div class="table-wrap">
 <table class="aging-table dispatch-stock-table">
 <thead><tr>
+    <?php if ($isSuperAdmin): ?>
+    <th class="stock-select-column">
+        <input
+            type="checkbox"
+            id="stockSelectAllVisible"
+            class="stock-row-checkbox"
+            aria-label="Select all visible records"
+            title="Select all visible records">
+    </th>
+    <?php endif; ?>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('division')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('division')) ?>"><span>Division</span><b><?= e($sortIndicator('division')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_code')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_code')) ?>"><span>Product Code</span><b><?= e($sortIndicator('product_code')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_name')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_name')) ?>"><span>Product Name</span><b><?= e($sortIndicator('product_name')) ?></b></a></th>
@@ -276,9 +303,18 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
     <?php if ($canManage): ?><th>Action</th><?php endif; ?>
 </tr></thead>
 <tbody>
-<?php if (!$tableRows): ?><tr><td colspan="14" class="empty">No stock batches found.</td></tr><?php endif; ?>
+<?php if (!$tableRows): ?><tr><td colspan="<?= (int)$stockTableColspan ?>" class="empty">No stock batches found.</td></tr><?php endif; ?>
 <?php foreach ($tableRows as $r): ?>
 <tr>
+    <?php if ($isSuperAdmin): ?>
+    <td class="stock-select-column">
+        <input
+            type="checkbox"
+            class="stock-row-checkbox stock-record-select"
+            value="<?= (int)$r['id'] ?>"
+            aria-label="Select batch <?= e($r['batch_no']) ?>">
+    </td>
+    <?php endif; ?>
     <td><span class="division-tag"><?= e($r['division_code']) ?></span></td>
     <td><?= e($r['material_code']) ?></td>
     <td><?= e($r['material_description']) ?></td>
@@ -357,6 +393,84 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
 <?php endif; ?>
 </div>
 
+
+<?php if ($isSuperAdmin): ?>
+<script>
+(function () {
+    const selectAll = document.getElementById('stockSelectAllVisible');
+    const rowBoxes = Array.from(document.querySelectorAll('.stock-record-select'));
+    const countNode = document.getElementById('stockSelectedCount');
+    const deleteForm = document.getElementById('stockSelectedDeleteForm');
+    const hiddenIds = document.getElementById('stockSelectedIds');
+    const deleteBtn = document.getElementById('stockSelectedDeleteBtn');
+
+    if (!deleteForm || !hiddenIds || !deleteBtn) return;
+
+    function selectedBoxes() {
+        return rowBoxes.filter(function (box) { return box.checked; });
+    }
+
+    function updateSelection() {
+        const selected = selectedBoxes();
+        countNode.textContent = String(selected.length);
+        deleteBtn.disabled = selected.length === 0;
+
+        if (selectAll) {
+            selectAll.checked = rowBoxes.length > 0 && selected.length === rowBoxes.length;
+            selectAll.indeterminate = selected.length > 0 && selected.length < rowBoxes.length;
+        }
+
+        rowBoxes.forEach(function (box) {
+            const row = box.closest('tr');
+            if (row) row.classList.toggle('stock-row-selected', box.checked);
+        });
+    }
+
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            rowBoxes.forEach(function (box) {
+                box.checked = selectAll.checked;
+            });
+            updateSelection();
+        });
+    }
+
+    rowBoxes.forEach(function (box) {
+        box.addEventListener('change', updateSelection);
+    });
+
+    deleteForm.addEventListener('submit', function (event) {
+        const selected = selectedBoxes();
+
+        if (!selected.length) {
+            event.preventDefault();
+            return;
+        }
+
+        const confirmed = window.confirm(
+            'Permanently delete ' + selected.length +
+            ' selected Finish Goods record' + (selected.length === 1 ? '' : 's') + '?'
+        );
+
+        if (!confirmed) {
+            event.preventDefault();
+            return;
+        }
+
+        hiddenIds.innerHTML = '';
+        selected.forEach(function (box) {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = box.value;
+            hiddenIds.appendChild(input);
+        });
+    });
+
+    updateSelection();
+})();
+</script>
+<?php endif; ?>
 
 <?php if (($user['role'] ?? '') === 'super_admin'): ?>
 <div class="stock-bulk-modal" id="stockBulkDeleteModal" hidden>
@@ -459,7 +573,7 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
     const submitBtn = document.getElementById('confirmStockBulkDelete');
     const selectedText = document.getElementById('stockBulkSelectedText');
 
-    if (!modal || !openBtn || !form) return;
+    if (!modal || !form) return;
 
     const checkboxes = Array.from(
         form.querySelectorAll('input[name="division_ids[]"]:not(:disabled)')
@@ -496,10 +610,10 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
         document.body.classList.remove('stock-bulk-modal-open');
         confirmInput.value = '';
         updateState();
-        openBtn.focus();
+        if (openBtn) openBtn.focus();
     }
 
-    openBtn.addEventListener('click', openModal);
+    if (openBtn) openBtn.addEventListener('click', openModal);
     closeBtn.addEventListener('click', closeModal);
     cancelBtn.addEventListener('click', closeModal);
 
@@ -540,6 +654,11 @@ $sortAria = static function (string $column) use ($sortKey, $sortDir): string {
     });
 
     updateState();
+
+    const query = new URLSearchParams(window.location.search);
+    if (query.get('bulk_delete') === '1') {
+        openModal();
+    }
 })();
 </script>
 <?php endif; ?>
