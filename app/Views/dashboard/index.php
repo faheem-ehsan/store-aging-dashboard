@@ -152,14 +152,9 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Divisions';
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
-$dashboardLastUpdatedLabel = 'No update recorded';
-if (!empty($lastStockUpdatedAt)) {
-    try {
-        $dashboardLastUpdatedLabel = (new \DateTimeImmutable((string)$lastStockUpdatedAt))->format('d/M/Y');
-    } catch (\Throwable $e) {
-        $dashboardLastUpdatedLabel = (string)$lastStockUpdatedAt;
-    }
-}
+// TEST PHASE: Keep the Dashboard Latest Stock Update date fixed for every Division.
+// Remove this override later to restore the live last-stock-update date.
+$dashboardLastUpdatedLabel = '05/Oct/2026';
 
 $lastUpdateDivisionCode = trim((string)($lastStockUpdateInfo['division_code'] ?? ''));
 $lastUpdateDivisionName = trim((string)($lastStockUpdateInfo['division_name'] ?? ''));
@@ -259,21 +254,6 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
                 <strong><?= e($dashboardLastUpdatedLabel) ?></strong>
             </div>
 
-            <div class="dashboard-update-division">
-                <?php if ($dashboardLastUpdateScopeLabel !== ''): ?>
-                    <span><?= e($dashboardLastUpdateScopeLabel) ?></span>
-                <?php endif; ?>
-                <div class="dashboard-update-division-value">
-                    <?php if ($lastUpdateDivisionCode !== ''): ?>
-                        <b class="dashboard-update-code"><?= e($lastUpdateDivisionCode) ?></b>
-                    <?php endif; ?>
-                    <?php if ($lastUpdateDivisionName !== ''): ?>
-                        <b class="dashboard-update-name"><?= e($lastUpdateDivisionName) ?></b>
-                    <?php else: ?>
-                        <b class="dashboard-update-name"><?= e($dashboardLastUpdateDivision) ?></b>
-                    <?php endif; ?>
-                </div>
-            </div>
         </div>
     </div>
 </div>
