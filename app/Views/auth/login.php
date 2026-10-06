@@ -22,5 +22,5 @@
         </label>
         <button class="btn primary" type="submit">Login</button>
     </form>
-    <div class="login-note">Default setup login: admin@example.com / Admin@123. Change it after first login.</div>
+    
 </div>
