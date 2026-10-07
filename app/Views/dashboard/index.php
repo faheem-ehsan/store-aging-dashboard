@@ -154,7 +154,7 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
 // TEST PHASE: Keep the Dashboard Latest Stock Update date fixed for every Division.
 // Remove this override later to restore the live last-stock-update date.
-$dashboardLastUpdatedLabel = '05/Oct/2026';
+$dashboardLastUpdatedLabel = '06/Oct/2026';
 
 $lastUpdateDivisionCode = trim((string)($lastStockUpdateInfo['division_code'] ?? ''));
 $lastUpdateDivisionName = trim((string)($lastStockUpdateInfo['division_name'] ?? ''));
