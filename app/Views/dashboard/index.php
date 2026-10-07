@@ -152,9 +152,9 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Divisions';
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
-// TEST PHASE: Keep the Dashboard Latest Stock Update date fixed for every Division.
-// Remove this override later to restore the live last-stock-update date.
-$dashboardLastUpdatedLabel = '05/Oct/2026';
+// TEST PHASE: Dashboard Latest Stock Update always shows yesterday's date.
+// This remains the same regardless of the selected Division.
+$dashboardLastUpdatedLabel = (new \DateTimeImmutable('yesterday'))->format('d/M/Y');
 
 $lastUpdateDivisionCode = trim((string)($lastStockUpdateInfo['division_code'] ?? ''));
 $lastUpdateDivisionName = trim((string)($lastStockUpdateInfo['division_name'] ?? ''));
