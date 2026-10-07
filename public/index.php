@@ -14,11 +14,17 @@ use App\Controllers\MarketReturnMappingController;
 use App\Controllers\AdminController;
 use App\Controllers\EmailNotificationController;
 use App\Controllers\DailyStockReportController;
+use App\Controllers\ProductMasterController;
 
 $router = new Router();
 
 $router->get('/', [DashboardController::class, 'index']);
 $router->get('/admin', [AdminController::class, 'index']);
+$router->get('/admin/products', [ProductMasterController::class, 'index']);
+$router->post('/admin/products/store', [ProductMasterController::class, 'store']);
+$router->post('/admin/products/update', [ProductMasterController::class, 'update']);
+$router->post('/admin/products/toggle', [ProductMasterController::class, 'toggle']);
+$router->post('/admin/products/delete', [ProductMasterController::class, 'delete']);
 $router->get('/admin/email-notifications', [EmailNotificationController::class, 'index']);
 $router->post('/admin/email-notifications/save', [EmailNotificationController::class, 'save']);
 $router->post('/admin/email-notifications/test', [EmailNotificationController::class, 'test']);
@@ -35,6 +41,7 @@ $router->get('/daily-stock-reports/export', [DailyStockReportController::class, 
 
 $router->get('/stocks', [StockController::class, 'index']);
 $router->get('/stocks/create', [StockController::class, 'create']);
+$router->get('/stocks/product-options', [StockController::class, 'productOptions']);
 $router->post('/stocks/store', [StockController::class, 'store']);
 $router->get('/stocks/edit', [StockController::class, 'edit']);
 $router->post('/stocks/update', [StockController::class, 'update']);

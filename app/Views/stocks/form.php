@@ -52,7 +52,7 @@ $stockReturnHiddenMap = [
 
         <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true)): ?>
         <label>Division
-            <select name="division_id" required>
+            <select name="division_id" id="batch_division_id" required>
                 <option value="">Select division...</option>
                 <?php foreach ($divisions as $d): ?>
                     <option value="<?= (int)$d['id'] ?>" <?= $selectedDivisionId === (int)$d['id'] ? 'selected' : '' ?>><?= e($d['code']) ?> — <?= e($d['name']) ?></option>
@@ -63,10 +63,25 @@ $stockReturnHiddenMap = [
         <label>Division<input value="<?= e($divisionLabel) ?>" readonly></label>
         <?php endif; ?>
 
+        <?php if (!$isEdit): ?>
+        <label>Product Code
+            <select name="material_code" id="product_master_select" required <?= $selectedDivisionId > 0 ? '' : 'disabled' ?>>
+                <option value=""><?= $selectedDivisionId > 0 ? 'Select approved product...' : 'Select Division first...' ?></option>
+                <?php foreach (($products ?? []) as $product): ?>
+                    <option value="<?= e($product['product_code']) ?>" data-name="<?= e($product['product_name']) ?>" data-uom="<?= e($product['uom']) ?>"><?= e($product['product_code']) ?> — <?= e($product['product_name']) ?></option>
+                <?php endforeach; ?>
+            </select>
+            <small class="product-master-form-help" id="product_master_help"><?= $selectedDivisionId > 0 && empty($products) ? 'No active products configured for this Division. Ask Super Admin to add them in Administration → Product Master.' : '' ?></small>
+        </label>
+        <label class="span-2">Product Name<input name="material_description" id="product_master_name" value="" readonly required></label>
+        <label>Current Stock<input type="number" step="0.001" min="0" name="current_qty" value="0" required></label>
+        <label>UoM<input name="uom" id="product_master_uom" value="" readonly required></label>
+        <?php else: ?>
         <label>Product Code<input name="material_code" value="<?= e($batch['material_code'] ?? '') ?>" required></label>
         <label class="span-2">Product Name<input name="material_description" value="<?= e($batch['material_description'] ?? '') ?>" required></label>
         <label>Current Stock<input type="number" step="0.001" min="0" name="current_qty" value="<?= e($batch['current_qty'] ?? '0') ?>" required></label>
         <label>UoM<input name="uom" value="<?= e($batch['uom'] ?? '') ?>" placeholder="e.g. CS, PCS, BT" required></label>
+        <?php endif; ?>
         <label>Retail Stock Value<input type="number" step="0.01" min="0" name="stock_value" value="<?= e($batch['stock_value'] ?? '0') ?>" required></label>
         <label>Batch No<input name="batch_no" value="<?= e($batch['batch_no'] ?? '') ?>" required></label>
         <label>Manufacturing Date
@@ -109,6 +124,82 @@ $stockReturnHiddenMap = [
 </div>
 <script>
 (function () {
+    const productSelect = document.getElementById('product_master_select');
+    const productName = document.getElementById('product_master_name');
+    const productUom = document.getElementById('product_master_uom');
+    const productHelp = document.getElementById('product_master_help');
+    const divisionSelect = document.getElementById('batch_division_id');
+    const productOptionsUrl = <?= json_encode(url('/stocks/product-options'), JSON_UNESCAPED_SLASHES) ?>;
+
+    function syncSelectedProduct() {
+        if (!productSelect || !productName || !productUom) return;
+        const option = productSelect.options[productSelect.selectedIndex];
+        productName.value = option && option.value ? (option.dataset.name || '') : '';
+        productUom.value = option && option.value ? (option.dataset.uom || '') : '';
+    }
+
+    function renderProductOptions(products, divisionSelected) {
+        if (!productSelect) return;
+        productSelect.innerHTML = '';
+
+        const first = document.createElement('option');
+        first.value = '';
+        first.textContent = divisionSelected ? 'Select approved product...' : 'Select Division first...';
+        productSelect.appendChild(first);
+
+        (products || []).forEach(function (product) {
+            const option = document.createElement('option');
+            option.value = product.code;
+            option.textContent = product.code + ' — ' + product.name;
+            option.dataset.name = product.name;
+            option.dataset.uom = product.uom;
+            productSelect.appendChild(option);
+        });
+
+        productSelect.disabled = !divisionSelected;
+        if (productHelp) {
+            productHelp.textContent = divisionSelected && (!products || products.length === 0)
+                ? 'No active products configured for this Division. Ask Super Admin to add them in Administration → Product Master.'
+                : '';
+        }
+        syncSelectedProduct();
+    }
+
+    async function loadDivisionProducts() {
+        if (!productSelect || !divisionSelect) return;
+        const divisionId = divisionSelect.value;
+        if (!divisionId) {
+            renderProductOptions([], false);
+            return;
+        }
+
+        productSelect.disabled = true;
+        productSelect.innerHTML = '<option value="">Loading products...</option>';
+        if (productName) productName.value = '';
+        if (productUom) productUom.value = '';
+
+        try {
+            const response = await fetch(productOptionsUrl + '?division_id=' + encodeURIComponent(divisionId), {
+                headers: {'Accept':'application/json'},
+                credentials: 'same-origin'
+            });
+            if (!response.ok) throw new Error('Unable to load products');
+            const data = await response.json();
+            renderProductOptions(data.products || [], true);
+        } catch (error) {
+            renderProductOptions([], true);
+            if (productHelp) productHelp.textContent = 'Unable to load Product Master for this Division. Refresh the page and try again.';
+        }
+    }
+
+    if (productSelect) {
+        productSelect.addEventListener('change', syncSelectedProduct);
+        syncSelectedProduct();
+    }
+    if (divisionSelect && productSelect) {
+        divisionSelect.addEventListener('change', loadDivisionProducts);
+    }
+
     const mfg = document.getElementById('manufacture_date');
     const exp = document.getElementById('expiry_date');
     const aging = document.getElementById('aging_days_preview');

@@ -1,0 +1,26 @@
+PRODUCT MASTER FOR MANUAL ADD BATCH
+===================================
+
+Super Admin manages Product Code, Product Name and UoM per Division at:
+  Administration -> Product Master
+
+Manual Add Batch behavior
+-------------------------
+- Division Admin sees approved products for only the assigned Division.
+- Super Admin / Store Manager selects a Division first, then the Product list reloads.
+- Product Name and UoM are filled automatically from Product Master.
+- The server re-validates the selected Product Master entry before creating the batch.
+
+Import isolation
+----------------
+- CSV import parser is unchanged.
+- CSV import template is unchanged.
+- Existing import behavior remains independent from Product Master.
+- Product Master is enforced only by /stocks/store (manual Create Batch).
+
+Migration
+---------
+Run once on an existing database:
+  database/migrations/016_add_product_master.sql
+
+The migration also pre-fills Product Master from existing materials and uses the most recent batch UoM where available.

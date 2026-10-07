@@ -12,7 +12,7 @@
         <div class="admin-hub-section-head">
             <div>
                 <h3>System Configuration</h3>
-                <p>Manage divisions, grading rules and Market Return assignment rules.</p>
+                <p>Manage divisions, approved products, grading rules and Market Return assignment rules.</p>
             </div>
         </div>
 
@@ -24,6 +24,17 @@
                 <span class="admin-hub-card-copy">
                     <strong>Divisions</strong>
                     <small>Create divisions and control division status.</small>
+                </span>
+                <span class="admin-hub-arrow">→</span>
+            </a>
+
+            <a class="admin-hub-card" href="<?= e(url('/admin/products')) ?>">
+                <span class="admin-hub-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v12H4V6Zm4 4h8M8 14h5M7 3v3m10-3v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="admin-hub-card-copy">
+                    <strong>Product Master</strong>
+                    <small>Maintain Product Code, Product Name and UoM for every Division.</small>
                 </span>
                 <span class="admin-hub-arrow">→</span>
             </a>

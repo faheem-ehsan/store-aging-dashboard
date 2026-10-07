@@ -5,6 +5,7 @@ use App\Core\Auth;
 use App\Core\View;
 use App\Models\Division;
 use App\Models\StockBatch;
+use App\Models\ProductMaster;
 use App\Services\GradeService;
 use App\Services\AuditLogger;
 
@@ -173,13 +174,54 @@ class StockController
             : ($user['division_code'] ?? '');
         $title = $divisionCode !== '' ? $divisionCode . ' Add Batch' : 'Division Add Batch';
 
+        $products = $selectedDivisionId > 0
+            ? (new ProductMaster())->activeByDivision($selectedDivisionId)
+            : [];
+
         View::render('stocks/form', [
             'title' => $title,
             'user' => $user,
             'divisions' => $divisions,
             'batch' => null,
             'selectedDivisionId' => $selectedDivisionId,
+            'products' => $products,
         ]);
+    }
+
+    public function productOptions(): void
+    {
+        $user = Auth::requireLogin();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
+
+        $divisionId = Auth::isGlobalOperator($user)
+            ? max(0, (int)($_GET['division_id'] ?? 0))
+            : (int)$user['division_id'];
+
+        $products = [];
+        if ($divisionId > 0) {
+            $division = (new Division())->find($divisionId);
+            if ($division && (int)$division['is_active']) {
+                if (!Auth::isGlobalOperator($user) && $divisionId !== (int)$user['division_id']) {
+                    $this->forbidden();
+                }
+                $products = (new ProductMaster())->activeByDivision($divisionId);
+            }
+        }
+
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo json_encode([
+            'division_id' => $divisionId,
+            'products' => array_map(static function (array $product): array {
+                return [
+                    'id' => (int)$product['id'],
+                    'code' => (string)$product['product_code'],
+                    'name' => (string)$product['product_name'],
+                    'uom' => (string)$product['uom'],
+                ];
+            }, $products),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
     }
 
     public function store(): void
@@ -188,10 +230,23 @@ class StockController
         $user = Auth::requireLogin();
         if (!Auth::canAddOperational($user)) $this->forbidden();
         $data = $this->payload($user);
+        $createPath = '/stocks/create' . (
+            Auth::isGlobalOperator($user) && (int)$data['division_id'] > 0
+                ? '?division_id=' . (int)$data['division_id']
+                : ''
+        );
+
+        try {
+            $data = $this->applyProductMasterForCreate($data, $user);
+        } catch (\Throwable $e) {
+            flash('error', $e->getMessage());
+            redirect($createPath);
+        }
+
         $error = $this->validate($data);
         if ($error) {
             flash('error', $error);
-            redirect('/stocks/create');
+            redirect($createPath);
         }
         try {
             $model = new StockBatch();
@@ -760,6 +815,35 @@ class StockController
             'result' => $result,
             'preselectedDivisionId' => $targetDivisionId,
         ]);
+    }
+
+    private function applyProductMasterForCreate(array $data, array $user): array
+    {
+        $divisionId = Auth::isGlobalOperator($user)
+            ? (int)($data['division_id'] ?? 0)
+            : (int)($user['division_id'] ?? 0);
+
+        if ($divisionId <= 0) {
+            throw new \RuntimeException('Select a Division before selecting a Product.');
+        }
+
+        $productCode = trim((string)($data['material_code'] ?? ''));
+        if ($productCode === '') {
+            throw new \RuntimeException('Select a Product from the approved Product Master.');
+        }
+
+        $product = (new ProductMaster())->findActiveByDivisionCode($divisionId, $productCode);
+        if (!$product) {
+            throw new \RuntimeException('The selected Product is not active in the Product Master for this Division. Ask Super Admin to configure it first.');
+        }
+
+        // Canonical values always come from the Super Admin Product Master.
+        // CSV import is intentionally not routed through this method.
+        $data['material_code'] = (string)$product['product_code'];
+        $data['material_description'] = (string)$product['product_name'];
+        $data['uom'] = (string)$product['uom'];
+
+        return $data;
     }
 
     private function payload(array $user): array
