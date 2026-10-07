@@ -154,7 +154,7 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
 // TEST PHASE: Keep the Dashboard Latest Stock Update date fixed for every Division.
 // Remove this override later to restore the live last-stock-update date.
-$dashboardLastUpdatedLabel = '06/Oct/2026';
+$dashboardLastUpdatedLabel = '05/Oct/2026';
 
 $lastUpdateDivisionCode = trim((string)($lastStockUpdateInfo['division_code'] ?? ''));
 $lastUpdateDivisionName = trim((string)($lastStockUpdateInfo['division_name'] ?? ''));
@@ -334,7 +334,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
                             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v9H4v-9Zm3 4.5h.01M17 12h.01M12 9.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </span>
                         <span>
-                            <small>Total Stock Value</small>
+                            <small>Total Stock Retail Value</small>
                             <strong>Rs/ <?= $dashboardStockValue($gs['value']) ?></strong>
                         </span>
                     </div>
