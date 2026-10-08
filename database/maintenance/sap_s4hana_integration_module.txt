@@ -1,0 +1,116 @@
+SAP S/4HANA INTEGRATION MODULE
+================================
+
+Scope
+-----
+Phase 1 is read-only from SAP to the Stock Aging Dashboard.
+
+SAP remains the system of record. The existing PHP MVC application remains
+the aging/grading/alerts/reporting layer.
+
+Administration
+--------------
+Super Admin -> Administration -> SAP S/4HANA Integration
+
+The module provides:
+- Encrypted SAP credentials
+- Basic Authentication or OAuth 2.0 Client Credentials
+- Configurable Product / Batch / Material Stock collection endpoints
+- Configurable SAP field mappings
+- SAP Plant + Storage Location -> Dashboard Division mapping
+- Test Connection
+- Preview Sync (does not modify staging/dashboard data)
+- Sync Now
+- Scheduled synchronization runner
+- Staging tables
+- Sync history / audit trail
+- Optional publish to the existing Finish Goods Aging tables
+- Automatic grade alert evaluation after successful publish
+
+Recommended order
+-----------------
+1. Run database/migrations/017_add_sap_s4hana_integration.sql.
+2. Open SAP S/4HANA Integration under Administration.
+3. Enter the SAP Base URL and approved authentication details.
+4. Enter collection/entity-set endpoints confirmed by the SAP team.
+5. Confirm the JSON field names using the SAP test payloads.
+6. Configure Plant / Storage Location -> Division mappings.
+7. Save settings.
+8. Run Test Connection.
+9. Run Preview Sync.
+10. Reconcile products, batches, dates, stock totals and unmapped rows.
+11. Enable "Publish validated SAP stock to Finish Goods Aging" only after UAT.
+12. Run Sync Now.
+13. When approved for production, run bin/install_sap_sync_task.bat as Administrator.
+
+Scheduled task
+--------------
+bin/sync_sap_stock.php
+bin/install_sap_sync_task.bat
+
+The provided Windows task runs daily at 01:15 AM. Change the time only after
+the SAP team approves the synchronization window.
+
+Data tables
+-----------
+sap_integration_settings
+sap_division_mapping
+sap_sync_log
+sap_products
+sap_batches
+sap_stock
+
+The existing stock_batches table receives:
+source_system = manual | sap
+sap_sync_key
+sap_last_sync_id
+
+Existing manual / CSV import
+----------------------------
+No Finish Goods CSV template or import rule is changed. Existing import remains
+available as a fallback / controlled manual channel.
+
+Stock value
+-----------
+The SAP stock value field is intentionally blank by default. Do not map
+"Total Stock Retail Value" until Finance / SAP confirms the approved SAP
+valuation or custom field.
+
+Field mapping
+-------------
+Starter field names are supplied in the settings page only as logical defaults.
+The exact OData payload field names must be confirmed against the organization's
+S/4HANA release, deployment model, activated services and chosen entity sets.
+
+Publishing behavior
+-------------------
+A synchronization first extracts all three SAP datasets. It then validates and
+normalizes them. Only a complete successful extract is allowed to replace the
+current staging snapshot.
+
+If Dashboard Publish is enabled:
+- SAP stock is mapped to a Dashboard Division.
+- Product Master is synchronized locally.
+- Stock from multiple SAP storage locations is aggregated to the dashboard's
+  existing natural key: Division + Product + Batch.
+- Manufacturing and Expiry Date are required before a batch is published.
+- SAP-managed dashboard rows that disappear from the latest complete snapshot
+  are removed.
+- Existing grading rules are applied by the current GradeService.
+- Grade email alert evaluation runs after the stock transaction commits.
+
+Cutover warning
+---------------
+Before production publishing is enabled, reconcile and resolve unmatched legacy
+manual stock in mapped divisions. Otherwise manual rows not represented by the
+same Division + Product + Batch key can coexist with SAP rows and affect totals.
+
+Security
+--------
+- SAP setup pages are Super Admin only.
+- SAP passwords / client secrets are encrypted at rest with config/sap_secret.php.
+- The module performs read-only HTTP GET calls to SAP.
+- No SAP inventory posting, stock adjustment, batch creation or Product Master
+  update is sent to SAP.
+- HTTPS certificate verification is enabled by default.
+- Technical errors are shown only to Super Admin and are sanitized.

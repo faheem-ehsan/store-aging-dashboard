@@ -152,9 +152,14 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Divisions';
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
-// TEST PHASE: Dashboard Latest Stock Update always shows yesterday's date.
-// This remains the same regardless of the selected Division.
-$dashboardLastUpdatedLabel = (new \DateTimeImmutable('yesterday'))->format('d/M/Y');
+// When SAP publishing is enabled, show the date of the last successful SAP
+// stock synchronization. Until SAP is configured, retain the existing
+// testing-phase "yesterday" behavior.
+if (!empty($sapLastStockUpdatedAt)) {
+    $dashboardLastUpdatedLabel = format_app_date($sapLastStockUpdatedAt);
+} else {
+    $dashboardLastUpdatedLabel = (new \DateTimeImmutable('yesterday'))->format('d/M/Y');
+}
 
 $lastUpdateDivisionCode = trim((string)($lastStockUpdateInfo['division_code'] ?? ''));
 $lastUpdateDivisionName = trim((string)($lastStockUpdateInfo['division_name'] ?? ''));
