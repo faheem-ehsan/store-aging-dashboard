@@ -15,7 +15,6 @@ use App\Controllers\AdminController;
 use App\Controllers\EmailNotificationController;
 use App\Controllers\DailyStockReportController;
 use App\Controllers\ProductMasterController;
-use App\Controllers\SapIntegrationController;
 
 $router = new Router();
 
@@ -26,13 +25,6 @@ $router->post('/admin/products/store', [ProductMasterController::class, 'store']
 $router->post('/admin/products/update', [ProductMasterController::class, 'update']);
 $router->post('/admin/products/toggle', [ProductMasterController::class, 'toggle']);
 $router->post('/admin/products/delete', [ProductMasterController::class, 'delete']);
-$router->get('/admin/sap-integration', [SapIntegrationController::class, 'index']);
-$router->post('/admin/sap-integration/save', [SapIntegrationController::class, 'save']);
-$router->post('/admin/sap-integration/test', [SapIntegrationController::class, 'test']);
-$router->post('/admin/sap-integration/preview', [SapIntegrationController::class, 'preview']);
-$router->post('/admin/sap-integration/sync', [SapIntegrationController::class, 'syncNow']);
-$router->post('/admin/sap-integration/mapping', [SapIntegrationController::class, 'saveMapping']);
-$router->post('/admin/sap-integration/mapping/delete', [SapIntegrationController::class, 'deleteMapping']);
 $router->get('/admin/email-notifications', [EmailNotificationController::class, 'index']);
 $router->post('/admin/email-notifications/save', [EmailNotificationController::class, 'save']);
 $router->post('/admin/email-notifications/test', [EmailNotificationController::class, 'test']);

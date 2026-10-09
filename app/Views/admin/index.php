@@ -39,17 +39,6 @@
                 <span class="admin-hub-arrow">→</span>
             </a>
 
-            <a class="admin-hub-card" href="<?= e(url('/admin/sap-integration')) ?>">
-                <span class="admin-hub-icon" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v5H4V6Zm0 7h7v5H4v-5Zm9 0h7v5h-7v-5ZM7 8.5h.01M16 15.5h.01M17 8.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                </span>
-                <span class="admin-hub-card-copy">
-                    <strong>SAP S/4HANA Integration</strong>
-                    <small>Read-only SAP connection, field mapping, division mapping, synchronization and audit logs.</small>
-                </span>
-                <span class="admin-hub-arrow">→</span>
-            </a>
-
             <a class="admin-hub-card" href="<?= e(url('/grade-criteria')) ?>">
                 <span class="admin-hub-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M12 6v6l4 2M20 12a8 8 0 1 1-16 0 8 8 0 0 1 16 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
