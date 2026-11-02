@@ -17,12 +17,14 @@ class SapIntegration
             publish_to_dashboard TINYINT(1) NOT NULL DEFAULT 0,
             environment_label VARCHAR(80) NOT NULL DEFAULT 'SAP S/4HANA',
             base_url VARCHAR(500) NULL,
-            auth_type ENUM('basic','oauth2') NOT NULL DEFAULT 'basic',
+            auth_type ENUM('basic','oauth2','api_key') NOT NULL DEFAULT 'basic',
             username VARCHAR(190) NULL,
             password_enc TEXT NULL,
             oauth_token_url VARCHAR(500) NULL,
             client_id VARCHAR(190) NULL,
             client_secret_enc TEXT NULL,
+            api_key_enc TEXT NULL,
+            api_key_header VARCHAR(80) NOT NULL DEFAULT 'APIKey',
             product_endpoint VARCHAR(500) NULL,
             batch_endpoint VARCHAR(500) NULL,
             stock_endpoint VARCHAR(500) NULL,
@@ -57,6 +59,18 @@ class SapIntegration
             CONSTRAINT fk_sap_settings_user FOREIGN KEY (updated_by) REFERENCES users(id) ON DELETE SET NULL
         ) ENGINE=InnoDB");
 
+        // Backwards-compatible migration for databases created before API-key support.
+        $authColumn = $pdo->query("SHOW COLUMNS FROM sap_integration_settings LIKE 'auth_type'")->fetch();
+        if ($authColumn && strpos((string)$authColumn['Type'], "'api_key'") === false) {
+            $pdo->exec("ALTER TABLE sap_integration_settings MODIFY auth_type ENUM('basic','oauth2','api_key') NOT NULL DEFAULT 'basic'");
+        }
+        $columns = array_column($pdo->query('SHOW COLUMNS FROM sap_integration_settings')->fetchAll(), 'Field');
+        if (!in_array('api_key_enc', $columns, true)) {
+            $pdo->exec('ALTER TABLE sap_integration_settings ADD COLUMN api_key_enc TEXT NULL');
+        }
+        if (!in_array('api_key_header', $columns, true)) {
+            $pdo->exec("ALTER TABLE sap_integration_settings ADD COLUMN api_key_header VARCHAR(80) NOT NULL DEFAULT 'APIKey'");
+        }
         $pdo->exec("INSERT IGNORE INTO sap_integration_settings (id) VALUES (1)");
 
         $pdo->exec("CREATE TABLE IF NOT EXISTS sap_division_mapping (
@@ -184,7 +198,8 @@ class SapIntegration
         $row = Database::connection()->query('SELECT * FROM sap_integration_settings WHERE id=1')->fetch() ?: [];
         $row['password_set'] = !empty($row['password_enc']);
         $row['client_secret_set'] = !empty($row['client_secret_enc']);
-        unset($row['password_enc'], $row['client_secret_enc']);
+        $row['api_key_set'] = !empty($row['api_key_enc']);
+        unset($row['password_enc'], $row['client_secret_enc'], $row['api_key_enc']);
         return $row;
     }
 
@@ -195,6 +210,7 @@ class SapIntegration
         $cipher = new SapCredentialCipher();
         $row['password'] = !empty($row['password_enc']) ? $cipher->decrypt((string)$row['password_enc']) : '';
         $row['client_secret'] = !empty($row['client_secret_enc']) ? $cipher->decrypt((string)$row['client_secret_enc']) : '';
+        $row['api_key'] = !empty($row['api_key_enc']) ? $cipher->decrypt((string)$row['api_key_enc']) : '';
         return $row;
     }
 
@@ -202,10 +218,11 @@ class SapIntegration
     {
         $this->ensureTables();
         $pdo = Database::connection();
-        $existing = $pdo->query('SELECT password_enc,client_secret_enc FROM sap_integration_settings WHERE id=1')->fetch() ?: [];
+        $existing = $pdo->query('SELECT password_enc,client_secret_enc,api_key_enc FROM sap_integration_settings WHERE id=1')->fetch() ?: [];
 
         $passwordEnc = (string)($existing['password_enc'] ?? '');
         $clientSecretEnc = (string)($existing['client_secret_enc'] ?? '');
+        $apiKeyEnc = (string)($existing['api_key_enc'] ?? '');
         $cipher = new SapCredentialCipher();
 
         if (array_key_exists('password', $data) && (string)$data['password'] !== '') {
@@ -215,10 +232,14 @@ class SapIntegration
             $clientSecretEnc = $cipher->encrypt((string)$data['client_secret']);
         }
 
+        if (array_key_exists('api_key', $data) && (string)$data['api_key'] !== '') {
+            $apiKeyEnc = $cipher->encrypt((string)$data['api_key']);
+        }
+
         $stmt = $pdo->prepare(
             "UPDATE sap_integration_settings SET
                 is_enabled=?, publish_to_dashboard=?, environment_label=?, base_url=?, auth_type=?,
-                username=?, password_enc=?, oauth_token_url=?, client_id=?, client_secret_enc=?,
+                username=?, password_enc=?, oauth_token_url=?, client_id=?, client_secret_enc=?, api_key_enc=?, api_key_header=?,
                 product_endpoint=?, batch_endpoint=?, stock_endpoint=?,
                 request_timeout_sec=?, page_size=?, verify_ssl=?, stock_type_filter=?,
                 product_code_field=?, product_name_field=?, product_uom_field=?,
@@ -233,12 +254,14 @@ class SapIntegration
             !empty($data['publish_to_dashboard']) ? 1 : 0,
             trim((string)($data['environment_label'] ?? 'SAP S/4HANA')) ?: 'SAP S/4HANA',
             $this->cleanUrl($data['base_url'] ?? ''),
-            in_array(($data['auth_type'] ?? 'basic'), ['basic','oauth2'], true) ? $data['auth_type'] : 'basic',
+            in_array(($data['auth_type'] ?? 'basic'), ['basic','oauth2','api_key'], true) ? $data['auth_type'] : 'basic',
             trim((string)($data['username'] ?? '')) ?: null,
             $passwordEnc ?: null,
             $this->cleanUrl($data['oauth_token_url'] ?? ''),
             trim((string)($data['client_id'] ?? '')) ?: null,
             $clientSecretEnc ?: null,
+            $apiKeyEnc ?: null,
+            preg_match('/^[A-Za-z0-9-]{1,80}$/', (string)($data['api_key_header'] ?? 'APIKey')) ? (string)$data['api_key_header'] : 'APIKey',
             trim((string)($data['product_endpoint'] ?? '')) ?: null,
             trim((string)($data['batch_endpoint'] ?? '')) ?: null,
             trim((string)($data['stock_endpoint'] ?? '')) ?: null,

@@ -33,7 +33,7 @@ class SapIntegrationController
         $model = new SapIntegration();
 
         $authType = trim((string)($_POST['auth_type'] ?? 'basic'));
-        if (!in_array($authType, ['basic','oauth2'], true)) {
+        if (!in_array($authType, ['basic','oauth2','api_key'], true)) {
             flash('error', 'Select a valid SAP authentication method.');
             redirect('/admin/sap-integration');
         }
@@ -75,6 +75,8 @@ class SapIntegrationController
                 'oauth_token_url' => $_POST['oauth_token_url'] ?? '',
                 'client_id' => $_POST['client_id'] ?? '',
                 'client_secret' => $_POST['client_secret'] ?? '',
+                'api_key' => $_POST['api_key'] ?? '',
+                'api_key_header' => $_POST['api_key_header'] ?? 'APIKey',
                 'product_endpoint' => $_POST['product_endpoint'] ?? '',
                 'batch_endpoint' => $_POST['batch_endpoint'] ?? '',
                 'stock_endpoint' => $_POST['stock_endpoint'] ?? '',

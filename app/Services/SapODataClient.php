@@ -75,6 +75,13 @@ class SapODataClient
 
         if ($authType === 'oauth2') {
             $headers[] = 'Authorization: Bearer ' . $this->oauthToken();
+        } elseif ($authType === 'api_key') {
+            $key = (string)($this->settings['api_key'] ?? '');
+            $header = (string)($this->settings['api_key_header'] ?? 'APIKey');
+            if ($key === '') throw new \RuntimeException('SAP API key is not configured.');
+            if (!preg_match('/^[A-Za-z0-9-]{1,80}$/', $header)) throw new \RuntimeException('Invalid SAP API key header.');
+            if (preg_match('/[\r\n]/', $key)) throw new \RuntimeException('Invalid SAP API key.');
+            $headers[] = $header . ': ' . $key;
         }
 
         $ch = curl_init($url);

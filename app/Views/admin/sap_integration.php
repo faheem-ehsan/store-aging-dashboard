@@ -105,6 +105,7 @@ $testBadgeClass = $lastTestStatus === 'success' ? 'ok' : ($lastTestStatus === 'f
                     <select name="auth_type" id="sapAuthType">
                         <option value="basic" <?= $authType === 'basic' ? 'selected' : '' ?>>Basic Authentication</option>
                         <option value="oauth2" <?= $authType === 'oauth2' ? 'selected' : '' ?>>OAuth 2.0 Client Credentials</option>
+                        <option value="api_key" <?= $authType === 'api_key' ? 'selected' : '' ?>>SAP Sandbox API Key</option>
                     </select>
                 </label>
 
@@ -120,6 +121,18 @@ $testBadgeClass = $lastTestStatus === 'success' ? 'ok' : ($lastTestStatus === 'f
                     <input type="checkbox" name="verify_ssl" value="1" <?= !empty($settings['verify_ssl']) ? 'checked' : '' ?>>
                     <span><b>Verify HTTPS certificate</b><small>Keep enabled in production.</small></span>
                 </label>
+            </div>
+
+            <div class="sap-auth-block" data-auth="api_key">
+                <div class="sap-form-grid two">
+                    <label>API Key Header
+                        <input name="api_key_header" value="<?= e($settings['api_key_header'] ?? 'APIKey') ?>" placeholder="APIKey">
+                        <small>Use the header name specified by SAP API documentation (e.g. APIKey or x-api-key).</small>
+                    </label>
+                    <label>Sandbox API Key
+                        <input type="password" name="api_key" value="" autocomplete="new-password" placeholder="<?= !empty($settings['api_key_set']) ? 'Saved securely · leave blank to keep' : 'Enter API key privately in deployed dashboard' ?>">
+                    </label>
+                </div>
             </div>
 
             <div class="sap-auth-block" data-auth="basic">

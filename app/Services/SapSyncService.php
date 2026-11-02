@@ -191,6 +191,9 @@ class SapSyncService
         if ($auth === 'basic' && trim((string)($settings['username'] ?? '')) === '') {
             throw new \RuntimeException('SAP Basic Authentication username is required.');
         }
+        if ($auth === 'api_key' && trim((string)($settings['api_key'] ?? '')) === '') {
+            throw new \RuntimeException('SAP API key is required.');
+        }
         if ($auth === 'oauth2') {
             if (trim((string)($settings['oauth_token_url'] ?? '')) === '' || trim((string)($settings['client_id'] ?? '')) === '') {
                 throw new \RuntimeException('OAuth 2.0 Token URL and Client ID are required.');
