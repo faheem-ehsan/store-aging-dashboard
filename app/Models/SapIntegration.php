@@ -446,6 +446,21 @@ class SapIntegration
         ];
     }
 
+    /** Plant / storage-location pairs in staging that have no division mapping yet. */
+    public function unmappedLocations(int $limit = 50): array
+    {
+        $this->ensureTables();
+        $stmt = Database::connection()->prepare(
+            'SELECT sap_plant, sap_storage_location, COUNT(*) AS stock_rows
+             FROM sap_stock WHERE division_id IS NULL
+             GROUP BY sap_plant, sap_storage_location
+             ORDER BY stock_rows DESC, sap_plant, sap_storage_location
+             LIMIT ' . max(1, min(500, $limit))
+        );
+        $stmt->execute();
+        return $stmt->fetchAll();
+    }
+
     public function latestSuccessfulStockSync(?int $divisionId = null): ?string
     {
         $this->ensureTables();

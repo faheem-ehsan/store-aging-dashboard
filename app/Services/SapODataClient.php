@@ -37,24 +37,38 @@ class SapODataClient
         if ($endpoint === '') throw new \RuntimeException('SAP endpoint is empty.');
 
         $pageSize = $pageSize ?: max(1, min(5000, (int)($this->settings['page_size'] ?? 500)));
-        $url = $this->absoluteUrl($endpoint);
-        $url = $this->withTop($url, $pageSize);
+        $baseUrl = $this->absoluteUrl($endpoint);
+        // If the SAP team already fixed $top/$skip in the URL, respect it and rely on server paging only.
+        $clientPaging = !preg_match('/(?:\?|&)\$(?:top|skip)=/', $baseUrl);
+        $baseUrl = $this->withJsonFormat($baseUrl);
+        $url = $clientPaging ? $this->withTop($baseUrl, $pageSize) : $baseUrl;
+
+        // Hard safety cap so a misconfigured endpoint cannot loop forever.
+        $maxPages = $maxPages ?? max(1, (int)($this->settings['max_pages'] ?? 1000));
 
         $rows = [];
         $pages = 0;
+        $skip = 0;
 
         while ($url !== '') {
             $pages++;
-            if ($maxPages !== null && $pages > $maxPages) break;
+            if ($pages > $maxPages) break;
 
             $payload = $this->getJson($url);
             [$pageRows, $next] = $this->extractRowsAndNext($payload, $url);
 
+            $count = 0;
             foreach ($pageRows as $row) {
-                if (is_array($row)) $rows[] = $row;
+                if (is_array($row)) { $rows[] = $row; $count++; }
             }
 
-            if ($maxPages !== null && $pages >= $maxPages) break;
+            if ($pages >= $maxPages) break;
+
+            if ($next === '' && $clientPaging && $count >= $pageSize) {
+                // OData v2 returns no __next when the client sets $top; page with $skip instead.
+                $skip += $count;
+                $next = $baseUrl . (str_contains($baseUrl, '?') ? '&' : '?') . '$top=' . $pageSize . '&$skip=' . $skip;
+            }
             $url = $next;
         }
 
@@ -66,6 +80,13 @@ class SapODataClient
         // Preserve any query already configured by the SAP team.
         if (preg_match('/(?:\?|&)\$top=/', $url)) return $url;
         return $url . (str_contains($url, '?') ? '&' : '?') . '$top=' . $pageSize;
+    }
+
+    private function withJsonFormat(string $url): string
+    {
+        // OData v2 services may ignore the Accept header behind some gateways; force JSON explicitly.
+        if (preg_match('/(?:\?|&)\$format=/', $url)) return $url;
+        return $url . (str_contains($url, '?') ? '&' : '?') . '$format=json';
     }
 
     private function getJson(string $url): array
@@ -96,6 +117,8 @@ class SapODataClient
             CURLOPT_SSL_VERIFYPEER => !empty($this->settings['verify_ssl']),
             CURLOPT_SSL_VERIFYHOST => !empty($this->settings['verify_ssl']) ? 2 : 0,
             CURLOPT_HEADER => false,
+            CURLOPT_ENCODING => '', // accept and transparently decode gzip/deflate
+            CURLOPT_USERAGENT => 'QarshiStockAgingDashboard/1.0',
         ]);
 
         if ($authType === 'basic') {
@@ -109,18 +132,26 @@ class SapODataClient
         $body = curl_exec($ch);
         $error = curl_error($ch);
         $status = (int)curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+        $contentType = (string)curl_getinfo($ch, CURLINFO_CONTENT_TYPE);
+        $effectiveUrl = (string)curl_getinfo($ch, CURLINFO_EFFECTIVE_URL);
         curl_close($ch);
 
         if ($body === false) {
             throw new \RuntimeException('SAP request failed: ' . $this->safeError($error));
         }
+        $body = (string)$body;
+        if (str_starts_with($body, "\xEF\xBB\xBF")) $body = substr($body, 3); // strip UTF-8 BOM
+
         if ($status < 200 || $status >= 300) {
-            throw new \RuntimeException('SAP returned HTTP ' . $status . ' for the configured endpoint.');
+            throw new \RuntimeException('SAP returned HTTP ' . $status . ' for the configured endpoint.'
+                . $this->describeBody($body, $contentType));
         }
 
-        $decoded = json_decode((string)$body, true);
+        $decoded = json_decode($body, true);
         if (!is_array($decoded)) {
-            throw new \RuntimeException('SAP response is not valid JSON.');
+            $this->logDiagnostic($status, $contentType, $effectiveUrl, $body);
+            throw new \RuntimeException('SAP response is not valid JSON (HTTP ' . $status . ').'
+                . $this->describeBody($body, $contentType));
         }
 
         return $decoded;
@@ -213,6 +244,26 @@ class SapODataClient
         if ($baseUrl === '') throw new \RuntimeException('SAP Base URL is not configured.');
 
         return $baseUrl . '/' . ltrim($endpoint, '/');
+    }
+
+    /** Short, credential-free description of a non-JSON body for admin troubleshooting. */
+    private function describeBody(string $body, string $contentType): string
+    {
+        $snippet = trim(preg_replace('/\s+/', ' ', strip_tags(substr($body, 0, 2000))));
+        $snippet = substr(preg_replace('#https?://\S+#i', '[url]', $snippet), 0, 160);
+        $type = $contentType !== '' ? $contentType : 'unknown';
+        return ' Content-Type: ' . $type . '; ' . strlen($body) . ' bytes'
+            . ($snippet !== '' ? '; starts with: "' . $snippet . '"' : '; empty body') . '.';
+    }
+
+    private function logDiagnostic(int $status, string $contentType, string $url, string $body): void
+    {
+        $dir = dirname(__DIR__, 2) . '/state';
+        if (!is_dir($dir) || !is_writable($dir)) return;
+        $entry = '[' . date('Y-m-d H:i:s') . "] HTTP {$status} | {$contentType} | "
+            . preg_replace('/([?&](?:apikey|api_key|key)=)[^&]+/i', '$1***', $url) . "\n"
+            . substr($body, 0, 4000) . "\n----\n";
+        @file_put_contents($dir . '/sap_last_non_json_response.log', $entry, FILE_APPEND | LOCK_EX);
     }
 
     private function safeError(string $error): string

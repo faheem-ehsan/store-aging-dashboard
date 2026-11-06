@@ -26,30 +26,6 @@ $testBadgeClass = $lastTestStatus === 'success' ? 'ok' : ($lastTestStatus === 'f
         </div>
     </div>
 
-    <section class="sap-panel" style="margin:18px 0; padding:20px; border:1px solid #bed7e8; border-radius:12px;">
-        <h3>SAP Sandbox - Test API Response</h3>
-        <p>The provided response belongs to <code>A_CostCenterActivityType</code> in
-        <code>API_COSTCNTRACTIVITYTYPE_CRUD_SRV</code>. It contains cost-center activity
-        definitions, <strong>not finished-goods products, batches, or stock</strong>.
-        These read-only diagnostics will not update dashboard inventory.</p>
-        <p><b>Sandbox Base URL:</b> <code>https://sandbox.api.sap.com</code><br>
-        <b>Authentication header:</b> <code>APIKey</code></p>
-        <div class="sap-control-actions" style="display:flex; gap:10px; flex-wrap:wrap;">
-            <form method="post" action="<?= e(url('/admin/sap-integration/test-sandbox-sample')) ?>">
-                <?= csrf_field() ?>
-                <button class="btn ghost" type="submit">Validate Uploaded Response (Offline)</button>
-            </form>
-            <form method="post" action="<?= e(url('/admin/sap-integration/test-sandbox-live')) ?>">
-                <?= csrf_field() ?>
-                <button class="btn primary" type="submit">Test Live SAP Sandbox API</button>
-            </form>
-        </div>
-        <p style="margin-top:12px;">For a live test, first select <strong>SAP Sandbox API Key</strong>,
-        enter your key below, and <strong>Save Settings</strong>. You may leave integration disabled.
-        For inventory sync, separately supply Product, Batch, and Material Stock entity-set paths
-        and validate field mappings. Keep Publish to Dashboard OFF while testing.</p>
-    </section>
-
     <div class="sap-summary-grid">
         <div class="sap-summary-card">
             <small>Last Connection Test</small>
@@ -343,6 +319,24 @@ $testBadgeClass = $lastTestStatus === 'success' ? 'ok' : ($lastTestStatus === 'f
                 </tbody>
             </table>
         </div>
+
+        <?php if (!empty($unmappedLocations)): ?>
+        <div class="table-wrap sap-table-wrap" id="unmapped-locations">
+            <p><strong>Unmapped SAP locations in staging</strong> — these rows are skipped when publishing. Add a mapping above for each plant (or plant + storage location) that belongs to a division.</p>
+            <table>
+                <thead><tr><th>SAP Plant</th><th>Storage Location</th><th>Stock Rows</th></tr></thead>
+                <tbody>
+                <?php foreach ($unmappedLocations as $loc): ?>
+                    <tr>
+                        <td><strong><?= e($loc['sap_plant']) ?></strong></td>
+                        <td><?= e($loc['sap_storage_location'] !== '' ? $loc['sap_storage_location'] : '(blank)') ?></td>
+                        <td><?= number_format((int)$loc['stock_rows']) ?></td>
+                    </tr>
+                <?php endforeach; ?>
+                </tbody>
+            </table>
+        </div>
+        <?php endif; ?>
     </section>
 
     <section class="sap-panel">

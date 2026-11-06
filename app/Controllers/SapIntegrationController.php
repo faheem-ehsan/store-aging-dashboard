@@ -22,39 +22,9 @@ class SapIntegrationController
             'divisions' => (new Division())->all(true),
             'logs' => $model->recentLogs(25),
             'stagingCounts' => $model->stagingCounts(),
+            'unmappedLocations' => $model->unmappedLocations(),
             'user' => $user,
         ]);
-    }
-
-    public function testSandboxSample(): void
-    {
-        verify_csrf();
-        Auth::requireSuperAdmin();
-        try {
-            $result = \App\Services\SapSandboxDiagnostic::sample();
-            flash('success', 'Uploaded response validated: ' . $result['count'] .
-                ' cost-center activity types; units ' . json_encode($result['units']) .
-                '. No stock rows imported.');
-        } catch (\Throwable $e) {
-            flash('error', 'Sample validation failed: ' . $e->getMessage());
-        }
-        redirect('/admin/sap-integration');
-    }
-
-    public function testSandboxLive(): void
-    {
-        verify_csrf();
-        Auth::requireSuperAdmin();
-        try {
-            $settings = (new SapIntegration())->clientSettings();
-            $result = \App\Services\SapSandboxDiagnostic::live($settings);
-            flash('success', 'Live SAP sandbox responded: ' . $result['count'] .
-                ' cost-center activity types on the first page; units ' .
-                json_encode($result['units']) . '. No stock rows imported.');
-        } catch (\Throwable $e) {
-            flash('error', 'Live sandbox test failed: ' . $e->getMessage());
-        }
-        redirect('/admin/sap-integration');
     }
 
     public function save(): void
@@ -80,10 +50,7 @@ class SapIntegrationController
             redirect('/admin/sap-integration');
         }
 
-        if (isset($_POST['publish_to_dashboard']) && trim((string)($_POST['stock_value_field'] ?? '')) === '') {
-            flash('error', 'Before enabling Publish to Dashboard, Finance / SAP must confirm and you must enter the approved Total Stock Retail Value field.');
-            redirect('/admin/sap-integration');
-        }
+        $publishWithoutValue = isset($_POST['publish_to_dashboard']) && trim((string)($_POST['stock_value_field'] ?? '')) === '';
 
         if (isset($_POST['is_enabled'])) {
             foreach (['product_endpoint'=>'Product API','batch_endpoint'=>'Batch API','stock_endpoint'=>'Material Stock API'] as $field=>$label) {
@@ -148,7 +115,8 @@ class SapIntegrationController
                 $user
             );
 
-            flash('success', 'SAP S/4HANA integration settings saved.');
+            flash('success', 'SAP S/4HANA integration settings saved.'
+                . ($publishWithoutValue ? ' Publishing is ON without a Stock Value field: published batches show Rs 0 until Finance confirms the field.' : ''));
         } catch (\Throwable $e) {
             flash('error', 'SAP settings could not be saved: ' . $e->getMessage());
         }

@@ -10,6 +10,9 @@ class SapSyncService
 {
     private SapIntegration $model;
 
+    /** Division mappings loaded before the publish transaction (avoids DDL inside it). */
+    private array $publishMappings = [];
+
     public function __construct()
     {
         $this->model = new SapIntegration();
@@ -59,9 +62,8 @@ class SapSyncService
         try {
             $settings = $this->model->clientSettings();
             if (!empty($settings['publish_to_dashboard']) && trim((string)($settings['stock_value_field'] ?? '')) === '') {
-                throw new \RuntimeException(
-                    'Dashboard publishing is enabled but Total Stock Retail Value is not mapped. Confirm the approved SAP value field with Finance / SAP first.'
-                );
+                // Publishing is allowed without a value field; stock value is recorded as Rs 0 until Finance confirms it.
+                $warnings[] = 'Total Stock Retail Value is not mapped; published batches carry Rs 0 stock value.';
             }
             if (empty($settings['is_enabled']) && !$preview) {
                 throw new \RuntimeException('SAP integration is disabled. Enable it in Administration before running a synchronization.');
@@ -106,6 +108,12 @@ class SapSyncService
             }
 
             $pdo = Database::connection();
+            if (!empty($settings['publish_to_dashboard'])) {
+                // Schema checks run CREATE/ALTER, which implicitly commit in MySQL; run them first.
+                (new ProductMaster())->ensureTable();
+                // mappings() runs CREATE TABLE IF NOT EXISTS; load it before the transaction too.
+                $this->publishMappings = $this->model->mappings();
+            }
             $pdo->beginTransaction();
             try {
                 $this->replaceStaging($pdo, $logId, $products, $batches, $stock);
@@ -378,7 +386,7 @@ class SapSyncService
         array &$warnings,
         array &$stats
     ): int {
-        (new ProductMaster())->ensureTable();
+        // ensureTable() is called before the transaction starts (DDL would implicitly commit it).
 
         // Aggregate storage-location stock to the existing dashboard natural key:
         // Division + Product + Batch. This preserves the current dashboard schema.
@@ -409,7 +417,7 @@ class SapSyncService
         }
 
         $mappedDivisionIds = [];
-        foreach ($this->model->mappings() as $mapping) {
+        foreach ($this->publishMappings as $mapping) {
             if (!empty($mapping['is_active']) && !empty($mapping['division_active'])) {
                 $mappedDivisionIds[(int)$mapping['division_id']] = true;
             }
