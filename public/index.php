@@ -29,6 +29,8 @@ $router->post('/admin/products/delete', [ProductMasterController::class, 'delete
 $router->get('/admin/sap-integration', [SapIntegrationController::class, 'index']);
 $router->post('/admin/sap-integration/save', [SapIntegrationController::class, 'save']);
 $router->post('/admin/sap-integration/test', [SapIntegrationController::class, 'test']);
+$router->post('/admin/sap-integration/test-sandbox-sample', [SapIntegrationController::class, 'testSandboxSample']);
+$router->post('/admin/sap-integration/test-sandbox-live', [SapIntegrationController::class, 'testSandboxLive']);
 $router->post('/admin/sap-integration/preview', [SapIntegrationController::class, 'preview']);
 $router->post('/admin/sap-integration/sync', [SapIntegrationController::class, 'syncNow']);
 $router->post('/admin/sap-integration/mapping', [SapIntegrationController::class, 'saveMapping']);

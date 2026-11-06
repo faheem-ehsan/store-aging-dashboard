@@ -26,6 +26,37 @@ class SapIntegrationController
         ]);
     }
 
+    public function testSandboxSample(): void
+    {
+        verify_csrf();
+        Auth::requireSuperAdmin();
+        try {
+            $result = \App\Services\SapSandboxDiagnostic::sample();
+            flash('success', 'Uploaded response validated: ' . $result['count'] .
+                ' cost-center activity types; units ' . json_encode($result['units']) .
+                '. No stock rows imported.');
+        } catch (\Throwable $e) {
+            flash('error', 'Sample validation failed: ' . $e->getMessage());
+        }
+        redirect('/admin/sap-integration');
+    }
+
+    public function testSandboxLive(): void
+    {
+        verify_csrf();
+        Auth::requireSuperAdmin();
+        try {
+            $settings = (new SapIntegration())->clientSettings();
+            $result = \App\Services\SapSandboxDiagnostic::live($settings);
+            flash('success', 'Live SAP sandbox responded: ' . $result['count'] .
+                ' cost-center activity types on the first page; units ' .
+                json_encode($result['units']) . '. No stock rows imported.');
+        } catch (\Throwable $e) {
+            flash('error', 'Live sandbox test failed: ' . $e->getMessage());
+        }
+        redirect('/admin/sap-integration');
+    }
+
     public function save(): void
     {
         verify_csrf();

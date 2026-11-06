@@ -1,0 +1,1392 @@
+{
+  "d": {
+    "results": [
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='1',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='1',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "1",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94301000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='1',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='101',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='101',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "101",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94311000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='101',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='102',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='102',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "102",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94311000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='102',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='11',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='11',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "11",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94311000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='11',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='2',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='2',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "2",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94302000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='2',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='3',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='3',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "3",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94303000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='3',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='8',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='8',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "8",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='8',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "SUS01",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "GJ",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94301900",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1754265600000)/",
+        "EnteredByUser": "CB9980000077",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "3",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "5",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS02',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS02',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "SUS02",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "GJ",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94301901",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1754265600000)/",
+        "EnteredByUser": "CB9980000077",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "3",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "5",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS02',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS03',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS03',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "SUS03",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "MWH",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94301902",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1754265600000)/",
+        "EnteredByUser": "CB9980000077",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "3",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "5",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SUS03',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SV01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SV01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "SV01",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308100",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1541721600000)/",
+        "EnteredByUser": "SAP_SYSTEM",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='SV01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T001',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T001',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T001",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "CLW",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T001',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T002',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T002',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T002",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "3",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "CFLW",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T002',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T003',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T003',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T003",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "CLW",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T003',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T004',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T004',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T004",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "CLW",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T004',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T005',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T005',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T005",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "CLW",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T005',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T006',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T006',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T006",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T006',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T007',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T007',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T007",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T007',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T008',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T008',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T008",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T008',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T009',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T009',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T009",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T009',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T010',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T010',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T010",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1466380800000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T010',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T011',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T011',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T011",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T011',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T012',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T012',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T012",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T012',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T013',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T013',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T013",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T013',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T014',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T014',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T014",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T014',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T015',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T015',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T015",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T015',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T016',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T016',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T016",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T016',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T017',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T017',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T017",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T017',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T018',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T018',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T018",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T018',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T019',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T019',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T019",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T019',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T020',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T020',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "T020",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "H",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308000",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1472169600000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='T020',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='TR01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='TR01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "TR01",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1577836800000)/",
+        "CostCtrActivityTypeQtyUnit": "KG",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94309010",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1652832000000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "*",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='TR01',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U001',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U001',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U001",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U001',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U002',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U002',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U002",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U002',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U003',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U003',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U003",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U003',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U004',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U004',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U004",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U004',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U005',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U005',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U005",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U005',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U006',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U006',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U006",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U006',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U007',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U007',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U007",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U007',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U008',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U008',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U008",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U008',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U009',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U009',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U009",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U009',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      },
+      {
+        "__metadata": {
+          "id": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U010',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U010',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')",
+          "type": "API_COSTCNTRACTIVITYTYPE_CRUD_SRV.A_CostCenterActivityTypeType"
+        },
+        "ControllingArea": "A000",
+        "CostCtrActivityType": "U010",
+        "ValidityEndDate": "/Date(253402214400000)/",
+        "ValidityStartDate": "/Date(1262304000000)/",
+        "CostCtrActivityTypeQtyUnit": "PC",
+        "CostCtrActivityTypeCategory": "1",
+        "AllocationCostElement": "94308500",
+        "CostCtrActivityTypeOutpQtyUnit": "",
+        "CreationDate": "/Date(1467158400000)/",
+        "EnteredByUser": "S4TESTER",
+        "CostOriginGroup": "",
+        "ActlPostgCostCenterActyTypeCat": "",
+        "OutputQuantityFactor": "0.00",
+        "ActivityTypeIsBlocked": "",
+        "FixedCostIsPredistributed": false,
+        "PriceAllocationMethod": "1",
+        "PeriodPriceIsAverage": false,
+        "ActualPriceAllocationMethod": "",
+        "ActualQuantityIsSetManually": false,
+        "PlanQuantityIsSetManually": false,
+        "CostCtrActivityTypeValidCat": "C",
+        "to_Text": {
+          "__deferred": {
+            "uri": "https://sandbox.api.sap.com/s4hanacloud/sap/opu/odata/sap/API_COSTCNTRACTIVITYTYPE_CRUD_SRV/A_CostCenterActivityType(ControllingArea='A000',CostCtrActivityType='U010',ValidityEndDate=datetime'9999-12-31T00%3A00%3A00')/to_Text"
+          }
+        }
+      }
+    ]
+  }
+}
