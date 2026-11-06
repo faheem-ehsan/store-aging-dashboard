@@ -7147,3 +7147,32 @@ body.stock-bulk-modal-open{overflow:hidden}
         grid-template-columns:1fr;
     }
 }
+
+/* ===== Collapsible sidebar (hamburger → icon-only rail) ===== */
+.sidebar-toggle{display:none}
+@media (min-width:901px){
+  .app-shell{transition:grid-template-columns .22s ease}
+  .sidebar{position:sticky}
+  .sidebar-toggle{display:inline-flex;align-items:center;justify-content:center;position:absolute;top:10px;right:10px;z-index:5;width:34px;height:34px;padding:0;border:1px solid var(--line,#dfe5ee);border-radius:10px;background:#fff;color:#c8102e;cursor:pointer;box-shadow:0 2px 6px rgba(26,39,61,.08)}
+  .sidebar-toggle:hover{background:#fff1f2}
+  .sidebar-toggle:focus-visible{outline:2px solid #c8102e;outline-offset:2px}
+  .sidebar-toggle svg{width:20px;height:20px}
+
+  /* Collapsed: icon-only rail */
+  html.sidebar-collapsed .app-shell{grid-template-columns:78px minmax(0,1fr)!important}
+  html.sidebar-collapsed .sidebar{width:78px!important;padding:12px 8px!important;align-items:center;overflow-x:hidden}
+  html.sidebar-collapsed .sidebar-toggle{position:static;margin:0 auto 10px}
+  html.sidebar-collapsed .brand-block{display:flex!important;justify-content:center;margin-bottom:10px!important}
+  html.sidebar-collapsed .brand-logo{max-width:52px!important;width:52px;padding:3px!important;border-radius:10px!important}
+  html.sidebar-collapsed .brand-text,
+  html.sidebar-collapsed .division-chip,
+  html.sidebar-collapsed .nav-label,
+  html.sidebar-collapsed .sidebar-user-copy{display:none!important}
+  html.sidebar-collapsed .sidebar nav{width:100%;justify-items:center}
+  html.sidebar-collapsed .nav-link{width:48px;min-height:44px!important;padding:0!important;display:flex!important;align-items:center;justify-content:center;gap:0!important}
+  html.sidebar-collapsed .nav-link .nav-icon{margin:0!important}
+  html.sidebar-collapsed .sidebar-account-zone{width:100%;display:flex;flex-direction:column;align-items:center}
+  html.sidebar-collapsed .sidebar-user-profile{width:52px;padding:4px!important;justify-content:center;gap:0!important}
+  html.sidebar-collapsed .logout{width:100%;display:flex;justify-content:center}
+  html.sidebar-collapsed .logout .link-button{width:48px;min-height:44px;padding:0!important;display:flex!important;align-items:center;justify-content:center;gap:0!important}
+}
