@@ -1,7 +1,5 @@
 <?php
 $isSuperAdmin = (($user['role'] ?? '') === 'super_admin');
-$canUseAllDivisions = in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true);
-
 $qty = static function ($value): string {
     $number = (float)$value;
     $formatted = number_format($number, 3, '.', ',');
@@ -101,8 +99,6 @@ if (!empty($selectedDivisionId)) $baseQuery['division_id'] = (int)$selectedDivis
             <input type="text" id="dailyReportDateDisplay" value="<?= e(format_app_date($reportDate)) ?>" placeholder="DD/MON/YYYY" autocomplete="off">
             <input type="hidden" name="date" id="dailyReportDateSql" value="<?= e($reportDate) ?>">
         </label>
-
-        <?php if ($canUseAllDivisions): ?>
         <label>
             <span>Division</span>
             <select name="division_id" id="dailyReportDivision">
