@@ -1,13 +1,15 @@
 <?php
 namespace App\Controllers;
 
+use App\Models\ProductMaster;
 use App\Models\RawMaterialBatch;
+use App\Models\RawMaterialMaster;
 use App\Models\StockBatch;
 
 /**
  * Raw Material Aging: the same list, grading, add/edit/delete, CSV import and
  * bulk delete as Finish Goods Aging, on separate raw_material tables.
- * Materials are entered as free text (there is no Raw Material master yet).
+ * Add Batch picks materials from Administration → Raw Material Master.
  */
 class RawMaterialController extends StockController
 {
@@ -20,7 +22,9 @@ class RawMaterialController extends StockController
         'name_label' => 'Material Name',
         'value_label' => 'Stock Value',
         'value_summary_label' => 'Current Stock Value',
-        'uses_product_master' => false,
+        'uses_product_master' => true,
+        'master_name' => 'Raw Material Master',
+        'master_item' => 'material',
         'audit_prefix' => 'RM_BATCH',
         'audit_entity' => 'raw_material_batch',
         'audit_bulk_entity' => 'raw_material_division_bulk_delete',
@@ -34,6 +38,11 @@ class RawMaterialController extends StockController
         'location_placeholder' => 'e.g. RM01',
         'search_placeholder' => 'Material code, material name or batch no...',
     ];
+
+    protected function masterModel(): ProductMaster
+    {
+        return new RawMaterialMaster();
+    }
 
     protected function batchModel(): StockBatch
     {

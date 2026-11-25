@@ -593,3 +593,20 @@ CREATE TABLE IF NOT EXISTS raw_material_batches (
     CONSTRAINT fk_rm_batch_division FOREIGN KEY (division_id) REFERENCES divisions(id),
     CONSTRAINT fk_rm_batch_material FOREIGN KEY (material_id) REFERENCES raw_materials(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- Raw Material Master (Administration): approved materials per Division for
+-- the Raw Material Aging "Add Batch" form. Also created automatically on first
+-- use by App\Models\RawMaterialMaster::ensureTable().
+CREATE TABLE IF NOT EXISTS raw_material_master (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    division_id INT UNSIGNED NOT NULL,
+    product_code VARCHAR(60) NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    uom VARCHAR(20) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_raw_material_master_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE RESTRICT,
+    UNIQUE KEY uq_raw_material_master_division_code (division_id, product_code),
+    INDEX idx_raw_material_master_name (product_name),
+    INDEX idx_raw_material_master_active (division_id, is_active)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

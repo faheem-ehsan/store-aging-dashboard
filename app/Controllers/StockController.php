@@ -25,6 +25,8 @@ class StockController
         'value_label' => 'Retail Stock Value',
         'value_summary_label' => 'Current Retail Stock Value',
         'uses_product_master' => true,
+        'master_name' => 'Product Master',
+        'master_item' => 'product',
         'audit_prefix' => 'BATCH',
         'audit_entity' => 'stock_batch',
         'audit_bulk_entity' => 'stock_division_bulk_delete',
@@ -42,6 +44,11 @@ class StockController
     protected function module(): array
     {
         return static::MODULE;
+    }
+
+    protected function masterModel(): ProductMaster
+    {
+        return new ProductMaster();
     }
 
     protected function batchModel(): StockBatch
@@ -214,7 +221,7 @@ class StockController
         $title = $divisionCode !== '' ? $divisionCode . ' Add Batch' : 'Division Add Batch';
 
         $products = $selectedDivisionId > 0 && $this->module()['uses_product_master']
-            ? (new ProductMaster())->activeByDivision($selectedDivisionId)
+            ? $this->masterModel()->activeByDivision($selectedDivisionId)
             : [];
 
         View::render('stocks/form', [
@@ -244,7 +251,7 @@ class StockController
                 if (!Auth::isGlobalOperator($user) && $divisionId !== (int)$user['division_id']) {
                     $this->forbidden();
                 }
-                $products = (new ProductMaster())->activeByDivision($divisionId);
+                $products = $this->masterModel()->activeByDivision($divisionId);
             }
         }
 
@@ -878,12 +885,12 @@ class StockController
 
         $productCode = trim((string)($data['material_code'] ?? ''));
         if ($productCode === '') {
-            throw new \RuntimeException('Select a Product from the approved Product Master.');
+            throw new \RuntimeException('Select a ' . $this->module()['master_item'] . ' from the approved ' . $this->module()['master_name'] . '.');
         }
 
-        $product = (new ProductMaster())->findActiveByDivisionCode($divisionId, $productCode);
+        $product = $this->masterModel()->findActiveByDivisionCode($divisionId, $productCode);
         if (!$product) {
-            throw new \RuntimeException('The selected Product is not active in the Product Master for this Division. Ask Super Admin to configure it first.');
+            throw new \RuntimeException('The selected ' . $this->module()['master_item'] . ' is not active in the ' . $this->module()['master_name'] . ' for this Division. Ask Super Admin to configure it first.');
         }
 
         // Canonical values always come from the Super Admin Product Master.

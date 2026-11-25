@@ -16,6 +16,7 @@ use App\Controllers\AdminController;
 use App\Controllers\EmailNotificationController;
 use App\Controllers\DailyStockReportController;
 use App\Controllers\ProductMasterController;
+use App\Controllers\RawMaterialMasterController;
 use App\Controllers\SapIntegrationController;
 
 $router = new Router();
@@ -27,6 +28,11 @@ $router->post('/admin/products/store', [ProductMasterController::class, 'store']
 $router->post('/admin/products/update', [ProductMasterController::class, 'update']);
 $router->post('/admin/products/toggle', [ProductMasterController::class, 'toggle']);
 $router->post('/admin/products/delete', [ProductMasterController::class, 'delete']);
+$router->get('/admin/raw-materials', [RawMaterialMasterController::class, 'index']);
+$router->post('/admin/raw-materials/store', [RawMaterialMasterController::class, 'store']);
+$router->post('/admin/raw-materials/update', [RawMaterialMasterController::class, 'update']);
+$router->post('/admin/raw-materials/toggle', [RawMaterialMasterController::class, 'toggle']);
+$router->post('/admin/raw-materials/delete', [RawMaterialMasterController::class, 'delete']);
 $router->get('/admin/sap-integration', [SapIntegrationController::class, 'index']);
 $router->post('/admin/sap-integration/save', [SapIntegrationController::class, 'save']);
 $router->post('/admin/sap-integration/test', [SapIntegrationController::class, 'test']);
@@ -63,6 +69,7 @@ $router->get('/stocks/import-template', [StockController::class, 'importTemplate
 
 $router->get('/raw-materials', [RawMaterialController::class, 'index']);
 $router->get('/raw-materials/create', [RawMaterialController::class, 'create']);
+$router->get('/raw-materials/product-options', [RawMaterialController::class, 'productOptions']);
 $router->post('/raw-materials/store', [RawMaterialController::class, 'store']);
 $router->get('/raw-materials/edit', [RawMaterialController::class, 'edit']);
 $router->post('/raw-materials/update', [RawMaterialController::class, 'update']);

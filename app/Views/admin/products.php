@@ -1,4 +1,5 @@
 <?php
+$master = $master ?? \App\Controllers\ProductMasterController::MODULE;
 $isEdit = !empty($editProduct);
 $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDivisionId ?? 0);
 ?>
@@ -6,8 +7,8 @@ $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDi
     <div class="product-master-head">
         <div>
             <span class="admin-hub-kicker">SUPER ADMIN</span>
-            <h2>Product Master</h2>
-            <p>Maintain the approved Product Code, Product Name and Unit of Measure for each Division. This master is used only by the manual Add Batch form.</p>
+            <h2><?= e($master['title']) ?></h2>
+            <p>Maintain the approved <?= e($master['code_label']) ?>, <?= e($master['name_label']) ?> and Unit of Measure for each Division. This master is used only by <?= e($master['used_by']) ?>.</p>
         </div>
         <a class="btn ghost" href="<?= e(url('/admin')) ?>">Back to Administration</a>
     </div>
@@ -16,13 +17,13 @@ $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDi
         <div class="card product-master-form-card">
             <div class="card-head">
                 <div>
-                    <h2><?= $isEdit ? 'Edit Product' : 'Add Product' ?></h2>
-                    <p>Configure one approved product for a Division.</p>
+                    <h2><?= e(($isEdit ? 'Edit ' : 'Add ') . $master['item']) ?></h2>
+                    <p>Configure one approved <?= e($master['item_lower']) ?> for a Division.</p>
                 </div>
-                <?php if ($isEdit): ?><a class="btn tiny ghost" href="<?= e(url('/admin/products?division_id=' . $formDivisionId)) ?>">Cancel Edit</a><?php endif; ?>
+                <?php if ($isEdit): ?><a class="btn tiny ghost" href="<?= e(url($master['base'] . '?division_id=' . $formDivisionId)) ?>">Cancel Edit</a><?php endif; ?>
             </div>
 
-            <form method="post" action="<?= e(url($isEdit ? '/admin/products/update' : '/admin/products/store')) ?>" class="form-stack">
+            <form method="post" action="<?= e(url($master['base'] . ($isEdit ? '/update' : '/store'))) ?>" class="form-stack">
                 <?= csrf_field() ?>
                 <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= (int)$editProduct['id'] ?>"><?php endif; ?>
 
@@ -35,37 +36,37 @@ $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDi
                     </select>
                 </label>
 
-                <label>Product Code
-                    <input name="product_code" maxlength="60" value="<?= e($editProduct['product_code'] ?? '') ?>" placeholder="e.g. 100324" required>
+                <label><?= e($master['code_label']) ?>
+                    <input name="product_code" maxlength="60" value="<?= e($editProduct['product_code'] ?? '') ?>" placeholder="<?= e($master['code_placeholder']) ?>" required>
                 </label>
 
-                <label>Product Name
-                    <input name="product_name" maxlength="255" value="<?= e($editProduct['product_name'] ?? '') ?>" placeholder="e.g. JS Sparkling 500ml" required>
+                <label><?= e($master['name_label']) ?>
+                    <input name="product_name" maxlength="255" value="<?= e($editProduct['product_name'] ?? '') ?>" placeholder="<?= e($master['name_placeholder']) ?>" required>
                 </label>
 
                 <label>Unit of Measure (UoM)
-                    <input name="uom" maxlength="20" value="<?= e($editProduct['uom'] ?? '') ?>" placeholder="e.g. CS, CTN, BTLS, BOX, EA" required>
+                    <input name="uom" maxlength="20" value="<?= e($editProduct['uom'] ?? '') ?>" placeholder="<?= e($master['uom_placeholder']) ?>" required>
                 </label>
 
-                <button class="btn primary" type="submit"><?= $isEdit ? 'Save Product' : 'Add Product' ?></button>
+                <button class="btn primary" type="submit"><?= e(($isEdit ? 'Save ' : 'Add ') . $master['item']) ?></button>
             </form>
 
             <div class="product-master-note">
                 <strong>Import remains independent</strong>
-                <span>CSV import rules, CSV template and existing import behavior are not changed by this Product Master.</span>
+                <span>CSV import rules, CSV template and existing import behavior are not changed by this <?= e($master['title']) ?>.</span>
             </div>
         </div>
 
         <div class="card flush product-master-list-card">
             <div class="card-head padded product-master-list-head">
                 <div>
-                    <h2>Configured Products</h2>
-                    <p><?= number_format(count($products)) ?> product(s) in the current view.</p>
+                    <h2>Configured <?= e($master['items']) ?></h2>
+                    <p><?= number_format(count($products)) ?> <?= e($master['item_lower']) ?>(s) in the current view.</p>
                 </div>
             </div>
 
-            <form method="get" action="<?= e(url('/admin/products')) ?>" class="product-master-filters">
-                <input type="search" name="q" value="<?= e($search) ?>" placeholder="Search product code, name or UoM...">
+            <form method="get" action="<?= e(url($master['base'])) ?>" class="product-master-filters">
+                <input type="search" name="q" value="<?= e($search) ?>" placeholder="Search <?= e($master['item_lower']) ?> code, name or UoM...">
                 <select name="division_id">
                     <option value="">All Divisions</option>
                     <?php foreach ($divisions as $division): ?>
@@ -73,7 +74,7 @@ $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDi
                     <?php endforeach; ?>
                 </select>
                 <button class="btn ghost" type="submit">Filter</button>
-                <a class="btn ghost" href="<?= e(url('/admin/products')) ?>">Reset</a>
+                <a class="btn ghost" href="<?= e(url($master['base'])) ?>">Reset</a>
             </form>
 
             <div class="table-wrap">
@@ -81,8 +82,8 @@ $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDi
                     <thead>
                     <tr>
                         <th>Division</th>
-                        <th>Product Code</th>
-                        <th>Product Name</th>
+                        <th><?= e($master['code_label']) ?></th>
+                        <th><?= e($master['name_label']) ?></th>
                         <th>UoM</th>
                         <th>Status</th>
                         <th>Action</th>
@@ -90,7 +91,7 @@ $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDi
                     </thead>
                     <tbody>
                     <?php if (!$products): ?>
-                        <tr><td colspan="6" class="empty">No Product Master records found.</td></tr>
+                        <tr><td colspan="6" class="empty">No <?= e($master['title']) ?> records found.</td></tr>
                     <?php endif; ?>
                     <?php foreach ($products as $product): ?>
                         <tr>
@@ -100,13 +101,13 @@ $formDivisionId = $isEdit ? (int)$editProduct['division_id'] : (int)($selectedDi
                             <td><span class="product-master-uom"><?= e($product['uom']) ?></span></td>
                             <td><?= $product['is_active'] ? '<span class="status on">Active</span>' : '<span class="status off">Disabled</span>' ?></td>
                             <td class="actions">
-                                <a href="<?= e(url('/admin/products?' . http_build_query(['division_id'=>(int)$product['division_id'],'q'=>$search,'edit'=>(int)$product['id']]))) ?>">Edit</a>
-                                <form method="post" action="<?= e(url('/admin/products/toggle')) ?>">
+                                <a href="<?= e(url($master['base'] . '?' . http_build_query(['division_id'=>(int)$product['division_id'],'q'=>$search,'edit'=>(int)$product['id']]))) ?>">Edit</a>
+                                <form method="post" action="<?= e(url($master['base'] . '/toggle')) ?>">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
                                     <button class="link-button" type="submit"><?= $product['is_active'] ? 'Disable' : 'Enable' ?></button>
                                 </form>
-                                <form method="post" action="<?= e(url('/admin/products/delete')) ?>" onsubmit="return confirm('Remove this product from the Product Master? Existing stock batches will not be deleted.')">
+                                <form method="post" action="<?= e(url($master['base'] . '/delete')) ?>" onsubmit="return confirm(<?= e(json_encode('Remove this ' . $master['item_lower'] . ' from the ' . $master['title'] . '? Existing stock batches will not be deleted.')) ?>)">
                                     <?= csrf_field() ?>
                                     <input type="hidden" name="id" value="<?= (int)$product['id'] ?>">
                                     <button class="danger-link" type="submit">Delete</button>

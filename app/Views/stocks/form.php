@@ -68,12 +68,12 @@ $stockReturnHiddenMap = [
         <?php if (!$isEdit && $module['uses_product_master']): ?>
         <label><?= e($module['code_label']) ?>
             <select name="material_code" id="product_master_select" required <?= $selectedDivisionId > 0 ? '' : 'disabled' ?>>
-                <option value=""><?= $selectedDivisionId > 0 ? 'Select approved product...' : 'Select Division first...' ?></option>
+                <option value=""><?= e($selectedDivisionId > 0 ? 'Select approved ' . $module['master_item'] . '...' : 'Select Division first...') ?></option>
                 <?php foreach (($products ?? []) as $product): ?>
                     <option value="<?= e($product['product_code']) ?>" data-name="<?= e($product['product_name']) ?>" data-uom="<?= e($product['uom']) ?>"><?= e($product['product_code']) ?> — <?= e($product['product_name']) ?></option>
                 <?php endforeach; ?>
             </select>
-            <small class="product-master-form-help" id="product_master_help"><?= $selectedDivisionId > 0 && empty($products) ? 'No active products configured for this Division. Ask Super Admin to add them in Administration → Product Master.' : '' ?></small>
+            <small class="product-master-form-help" id="product_master_help"><?= e($selectedDivisionId > 0 && empty($products) ? 'No active ' . $module['master_item'] . 's configured for this Division. Ask Super Admin to add them in Administration → ' . $module['master_name'] . '.' : '') ?></small>
         </label>
         <label class="span-2"><?= e($module['name_label']) ?><input name="material_description" id="product_master_name" value="" readonly required></label>
         <label>Current Stock<input type="number" step="0.001" min="0" name="current_qty" value="0" required></label>
@@ -131,6 +131,8 @@ $stockReturnHiddenMap = [
     const productUom = document.getElementById('product_master_uom');
     const productHelp = document.getElementById('product_master_help');
     const divisionSelect = document.getElementById('batch_division_id');
+    const masterItem = <?= json_encode($module['master_item']) ?>;
+    const masterName = <?= json_encode($module['master_name']) ?>;
     const productOptionsUrl = <?= json_encode(url($moduleBase . '/product-options'), JSON_UNESCAPED_SLASHES) ?>;
 
     function syncSelectedProduct() {
@@ -146,7 +148,7 @@ $stockReturnHiddenMap = [
 
         const first = document.createElement('option');
         first.value = '';
-        first.textContent = divisionSelected ? 'Select approved product...' : 'Select Division first...';
+        first.textContent = divisionSelected ? 'Select approved ' + masterItem + '...' : 'Select Division first...';
         productSelect.appendChild(first);
 
         (products || []).forEach(function (product) {
@@ -161,7 +163,7 @@ $stockReturnHiddenMap = [
         productSelect.disabled = !divisionSelected;
         if (productHelp) {
             productHelp.textContent = divisionSelected && (!products || products.length === 0)
-                ? 'No active products configured for this Division. Ask Super Admin to add them in Administration → Product Master.'
+                ? 'No active ' + masterItem + 's configured for this Division. Ask Super Admin to add them in Administration → ' + masterName + '.'
                 : '';
         }
         syncSelectedProduct();
@@ -176,7 +178,7 @@ $stockReturnHiddenMap = [
         }
 
         productSelect.disabled = true;
-        productSelect.innerHTML = '<option value="">Loading products...</option>';
+        productSelect.innerHTML = '<option value="">Loading...</option>';
         if (productName) productName.value = '';
         if (productUom) productUom.value = '';
 
@@ -190,7 +192,7 @@ $stockReturnHiddenMap = [
             renderProductOptions(data.products || [], true);
         } catch (error) {
             renderProductOptions([], true);
-            if (productHelp) productHelp.textContent = 'Unable to load Product Master for this Division. Refresh the page and try again.';
+            if (productHelp) productHelp.textContent = 'Unable to load ' + masterName + ' for this Division. Refresh the page and try again.';
         }
     }
 
