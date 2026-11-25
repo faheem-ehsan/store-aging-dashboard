@@ -29,6 +29,7 @@ $dashboardPath = $normalizePath(url('/'));
 $isDashboardActive = $requestPath === $dashboardPath;
 $isStocksActive = str_starts_with($requestPath, $normalizePath(url('/stocks')));
 $isRawMaterialsActive = str_starts_with($requestPath, $normalizePath(url('/raw-materials')));
+$isExportGoodsActive = str_starts_with($requestPath, $normalizePath(url('/export-goods')));
 $isDailyReportsActive = str_starts_with($requestPath, $normalizePath(url('/daily-stock-reports')));
 $isAdminHome = $requestPath === $normalizePath(url('/admin'));
 $isAdminChild = ($me['role'] ?? '') === 'super_admin' && (
@@ -80,6 +81,10 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
             <a class="nav-link<?= $isRawMaterialsActive ? ' active' : '' ?>" title="Raw Material Aging" href="<?= e(url('/raw-materials')) ?>"<?= $isRawMaterialsActive ? ' aria-current="page"' : '' ?>>
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M9 3h6M10 3v5.5L5.2 17.2A2.5 2.5 0 0 0 7.4 21h9.2a2.5 2.5 0 0 0 2.2-3.8L14 8.5V3M7.5 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 <span class="nav-label">Raw Material Aging</span>
+            </a>
+            <a class="nav-link<?= $isExportGoodsActive ? ' active' : '' ?>" title="Export Goods Aging" href="<?= e(url('/export-goods')) ?>"<?= $isExportGoodsActive ? ' aria-current="page"' : '' ?>>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9Zm9 4.5 9-4.5M12 12v9M12 12 3 7.5M16.5 5.2 7.5 9.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+                <span class="nav-label">Export Goods Aging</span>
             </a>
             <?php if (in_array(($me['role'] ?? ''), ['super_admin','store_manager','division_admin'], true)): ?>
             <a class="nav-link<?= $isDailyReportsActive ? ' active' : '' ?>" title="Daily Stock Reports" href="<?= e(url('/daily-stock-reports')) ?>"<?= $isDailyReportsActive ? ' aria-current="page"' : '' ?>>

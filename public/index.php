@@ -6,6 +6,7 @@ use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\StockController;
 use App\Controllers\RawMaterialController;
+use App\Controllers\ExportGoodsController;
 use App\Controllers\UserController;
 use App\Controllers\DivisionController;
 use App\Controllers\LogController;
@@ -17,6 +18,7 @@ use App\Controllers\EmailNotificationController;
 use App\Controllers\DailyStockReportController;
 use App\Controllers\ProductMasterController;
 use App\Controllers\RawMaterialMasterController;
+use App\Controllers\ExportGoodsMasterController;
 use App\Controllers\SapIntegrationController;
 
 $router = new Router();
@@ -33,6 +35,11 @@ $router->post('/admin/raw-materials/store', [RawMaterialMasterController::class,
 $router->post('/admin/raw-materials/update', [RawMaterialMasterController::class, 'update']);
 $router->post('/admin/raw-materials/toggle', [RawMaterialMasterController::class, 'toggle']);
 $router->post('/admin/raw-materials/delete', [RawMaterialMasterController::class, 'delete']);
+$router->get('/admin/export-goods', [ExportGoodsMasterController::class, 'index']);
+$router->post('/admin/export-goods/store', [ExportGoodsMasterController::class, 'store']);
+$router->post('/admin/export-goods/update', [ExportGoodsMasterController::class, 'update']);
+$router->post('/admin/export-goods/toggle', [ExportGoodsMasterController::class, 'toggle']);
+$router->post('/admin/export-goods/delete', [ExportGoodsMasterController::class, 'delete']);
 $router->get('/admin/sap-integration', [SapIntegrationController::class, 'index']);
 $router->post('/admin/sap-integration/save', [SapIntegrationController::class, 'save']);
 $router->post('/admin/sap-integration/test', [SapIntegrationController::class, 'test']);
@@ -79,6 +86,19 @@ $router->post('/raw-materials/bulk-delete', [RawMaterialController::class, 'bulk
 $router->get('/raw-materials/import', [RawMaterialController::class, 'importForm']);
 $router->post('/raw-materials/import', [RawMaterialController::class, 'importCsv']);
 $router->get('/raw-materials/import-template', [RawMaterialController::class, 'importTemplate']);
+
+$router->get('/export-goods', [ExportGoodsController::class, 'index']);
+$router->get('/export-goods/create', [ExportGoodsController::class, 'create']);
+$router->get('/export-goods/product-options', [ExportGoodsController::class, 'productOptions']);
+$router->post('/export-goods/store', [ExportGoodsController::class, 'store']);
+$router->get('/export-goods/edit', [ExportGoodsController::class, 'edit']);
+$router->post('/export-goods/update', [ExportGoodsController::class, 'update']);
+$router->post('/export-goods/delete', [ExportGoodsController::class, 'delete']);
+$router->post('/export-goods/delete-selected', [ExportGoodsController::class, 'deleteSelected']);
+$router->post('/export-goods/bulk-delete', [ExportGoodsController::class, 'bulkDelete']);
+$router->get('/export-goods/import', [ExportGoodsController::class, 'importForm']);
+$router->post('/export-goods/import', [ExportGoodsController::class, 'importCsv']);
+$router->get('/export-goods/import-template', [ExportGoodsController::class, 'importTemplate']);
 
 
 $router->get('/market-return', [MarketReturnController::class, 'index']);
