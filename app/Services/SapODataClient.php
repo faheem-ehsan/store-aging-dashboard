@@ -232,7 +232,34 @@ class SapODataClient
             $next = $this->absoluteUrl($next);
         }
 
+        // Paging links come from the remote response. Only follow them to the host we
+        // are already talking to (or the configured Base URL); otherwise SAP credentials
+        // would be sent to whatever host the response names.
+        if ($next !== '') {
+            $nextOrigin = $this->origin($next);
+            $allowed = array_filter([
+                $this->origin($currentUrl),
+                $this->origin((string)($this->settings['base_url'] ?? '')),
+            ]);
+            if ($nextOrigin === null || !in_array($nextOrigin, $allowed, true)) {
+                throw new \RuntimeException(
+                    'SAP returned a next-page link to a different host; paging was stopped to protect credentials.'
+                );
+            }
+        }
+
         return [$rows, $next];
+    }
+
+    /** Normalised scheme://host:port for same-origin checks, or null if not an http(s) URL. */
+    private function origin(string $url): ?string
+    {
+        $parts = parse_url(trim($url));
+        $scheme = strtolower((string)($parts['scheme'] ?? ''));
+        $host = strtolower((string)($parts['host'] ?? ''));
+        if (!in_array($scheme, ['http', 'https'], true) || $host === '') return null;
+        $port = (int)($parts['port'] ?? ($scheme === 'https' ? 443 : 80));
+        return $scheme . '://' . $host . ':' . $port;
     }
 
     private function absoluteUrl(string $endpoint): string

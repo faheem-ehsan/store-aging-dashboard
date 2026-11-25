@@ -3,9 +3,14 @@ DirectoryIndex index.php
 
 RewriteEngine On
 
-# Protect application/source folders when the project lives under htdocs/www.
-RewriteRule ^(?:app|config|database)(?:/|$) - [F,L,NC]
-RewriteRule ^(?:\.env|README\.md)(?:$|/) - [F,L,NC]
+# Block dot-files and dot-folders (.git, .env, .gitattributes, ...).
+RewriteRule (?:^|/)\. - [F,L]
+
+# Protect application/source/CLI/state folders when the project lives under htdocs/www.
+RewriteRule ^(?:app|bin|config|database|state)(?:/|$) - [F,L,NC]
+
+# Block documentation, archives, dumps and scripts that must never be served directly.
+RewriteRule \.(?:md|txt|zip|rar|7z|gz|tar|sql|bak|old|log|bat|cmd|ps1|sh|ini|json|lock)$ - [F,L,NC]
 
 # Expose only public static files through the project root.
 RewriteRule ^assets/(.*)$ public/assets/$1 [L,NC]

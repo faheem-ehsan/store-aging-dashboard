@@ -7,10 +7,9 @@ class SapCredentialCipher
 
     public function __construct()
     {
-        $secretFile = ROOT_PATH . '/config/sap_secret.php';
-        $secret = is_file($secretFile) ? (string)require $secretFile : '';
+        $secret = app_secret('SAP_SECRET_KEY', 'sap_secret.php');
         if ($secret === '') {
-            throw new \RuntimeException('SAP credential encryption key is missing.');
+            throw new \RuntimeException('SAP credential encryption key is missing. Set SAP_SECRET_KEY or config/sap_secret.php.');
         }
         $this->key = hash('sha256', $secret, true);
     }

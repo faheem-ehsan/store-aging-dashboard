@@ -374,7 +374,7 @@ class DailyStockReportController
         ]);
 
         foreach ($rows as $row) {
-            fputcsv($out, [
+            fputcsv($out, csv_safe([
                 format_app_date($row['report_date']),
                 $row['division_code'],
                 $row['division_name'],
@@ -391,7 +391,7 @@ class DailyStockReportController
                 $row['generation_type'],
                 format_app_datetime($row['generated_at']),
                 !empty($row['verified_at']) ? format_app_datetime($row['verified_at']) : '',
-            ]);
+            ]));
         }
 
         fclose($out);

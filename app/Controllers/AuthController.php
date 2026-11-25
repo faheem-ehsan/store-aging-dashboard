@@ -6,6 +6,7 @@ use App\Core\View;
 use App\Models\Division;
 use App\Models\User;
 use App\Services\AuditLogger;
+use App\Services\LoginThrottle;
 
 class AuthController
 {
@@ -21,8 +22,23 @@ class AuthController
     public function login(): void
     {
         verify_csrf();
-        $email = trim($_POST['email'] ?? '');
-        $password = $_POST['password'] ?? '';
+        $email = strtolower(trim((string)($_POST['email'] ?? '')));
+        $password = (string)($_POST['password'] ?? '');
+        $ip = substr((string)($_SERVER['REMOTE_ADDR'] ?? ''), 0, 45);
+
+        if ((new LoginThrottle())->isBlocked($email, $ip)) {
+            AuditLogger::log(
+                'LOGIN_BLOCKED',
+                'Blocked login attempt for ' . ($email ?: 'blank email') . ' (too many failed attempts).',
+                'auth',
+                null,
+                [],
+                ['id' => null, 'name' => 'Login Attempt', 'email' => $email, 'role' => 'guest', 'division_id' => null]
+            );
+            flash('error', 'Too many failed sign-in attempts. Please wait ' . LoginThrottle::WINDOW_MINUTES . ' minutes and try again.');
+            redirect('/login');
+        }
+
         $divisionRaw = $_POST['division_id'] ?? '';
         if ($divisionRaw === 'super') {
             $divisionId = null;
