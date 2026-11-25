@@ -662,11 +662,22 @@ $hasRowActions = $canEdit || $canDelete;
             const stats = divisionStats[key] || {items: 0, qty: 0, value: 0};
             const item = document.createElement('div');
             item.className = 'grade-division-summary-row';
-            item.innerHTML =
-                '<span class="grade-division-name"><b>' + divisionDef.code + '</b> — ' + divisionDef.name + '</span>' +
-                '<strong>' + Number(stats.items || 0).toLocaleString() + '</strong>' +
-                '<strong>' + formatQty(stats.qty || 0) + '</strong>' +
-                '<strong>' + formatMoney(stats.value || 0) + '</strong>';
+            // Build with textContent only: division code/name are data, never HTML.
+            const nameEl = document.createElement('span');
+            nameEl.className = 'grade-division-name';
+            const codeEl = document.createElement('b');
+            codeEl.textContent = String(divisionDef.code || '');
+            nameEl.append(codeEl, ' — ' + String(divisionDef.name || ''));
+            item.appendChild(nameEl);
+            [
+                Number(stats.items || 0).toLocaleString(),
+                formatQty(stats.qty || 0),
+                formatMoney(stats.value || 0)
+            ].forEach(function (text) {
+                const cell = document.createElement('strong');
+                cell.textContent = text;
+                item.appendChild(cell);
+            });
             divisionBarsList.appendChild(item);
         });
     }
@@ -690,9 +701,12 @@ $hasRowActions = $canEdit || $canDelete;
         units.forEach(function (unitName) {
             const chip = document.createElement('div');
             chip.className = 'grade-modal-uom-chip';
-            chip.innerHTML =
-                '<span>' + unitName + '</span>' +
-                '<strong>' + formatQty(unitStats[unitName] || 0) + '</strong>';
+            // Unit names come from imported rows: insert as text, never HTML.
+            const unitEl = document.createElement('span');
+            unitEl.textContent = unitName;
+            const qtyEl = document.createElement('strong');
+            qtyEl.textContent = formatQty(unitStats[unitName] || 0);
+            chip.append(unitEl, qtyEl);
             unitSummary.appendChild(chip);
         });
     }

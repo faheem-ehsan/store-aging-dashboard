@@ -610,11 +610,22 @@ ksort($modalLocations);
             const stats = divisionStats[divisionDef.code] || {batches: 0, qty: 0, value: 0};
             const item = document.createElement('div');
             item.className = 'grade-division-summary-row';
-            item.innerHTML =
-                '<span class="grade-division-name"><b>' + divisionDef.code + '</b> — ' + divisionDef.name + '</span>' +
-                '<strong>' + Number(stats.batches || 0).toLocaleString() + '</strong>' +
-                '<strong>' + Math.round(Number(stats.qty || 0)).toLocaleString() + '</strong>' +
-                '<strong>Rs/ ' + dashboardStockValue(Number(stats.value || 0)) + '</strong>';
+            // Build with textContent only: division code/name are data, never HTML.
+            const nameEl = document.createElement('span');
+            nameEl.className = 'grade-division-name';
+            const codeEl = document.createElement('b');
+            codeEl.textContent = String(divisionDef.code || '');
+            nameEl.append(codeEl, ' — ' + String(divisionDef.name || ''));
+            item.appendChild(nameEl);
+            [
+                Number(stats.batches || 0).toLocaleString(),
+                Math.round(Number(stats.qty || 0)).toLocaleString(),
+                'Rs/ ' + dashboardStockValue(Number(stats.value || 0))
+            ].forEach(function (text) {
+                const cell = document.createElement('strong');
+                cell.textContent = text;
+                item.appendChild(cell);
+            });
             divisionBarsList.appendChild(item);
         });
     }
@@ -708,7 +719,12 @@ ksort($modalLocations);
         Object.keys(uomTotals).sort().forEach(function (uom) {
             const chip = document.createElement('div');
             chip.className = 'grade-modal-uom-chip grade-modal-uom-chip-full';
-            chip.innerHTML = '<span>' + uomTotals[uom].label + '</span><strong>' + dashboardNumber(uomTotals[uom].qty) + '</strong>';
+            // UoM labels come from imported stock data: insert as text, never HTML.
+            const labelEl = document.createElement('span');
+            labelEl.textContent = String(uomTotals[uom].label || '');
+            const uomQtyEl = document.createElement('strong');
+            uomQtyEl.textContent = dashboardNumber(uomTotals[uom].qty);
+            chip.append(labelEl, uomQtyEl);
             uomsEl.appendChild(chip);
         });
         resultText.textContent = 'Showing ' + count.toLocaleString() + ' batch' + (count === 1 ? '' : 'es');
