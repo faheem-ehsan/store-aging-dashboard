@@ -139,6 +139,17 @@
                 <span class="admin-hub-arrow">→</span>
             </a>
 
+            <a class="admin-hub-card admin-hub-card-danger" href="<?= e(url('/raw-materials?bulk_delete=1')) ?>">
+                <span class="admin-hub-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="admin-hub-card-copy">
+                    <strong>Raw Material Bulk Delete</strong>
+                    <small>Delete Raw Material batch records by selected division.</small>
+                </span>
+                <span class="admin-hub-arrow">→</span>
+            </a>
+
             <a class="admin-hub-card admin-hub-card-danger" href="<?= e(url('/market-return?bulk_delete=1')) ?>">
                 <span class="admin-hub-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>

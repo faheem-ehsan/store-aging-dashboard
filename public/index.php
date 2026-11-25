@@ -5,6 +5,7 @@ use App\Core\Router;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
 use App\Controllers\StockController;
+use App\Controllers\RawMaterialController;
 use App\Controllers\UserController;
 use App\Controllers\DivisionController;
 use App\Controllers\LogController;
@@ -59,6 +60,18 @@ $router->post('/stocks/bulk-delete', [StockController::class, 'bulkDelete']);
 $router->get('/stocks/import', [StockController::class, 'importForm']);
 $router->post('/stocks/import', [StockController::class, 'importCsv']);
 $router->get('/stocks/import-template', [StockController::class, 'importTemplate']);
+
+$router->get('/raw-materials', [RawMaterialController::class, 'index']);
+$router->get('/raw-materials/create', [RawMaterialController::class, 'create']);
+$router->post('/raw-materials/store', [RawMaterialController::class, 'store']);
+$router->get('/raw-materials/edit', [RawMaterialController::class, 'edit']);
+$router->post('/raw-materials/update', [RawMaterialController::class, 'update']);
+$router->post('/raw-materials/delete', [RawMaterialController::class, 'delete']);
+$router->post('/raw-materials/delete-selected', [RawMaterialController::class, 'deleteSelected']);
+$router->post('/raw-materials/bulk-delete', [RawMaterialController::class, 'bulkDelete']);
+$router->get('/raw-materials/import', [RawMaterialController::class, 'importForm']);
+$router->post('/raw-materials/import', [RawMaterialController::class, 'importCsv']);
+$router->get('/raw-materials/import-template', [RawMaterialController::class, 'importTemplate']);
 
 
 $router->get('/market-return', [MarketReturnController::class, 'index']);

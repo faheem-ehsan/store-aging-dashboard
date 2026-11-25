@@ -1,19 +1,23 @@
+<?php
+$module = $module ?? \App\Controllers\StockController::MODULE;
+$moduleBase = $module['base'];
+?>
 <div class="import-layout">
     <div class="card import-card">
         <div class="card-head">
             <div>
-                <h2>Import Stock Batches from CSV</h2>
-                <p>Use one CSV file to add new stock batches. By default, an already-imported Division + Product Code + Batch No. is kept unchanged and skipped. A different Batch No. is inserted as a new batch.</p>
+                <h2>Import <?= e($module['name']) ?> Batches from CSV</h2>
+                <p>Use one CSV file to add new stock batches. By default, an already-imported Division + <?= e($module['code_label']) ?> + Batch No. is kept unchanged and skipped. A different Batch No. is inserted as a new batch.</p>
             </div>
-            <a class="btn ghost" href="<?= e(url('/stocks/import-template')) ?>">Download CSV Template</a>
+            <a class="btn ghost" href="<?= e(url($moduleBase . '/import-template')) ?>">Download CSV Template</a>
         </div>
 
         <div class="import-notes">
             <strong>Import matching rule</strong>
-            <p><b>Default: Add New Batches Only.</b> Same Division + Product Code + Batch No. = <b>skip existing record</b>. Different Batch No. = <b>insert a new batch</b>, even when the Product Code is the same.</p>
+            <p><b>Default: Add New Batches Only.</b> Same Division + <?= e($module['code_label']) ?> + Batch No. = <b>skip existing record</b>. Different Batch No. = <b>insert a new batch</b>, even when the <?= e($module['code_label']) ?> is the same.</p>
             <strong>Required CSV headings</strong>
             <div class="csv-columns">
-                <span>Division</span><span>Product Code</span><span>Product Name</span><span>Current Stock</span><span>UoM</span><span>Retail Stock Value</span><span>Batch No</span><span>Manufacturing Date</span><span>Expiry Date</span><span>Aging (Days)</span><span>Aging Remaining (Days)</span><span>Stock Location</span>
+                <span>Division</span><span><?= e($module['code_label']) ?></span><span><?= e($module['name_label']) ?></span><span>Current Stock</span><span>UoM</span><span><?= e($module['value_label']) ?></span><span>Batch No</span><span>Manufacturing Date</span><span>Expiry Date</span><span>Aging (Days)</span><span>Aging Remaining (Days)</span><span>Stock Location</span>
             </div>
             <p><b>Excel note:</b> CSV files cannot store a cell number format. The downloaded template keeps example dates as text so Excel shows the full four-digit year (for example 18/Sep/2026). The importer removes the text marker automatically before saving.</p>
             <p><b>Fixed CSV date format:</b> DD/MON/YYYY for Manufacturing Date, Expiry Date and Last Receipt Date.</p>
@@ -25,7 +29,7 @@
             <?php endif; ?>
         </div>
 
-        <form method="post" action="<?= e(url('/stocks/import')) ?>" enctype="multipart/form-data" class="csv-upload-form">
+        <form method="post" action="<?= e(url($moduleBase . '/import')) ?>" enctype="multipart/form-data" class="csv-upload-form">
             <?= csrf_field() ?>
 
             <label class="csv-target-division csv-import-mode">
@@ -50,7 +54,7 @@
                         </option>
                     <?php endforeach; ?>
                 </select>
-                <small>If your CSV starts with Product Code instead of JSD/SNW/RTD, select the correct division here before importing.</small>
+                <small>If your CSV starts with <?= e($module['code_label']) ?> instead of JSD/SNW/RTD, select the correct division here before importing.</small>
             </label>
             <?php else: ?>
                 <input type="hidden" name="target_division_id" value="<?= (int)$user['division_id'] ?>">
@@ -63,7 +67,7 @@
                 <input type="file" name="csv_file" accept=".csv,text/csv" required>
             </label>
             <div class="form-actions">
-                <a class="btn ghost" href="<?= e(url('/stocks')) ?>">Back to Stock</a>
+                <a class="btn ghost" href="<?= e(url($moduleBase)) ?>">Back to <?= e($module['index_title']) ?></a>
                 <button class="btn primary" type="submit">Import CSV</button>
             </div>
         </form>
@@ -90,7 +94,7 @@
                 Import completed. New Batch Nos. were added and existing Batch Nos. were preserved according to the selected import mode.
             </div>
         <?php endif; ?>
-        <a class="btn primary" href="<?= e(url('/stocks')) ?>">View Imported Stock</a>
+        <a class="btn primary" href="<?= e(url($moduleBase)) ?>">View Imported Stock</a>
     </div>
     <?php endif; ?>
 </div>

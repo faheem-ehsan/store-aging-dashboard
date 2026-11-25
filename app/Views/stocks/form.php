@@ -1,4 +1,6 @@
 <?php
+$module = $module ?? \App\Controllers\StockController::MODULE;
+$moduleBase = $module['base'];
 $isEdit = !empty($batch);
 $selectedDivisionId = $isEdit
     ? (int)($batch['division_id'] ?? 0)
@@ -20,7 +22,7 @@ if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) && $s
 $formHeading = $isEdit ? 'Edit Batch' : (($divisionCode !== '' ? $divisionCode . ' ' : 'Division ') . 'Add Batch');
 
 $returnParams = $returnParams ?? [];
-$returnUrl = url('/stocks' . ($returnParams ? '?' . http_build_query($returnParams) : ''));
+$returnUrl = url($moduleBase . ($returnParams ? '?' . http_build_query($returnParams) : ''));
 $stockReturnHiddenMap = [
     'q' => 'return_q',
     'division_id' => 'return_division_id',
@@ -37,9 +39,9 @@ $stockReturnHiddenMap = [
             <h2><?= e($formHeading) ?></h2>
             <p>Entry layout follows the approved stock-aging import template. Aging values are calculated automatically.</p>
         </div>
-        <?php if (!$isEdit): ?><a class="btn ghost" href="<?= e(url('/stocks/import' . ($selectedDivisionId > 0 ? '?division_id=' . $selectedDivisionId : ''))) ?>">Import CSV</a><?php endif; ?>
+        <?php if (!$isEdit): ?><a class="btn ghost" href="<?= e(url($moduleBase . '/import' . ($selectedDivisionId > 0 ? '?division_id=' . $selectedDivisionId : ''))) ?>">Import CSV</a><?php endif; ?>
     </div>
-    <form method="post" action="<?= e(url($isEdit ? '/stocks/update' : '/stocks/store')) ?>" class="form-grid dispatch-batch-grid" id="batchForm">
+    <form method="post" action="<?= e(url($isEdit ? $moduleBase . '/update' : $moduleBase . '/store')) ?>" class="form-grid dispatch-batch-grid" id="batchForm">
         <?= csrf_field() ?>
         <?php if ($isEdit): ?><input type="hidden" name="id" value="<?= (int)$batch['id'] ?>"><?php endif; ?>
         <?php if ($isEdit): ?>
@@ -63,8 +65,8 @@ $stockReturnHiddenMap = [
         <label>Division<input value="<?= e($divisionLabel) ?>" readonly></label>
         <?php endif; ?>
 
-        <?php if (!$isEdit): ?>
-        <label>Product Code
+        <?php if (!$isEdit && $module['uses_product_master']): ?>
+        <label><?= e($module['code_label']) ?>
             <select name="material_code" id="product_master_select" required <?= $selectedDivisionId > 0 ? '' : 'disabled' ?>>
                 <option value=""><?= $selectedDivisionId > 0 ? 'Select approved product...' : 'Select Division first...' ?></option>
                 <?php foreach (($products ?? []) as $product): ?>
@@ -73,16 +75,16 @@ $stockReturnHiddenMap = [
             </select>
             <small class="product-master-form-help" id="product_master_help"><?= $selectedDivisionId > 0 && empty($products) ? 'No active products configured for this Division. Ask Super Admin to add them in Administration → Product Master.' : '' ?></small>
         </label>
-        <label class="span-2">Product Name<input name="material_description" id="product_master_name" value="" readonly required></label>
+        <label class="span-2"><?= e($module['name_label']) ?><input name="material_description" id="product_master_name" value="" readonly required></label>
         <label>Current Stock<input type="number" step="0.001" min="0" name="current_qty" value="0" required></label>
         <label>UoM<input name="uom" id="product_master_uom" value="" readonly required></label>
         <?php else: ?>
-        <label>Product Code<input name="material_code" value="<?= e($batch['material_code'] ?? '') ?>" required></label>
-        <label class="span-2">Product Name<input name="material_description" value="<?= e($batch['material_description'] ?? '') ?>" required></label>
+        <label><?= e($module['code_label']) ?><input name="material_code" value="<?= e($batch['material_code'] ?? '') ?>" required></label>
+        <label class="span-2"><?= e($module['name_label']) ?><input name="material_description" value="<?= e($batch['material_description'] ?? '') ?>" required></label>
         <label>Current Stock<input type="number" step="0.001" min="0" name="current_qty" value="<?= e($batch['current_qty'] ?? '0') ?>" required></label>
-        <label>UoM<input name="uom" value="<?= e($batch['uom'] ?? '') ?>" placeholder="e.g. CS, PCS, BT" required></label>
+        <label>UoM<input name="uom" value="<?= e($batch['uom'] ?? '') ?>" placeholder="<?= e($module['uom_placeholder']) ?>" required></label>
         <?php endif; ?>
-        <label>Retail Stock Value<input type="number" step="0.01" min="0" name="stock_value" value="<?= e($batch['stock_value'] ?? '0') ?>" required></label>
+        <label><?= e($module['value_label']) ?><input type="number" step="0.01" min="0" name="stock_value" value="<?= e($batch['stock_value'] ?? '0') ?>" required></label>
         <label>Batch No<input name="batch_no" value="<?= e($batch['batch_no'] ?? '') ?>" required></label>
         <label>Manufacturing Date
             <input
@@ -114,10 +116,10 @@ $stockReturnHiddenMap = [
         </label>
         <label>Aging (Days)<input id="aging_days_preview" value="" readonly tabindex="-1"></label>
         <label>Expiry Remaining (Days)<input id="remaining_days_preview" value="" readonly tabindex="-1"></label>
-        <label class="span-2">Stock Location<input name="receiving_store" value="<?= e($batch['receiving_store'] ?? '') ?>" placeholder="e.g. FW02" required></label>
+        <label class="span-2">Stock Location<input name="receiving_store" value="<?= e($batch['receiving_store'] ?? '') ?>" placeholder="<?= e($module['location_placeholder']) ?>" required></label>
 
         <div class="form-actions span-2">
-            <a class="btn ghost" href="<?= e($isEdit ? $returnUrl : url('/stocks')) ?>">Cancel</a>
+            <a class="btn ghost" href="<?= e($isEdit ? $returnUrl : url($moduleBase)) ?>">Cancel</a>
             <button class="btn primary" type="submit"><?= $isEdit ? 'Save Changes' : 'Create Batch' ?></button>
         </div>
     </form>
@@ -129,7 +131,7 @@ $stockReturnHiddenMap = [
     const productUom = document.getElementById('product_master_uom');
     const productHelp = document.getElementById('product_master_help');
     const divisionSelect = document.getElementById('batch_division_id');
-    const productOptionsUrl = <?= json_encode(url('/stocks/product-options'), JSON_UNESCAPED_SLASHES) ?>;
+    const productOptionsUrl = <?= json_encode(url($moduleBase . '/product-options'), JSON_UNESCAPED_SLASHES) ?>;
 
     function syncSelectedProduct() {
         if (!productSelect || !productName || !productUom) return;
