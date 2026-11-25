@@ -15,6 +15,8 @@ class ExportGoodsController extends StockController
 {
     public const MODULE = [
         'key' => 'eg',
+        'order' => 20,
+        'icon' => '<path d="M3 7.5 12 3l9 4.5v9L12 21l-9-4.5v-9Zm9 4.5 9-4.5M12 12v9M12 12 3 7.5M16.5 5.2 7.5 9.8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
         'base' => '/export-goods',
         'name' => 'Export Goods',
         'index_title' => 'Export Goods Aging',

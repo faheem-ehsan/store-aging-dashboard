@@ -6,6 +6,8 @@ use App\Core\View;
 use App\Models\Division;
 use App\Models\StockBatch;
 use App\Models\SapIntegration;
+use App\Models\UserPreference;
+use App\Services\AgingModuleRegistry;
 use App\Services\GradeService;
 
 class DashboardController
@@ -114,6 +116,31 @@ class DashboardController
 
         $gradeCriteria = $divisionId ? $grader->criteriaForDivision((int)$divisionId) : null;
 
+        // Extra aging modules (Raw Material, Export Goods, any added later) shown
+        // below the Finish Goods grade summary. Discovered automatically; each
+        // user chooses which ones to display. Same division scope and grading.
+        $availableModules = [];
+        foreach (AgingModuleRegistry::modules() as $key => $moduleController) {
+            $availableModules[$key] = $moduleController::MODULE['index_title'];
+        }
+        $shownModuleKeys = $this->shownModuleKeys((int)$user['id'], array_keys($availableModules));
+
+        $moduleSummaries = [];
+        foreach (AgingModuleRegistry::modules() as $key => $moduleController) {
+            if (!in_array($key, $shownModuleKeys, true)) continue;
+            try {
+                $moduleSummaries[] = $this->moduleSummary(
+                    $moduleController::MODULE,
+                    AgingModuleRegistry::batchModel($moduleController),
+                    $user,
+                    $divisionId,
+                    $grader
+                );
+            } catch (\Throwable $e) {
+                // An optional module must never take the main dashboard down.
+            }
+        }
+
         View::render('dashboard/index', [
             'title' => 'Dashboard',
             'user' => $user,
@@ -127,6 +154,79 @@ class DashboardController
             'lastStockUpdatedAt' => $lastStockUpdatedAt,
             'lastStockUpdateInfo' => $lastStockUpdateInfo,
             'sapLastStockUpdatedAt' => $sapLastStockUpdatedAt,
+            'moduleSummaries' => $moduleSummaries,
+            'availableModules' => $availableModules,
+            'shownModuleKeys' => $shownModuleKeys,
         ]);
+    }
+
+    private const SHOWN_MODULES_PREF = 'dashboard.aging_modules';
+
+    /** POST /dashboard/modules: save which aging modules this user shows on the Dashboard. */
+    public function saveModules(): void
+    {
+        verify_csrf();
+        $user = Auth::requireLogin();
+
+        $available = array_keys(AgingModuleRegistry::modules());
+        $requested = $_POST['modules'] ?? [];
+        if (!is_array($requested)) $requested = [];
+        $selected = array_values(array_intersect($available, array_map('strval', $requested)));
+
+        (new UserPreference())->set((int)$user['id'], self::SHOWN_MODULES_PREF, json_encode($selected));
+
+        $divisionId = (int)($_POST['return_division_id'] ?? 0);
+        redirect('/' . ($divisionId > 0 ? '?division_id=' . $divisionId : ''));
+    }
+
+    /**
+     * Module keys this user shows. No saved choice yet = all modules, so new
+     * modules appear automatically until the user picks their own set.
+     */
+    private function shownModuleKeys(int $userId, array $availableKeys): array
+    {
+        try {
+            $saved = (new UserPreference())->get($userId, self::SHOWN_MODULES_PREF);
+        } catch (\Throwable $e) {
+            $saved = null;
+        }
+        if ($saved === null) return $availableKeys;
+
+        $keys = json_decode($saved, true);
+        return is_array($keys) ? array_values(array_intersect($availableKeys, $keys)) : $availableKeys;
+    }
+
+    /** Totals and per-grade breakdown for one aging module (Raw Material / Export Goods). */
+    private function moduleSummary(array $module, StockBatch $model, array $user, ?int $divisionId, GradeService $grader): array
+    {
+        $summary = [
+            'name' => $module['index_title'],
+            'base' => $module['base'],
+            'icon' => $module['icon'] ?? '',
+            'batches' => 0,
+            'value' => 0.0,
+            'attention_batches' => 0,
+            'attention_value' => 0.0,
+            'grades' => array_fill_keys(['A+', 'A', 'B', 'C', 'EX'], ['batches' => 0, 'value' => 0.0]),
+        ];
+
+        foreach ($model->allAccessible($user, ['division_id' => $divisionId]) as $row) {
+            $row = $grader->enrich($row);
+            $value = (float)($row['stock_value'] ?? 0);
+            $code = (string)$row['grade']['grade_code'];
+
+            $summary['batches']++;
+            $summary['value'] += $value;
+            if (isset($summary['grades'][$code])) {
+                $summary['grades'][$code]['batches']++;
+                $summary['grades'][$code]['value'] += $value;
+            }
+            if ($code === 'C' || $code === 'EX') {
+                $summary['attention_batches']++;
+                $summary['attention_value'] += $value;
+            }
+        }
+
+        return $summary;
     }
 }

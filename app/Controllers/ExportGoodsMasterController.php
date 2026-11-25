@@ -13,6 +13,9 @@ class ExportGoodsMasterController extends ProductMasterController
 {
     public const MODULE = [
         'base' => '/admin/export-goods',
+        'order' => 20,
+        'icon' => ExportGoodsController::MODULE['icon'],
+        'card_text' => 'Maintain export Product Code, Product Name and UoM for every Division.',
         'title' => 'Export Goods Master',
         'item' => 'Product',
         'item_lower' => 'product',

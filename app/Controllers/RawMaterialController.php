@@ -15,6 +15,8 @@ class RawMaterialController extends StockController
 {
     public const MODULE = [
         'key' => 'rm',
+        'order' => 10,
+        'icon' => '<path d="M9 3h6M10 3v5.5L5.2 17.2A2.5 2.5 0 0 0 7.4 21h9.2a2.5 2.5 0 0 0 2.2-3.8L14 8.5V3M7.5 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>',
         'base' => '/raw-materials',
         'name' => 'Raw Material',
         'index_title' => 'Raw Material Aging',

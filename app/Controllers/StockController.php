@@ -41,6 +41,12 @@ class StockController
         'search_placeholder' => 'Product code, product name or batch no...',
     ];
 
+    /** Public accessor for AgingModuleRegistry (dashboard summaries). Not routed. */
+    public function agingBatchModel(): StockBatch
+    {
+        return $this->batchModel();
+    }
+
     protected function module(): array
     {
         return static::MODULE;
