@@ -1,4 +1,9 @@
 <?php
+// CLI only: never allow these scheduled jobs to be triggered over HTTP.
+if (PHP_SAPI !== 'cli') {
+    http_response_code(404);
+    exit;
+}
 require dirname(__DIR__) . '/app/bootstrap.php';
 
 use App\Services\GradeAlertService;

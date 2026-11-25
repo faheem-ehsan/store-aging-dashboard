@@ -5,6 +5,7 @@ use App\Core\Auth;
 use App\Core\View;
 use App\Models\Division;
 use App\Models\StockBatch;
+use App\Models\ProductMaster;
 use App\Services\GradeService;
 use App\Services\AuditLogger;
 
@@ -12,7 +13,7 @@ class StockController
 {
     private function canManage(array $user): bool
     {
-        return in_array($user['role'], ['super_admin','division_admin'], true);
+        return Auth::canManageOperational($user);
     }
 
     private function stockReturnParams(array $source): array
@@ -89,8 +90,7 @@ class StockController
             'division_id' => isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null,
             'grade' => trim($_GET['grade'] ?? ''),
         ];
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $grader = new GradeService();
@@ -145,6 +145,9 @@ class StockController
             'filters' => $filters,
             'divisions' => $divisions,
             'canManage' => $this->canManage($user),
+            'canAdd' => Auth::canAddOperational($user),
+            'canEdit' => Auth::canEditOperational($user),
+            'canDelete' => Auth::canDeleteOperational($user),
             'summary' => $summary,
             'selectedDivisionLabel' => $selectedDivisionLabel,
             'selectedGradeLabel' => $selectedGradeLabel,
@@ -156,20 +159,24 @@ class StockController
     public function create(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
 
         $divisionModel = new Division();
         $divisions = $divisionModel->all(true);
-        $selectedDivisionId = $user['role'] === 'super_admin'
+        $selectedDivisionId = Auth::isGlobalOperator($user)
             ? (int)($_GET['division_id'] ?? 0)
             : (int)$user['division_id'];
         $selectedDivision = $selectedDivisionId > 0 ? $divisionModel->find($selectedDivisionId) : null;
         if ($selectedDivision && !(int)$selectedDivision['is_active']) $selectedDivision = null;
 
-        $divisionCode = $user['role'] === 'super_admin'
+        $divisionCode = Auth::isGlobalOperator($user)
             ? ($selectedDivision['code'] ?? '')
             : ($user['division_code'] ?? '');
         $title = $divisionCode !== '' ? $divisionCode . ' Add Batch' : 'Division Add Batch';
+
+        $products = $selectedDivisionId > 0
+            ? (new ProductMaster())->activeByDivision($selectedDivisionId)
+            : [];
 
         View::render('stocks/form', [
             'title' => $title,
@@ -177,19 +184,69 @@ class StockController
             'divisions' => $divisions,
             'batch' => null,
             'selectedDivisionId' => $selectedDivisionId,
+            'products' => $products,
         ]);
+    }
+
+    public function productOptions(): void
+    {
+        $user = Auth::requireLogin();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
+
+        $divisionId = Auth::isGlobalOperator($user)
+            ? max(0, (int)($_GET['division_id'] ?? 0))
+            : (int)$user['division_id'];
+
+        $products = [];
+        if ($divisionId > 0) {
+            $division = (new Division())->find($divisionId);
+            if ($division && (int)$division['is_active']) {
+                if (!Auth::isGlobalOperator($user) && $divisionId !== (int)$user['division_id']) {
+                    $this->forbidden();
+                }
+                $products = (new ProductMaster())->activeByDivision($divisionId);
+            }
+        }
+
+        header('Content-Type: application/json; charset=UTF-8');
+        header('Cache-Control: no-store');
+        echo json_encode([
+            'division_id' => $divisionId,
+            'products' => array_map(static function (array $product): array {
+                return [
+                    'id' => (int)$product['id'],
+                    'code' => (string)$product['product_code'],
+                    'name' => (string)$product['product_name'],
+                    'uom' => (string)$product['uom'],
+                ];
+            }, $products),
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        exit;
     }
 
     public function store(): void
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         $data = $this->payload($user);
+        $createPath = '/stocks/create' . (
+            Auth::isGlobalOperator($user) && (int)$data['division_id'] > 0
+                ? '?division_id=' . (int)$data['division_id']
+                : ''
+        );
+
+        try {
+            $data = $this->applyProductMasterForCreate($data, $user);
+        } catch (\Throwable $e) {
+            flash('error', $e->getMessage());
+            redirect($createPath);
+        }
+
         $error = $this->validate($data);
         if ($error) {
             flash('error', $error);
-            redirect('/stocks/create');
+            redirect($createPath);
         }
         try {
             $model = new StockBatch();
@@ -224,7 +281,7 @@ class StockController
     public function edit(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_GET['id'] ?? 0);
         $batch = (new StockBatch())->findAccessible($id, $user);
         if (!$batch) { http_response_code(404); View::render('errors/404', ['title'=>'Not Found']); return; }
@@ -244,7 +301,7 @@ class StockController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
 
         $returnParams = $this->stockReturnParams($_POST);
@@ -295,7 +352,7 @@ class StockController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canDeleteOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
         $returnParams = $this->stockReturnParams($_POST);
         $returnPath = $this->stockReturnPath($returnParams);
@@ -322,7 +379,8 @@ class StockController
     public function deleteSelected(): void
     {
         verify_csrf();
-        $user = Auth::requireSuperAdmin();
+        $user = Auth::requireLogin();
+        if (!Auth::canDeleteOperational($user)) $this->forbidden();
 
         $returnParams = $this->stockReturnParams($_POST);
         $returnPath = $this->stockReturnPath($returnParams);
@@ -342,6 +400,19 @@ class StockController
 
         try {
             $model = new StockBatch();
+
+            if (($user['role'] ?? '') === 'division_admin') {
+                $allowedIds = [];
+                foreach ($ids as $selectedId) {
+                    $accessible = $model->findAccessible((int)$selectedId, $user);
+                    if (!$accessible || (int)$accessible['division_id'] !== (int)$user['division_id']) {
+                        $this->forbidden();
+                    }
+                    $allowedIds[] = (int)$selectedId;
+                }
+                $ids = $allowedIds;
+            }
+
             $result = $model->deleteSelectedByIds($ids);
             $rows = $result['rows'] ?? [];
 
@@ -477,13 +548,14 @@ class StockController
     public function importForm(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         View::render('stocks/import', [
             'title' => 'CSV Import',
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'result' => null,
-            'preselectedDivisionId' => $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
+            'canEdit' => Auth::canEditOperational($user),
+            'preselectedDivisionId' => Auth::isGlobalOperator($user) ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
         ]);
     }
 
@@ -491,16 +563,19 @@ class StockController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
 
         $result = ['inserted' => 0, 'updated' => 0, 'skipped' => 0, 'failed' => 0, 'errors' => []];
         $importMode = trim((string)($_POST['import_mode'] ?? 'new_only'));
         if (!in_array($importMode, ['new_only', 'update_existing'], true)) {
             $importMode = 'new_only';
         }
+        if ($importMode === 'update_existing' && !Auth::canEditOperational($user)) {
+            $this->forbidden();
+        }
 
         $divisionModel = new Division();
-        $targetDivisionId = $user['role'] === 'super_admin'
+        $targetDivisionId = Auth::isGlobalOperator($user)
             ? (int)($_POST['target_division_id'] ?? 0)
             : (int)$user['division_id'];
         $targetDivision = null;
@@ -512,7 +587,7 @@ class StockController
                 $this->renderImportResult($user, $result);
                 return;
             }
-            if ($user['role'] !== 'super_admin' && $targetDivisionId !== (int)$user['division_id']) {
+            if (!Auth::isGlobalOperator($user) && $targetDivisionId !== (int)$user['division_id']) {
                 $result['failed'] = 1;
                 $result['errors'][] = 'Target division does not match your login division.';
                 $this->renderImportResult($user, $result);
@@ -576,7 +651,7 @@ class StockController
 
         $required = ['material_no','material_description','current_qty','uom','stock_value','batch_no','manufacture_date','expiry_date','receiving_store'];
         $missing = array_values(array_filter($required, fn($h) => !in_array($h, $headers, true)));
-        if ($user['role'] === 'super_admin' && $targetDivisionId === 0 && !in_array('division', $headers, true)) {
+        if (Auth::isGlobalOperator($user) && $targetDivisionId === 0 && !in_array('division', $headers, true)) {
             $missing[] = 'division (or choose a Target Division before importing)';
         }
         if ($missing) {
@@ -605,7 +680,7 @@ class StockController
             }
 
             try {
-                if ($user['role'] === 'super_admin') {
+                if (Auth::isGlobalOperator($user)) {
                     if ($targetDivisionId > 0) {
                         $divisionId = $targetDivisionId;
                     } else {
@@ -681,7 +756,7 @@ class StockController
     {
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
-        $division = $user['role'] === 'super_admin' ? 'SNW' : ($user['division_code'] ?? 'SNW');
+        $division = Auth::isGlobalOperator($user) ? 'SNW' : ($user['division_code'] ?? 'SNW');
 
         header('Content-Type: text/csv; charset=UTF-8');
         header('Content-Disposition: attachment; filename="qarshi_dispatch_stock_import_template.csv"');
@@ -702,7 +777,7 @@ class StockController
 
     private function renderImportResult(array $user, array $result): void
     {
-        $targetDivisionId = $user['role'] === 'super_admin'
+        $targetDivisionId = Auth::isGlobalOperator($user)
             ? (int)($_POST['target_division_id'] ?? 0)
             : (int)$user['division_id'];
         $targetDivision = $targetDivisionId > 0 ? (new Division())->find($targetDivisionId) : null;
@@ -742,10 +817,39 @@ class StockController
         ]);
     }
 
+    private function applyProductMasterForCreate(array $data, array $user): array
+    {
+        $divisionId = Auth::isGlobalOperator($user)
+            ? (int)($data['division_id'] ?? 0)
+            : (int)($user['division_id'] ?? 0);
+
+        if ($divisionId <= 0) {
+            throw new \RuntimeException('Select a Division before selecting a Product.');
+        }
+
+        $productCode = trim((string)($data['material_code'] ?? ''));
+        if ($productCode === '') {
+            throw new \RuntimeException('Select a Product from the approved Product Master.');
+        }
+
+        $product = (new ProductMaster())->findActiveByDivisionCode($divisionId, $productCode);
+        if (!$product) {
+            throw new \RuntimeException('The selected Product is not active in the Product Master for this Division. Ask Super Admin to configure it first.');
+        }
+
+        // Canonical values always come from the Super Admin Product Master.
+        // CSV import is intentionally not routed through this method.
+        $data['material_code'] = (string)$product['product_code'];
+        $data['material_description'] = (string)$product['product_name'];
+        $data['uom'] = (string)$product['uom'];
+
+        return $data;
+    }
+
     private function payload(array $user): array
     {
         return [
-            'division_id' => $user['role'] === 'super_admin' ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'],
+            'division_id' => Auth::isGlobalOperator($user) ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'],
             'material_code' => trim($_POST['material_code'] ?? ''),
             'material_description' => trim($_POST['material_description'] ?? ''),
             'batch_no' => trim($_POST['batch_no'] ?? ''),

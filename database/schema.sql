@@ -32,7 +32,10 @@ CREATE TABLE users (
     name VARCHAR(120) NOT NULL,
     email VARCHAR(190) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('super_admin','division_admin','user') NOT NULL DEFAULT 'user',
+    role ENUM('super_admin','store_manager','division_admin','user') NOT NULL DEFAULT 'user',
+    can_add TINYINT(1) NOT NULL DEFAULT 1,
+    can_edit TINYINT(1) NOT NULL DEFAULT 1,
+    can_delete TINYINT(1) NOT NULL DEFAULT 1,
     avatar_path VARCHAR(255) NULL,
     is_active TINYINT(1) NOT NULL DEFAULT 1,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -178,6 +181,24 @@ CREATE TABLE materials (
     CONSTRAINT fk_material_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE RESTRICT,
     UNIQUE KEY uq_material_division_code (division_id, material_code),
     INDEX idx_material_description (description)
+) ENGINE=InnoDB;
+
+-- Super Admin Product Master for manual Add Batch entry.
+-- IMPORTANT: This table is independent of CSV import logic and templates.
+
+CREATE TABLE IF NOT EXISTS product_master (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    division_id INT UNSIGNED NOT NULL,
+    product_code VARCHAR(60) NOT NULL,
+    product_name VARCHAR(255) NOT NULL,
+    uom VARCHAR(20) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    CONSTRAINT fk_product_master_division FOREIGN KEY (division_id) REFERENCES divisions(id) ON DELETE RESTRICT,
+    UNIQUE KEY uq_product_master_division_code (division_id, product_code),
+    INDEX idx_product_master_name (product_name),
+    INDEX idx_product_master_active (division_id, is_active)
 ) ENGINE=InnoDB;
 
 CREATE TABLE stock_batches (

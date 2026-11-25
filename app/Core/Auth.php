@@ -30,6 +30,64 @@ class Auth
         return $user;
     }
 
+    public static function isGlobalOperator(array $user): bool
+    {
+        return in_array($user['role'] ?? '', ['super_admin', 'store_manager'], true);
+    }
+
+    public static function canReadAllDivisions(array $user): bool
+    {
+        return self::isGlobalOperator($user)
+            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+    }
+
+    public static function canAddOperational(array $user): bool
+    {
+        $role = $user['role'] ?? '';
+        if (in_array($role, ['super_admin', 'store_manager'], true)) return true;
+        if ($role !== 'division_admin') return false;
+
+        // Backward compatibility before migration: an existing Division Admin
+        // keeps legacy full access until the permission columns are installed.
+        return !array_key_exists('can_add', $user) || (int)$user['can_add'] === 1;
+    }
+
+    public static function canEditOperational(array $user): bool
+    {
+        $role = $user['role'] ?? '';
+        if (in_array($role, ['super_admin', 'store_manager'], true)) return true;
+        if ($role !== 'division_admin') return false;
+
+        return !array_key_exists('can_edit', $user) || (int)$user['can_edit'] === 1;
+    }
+
+    public static function canDeleteOperational(array $user): bool
+    {
+        $role = $user['role'] ?? '';
+        if (in_array($role, ['super_admin', 'store_manager'], true)) return true;
+        if ($role !== 'division_admin') return false;
+
+        return !array_key_exists('can_delete', $user) || (int)$user['can_delete'] === 1;
+    }
+
+    public static function canManageOperational(array $user): bool
+    {
+        return self::canAddOperational($user)
+            || self::canEditOperational($user)
+            || self::canDeleteOperational($user);
+    }
+
+    public static function requireGlobalOperator(): array
+    {
+        $user = self::requireLogin();
+        if (!self::isGlobalOperator($user)) {
+            http_response_code(403);
+            View::render('errors/403', ['title' => 'Forbidden']);
+            exit;
+        }
+        return $user;
+    }
+
     public static function requireSuperAdmin(): array
     {
         $user = self::requireLogin();

@@ -19,6 +19,18 @@ $router = new Router();
 
 $router->get('/', [DashboardController::class, 'index']);
 $router->get('/admin', [AdminController::class, 'index']);
+$router->get('/admin/products', [ProductMasterController::class, 'index']);
+$router->post('/admin/products/store', [ProductMasterController::class, 'store']);
+$router->post('/admin/products/update', [ProductMasterController::class, 'update']);
+$router->post('/admin/products/toggle', [ProductMasterController::class, 'toggle']);
+$router->post('/admin/products/delete', [ProductMasterController::class, 'delete']);
+$router->get('/admin/sap-integration', [SapIntegrationController::class, 'index']);
+$router->post('/admin/sap-integration/save', [SapIntegrationController::class, 'save']);
+$router->post('/admin/sap-integration/test', [SapIntegrationController::class, 'test']);
+$router->post('/admin/sap-integration/preview', [SapIntegrationController::class, 'preview']);
+$router->post('/admin/sap-integration/sync', [SapIntegrationController::class, 'syncNow']);
+$router->post('/admin/sap-integration/mapping', [SapIntegrationController::class, 'saveMapping']);
+$router->post('/admin/sap-integration/mapping/delete', [SapIntegrationController::class, 'deleteMapping']);
 $router->get('/admin/email-notifications', [EmailNotificationController::class, 'index']);
 $router->post('/admin/email-notifications/save', [EmailNotificationController::class, 'save']);
 $router->post('/admin/email-notifications/test', [EmailNotificationController::class, 'test']);
@@ -35,6 +47,7 @@ $router->get('/daily-stock-reports/export', [DailyStockReportController::class, 
 
 $router->get('/stocks', [StockController::class, 'index']);
 $router->get('/stocks/create', [StockController::class, 'create']);
+$router->get('/stocks/product-options', [StockController::class, 'productOptions']);
 $router->post('/stocks/store', [StockController::class, 'store']);
 $router->get('/stocks/edit', [StockController::class, 'edit']);
 $router->post('/stocks/update', [StockController::class, 'update']);
@@ -66,6 +79,7 @@ $router->get('/users/edit', [UserController::class, 'edit']);
 $router->post('/users/store', [UserController::class, 'store']);
 $router->post('/users/update', [UserController::class, 'update']);
 $router->post('/users/toggle', [UserController::class, 'toggle']);
+$router->post('/users/delete', [UserController::class, 'delete']);
 
 $router->get('/divisions', [DivisionController::class, 'index']);
 $router->post('/divisions/store', [DivisionController::class, 'store']);

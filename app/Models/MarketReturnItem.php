@@ -2,6 +2,7 @@
 namespace App\Models;
 
 use App\Core\Database;
+use App\Core\Auth;
 
 class MarketReturnItem
 {
@@ -19,8 +20,7 @@ class MarketReturnItem
         $sql = $this->baseSelect() . ' WHERE 1=1';
         $params = [];
 
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
 
         if (!$canReadAllDivisions) {
             $sql .= ' AND mri.division_id=?';
@@ -66,8 +66,7 @@ class MarketReturnItem
                 WHERE 1=1';
         $params = [];
 
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
 
         if (!$canReadAllDivisions) {
             $sql .= ' AND mri.division_id=?';
@@ -165,8 +164,7 @@ class MarketReturnItem
     {
         $sql = $this->baseSelect() . ' WHERE mri.id=?';
         $params = [$id];
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) {
             $sql .= ' AND mri.division_id=?';
             $params[] = (int)$user['division_id'];
@@ -178,7 +176,7 @@ class MarketReturnItem
 
     public function save(array $data, array $user, ?int $id = null): int
     {
-        $divisionId = ($user['role'] ?? '') === 'super_admin'
+        $divisionId = Auth::isGlobalOperator($user)
             ? (int)$data['division_id']
             : (int)$user['division_id'];
 

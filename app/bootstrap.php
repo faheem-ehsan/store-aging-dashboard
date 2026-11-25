@@ -1,9 +1,68 @@
 <?php
 use App\Core\Auth;
 
+$isWebRequest = PHP_SAPI !== 'cli';
+$isHttps = (!empty($_SERVER['HTTPS']) && strtolower((string)$_SERVER['HTTPS']) !== 'off')
+    || (int)($_SERVER['SERVER_PORT'] ?? 0) === 443;
+$sessionIdleSeconds = max(5, (int)(getenv('SESSION_IDLE_MINUTES') ?: 30)) * 60;
+
+if ($isWebRequest && session_status() !== PHP_SESSION_ACTIVE) {
+    ini_set('session.use_strict_mode', '1');
+    ini_set('session.use_only_cookies', '1');
+    ini_set('session.use_trans_sid', '0');
+    // Keep server-side session files at least as long as the idle window.
+    ini_set('session.gc_maxlifetime', (string)max(1440, $sessionIdleSeconds + 300));
+    session_set_cookie_params([
+        'lifetime' => 0,
+        'path' => '/',
+        'secure' => $isHttps,
+        'httponly' => true,
+        'samesite' => 'Lax',
+    ]);
+}
+
 if (session_status() !== PHP_SESSION_ACTIVE) {
     session_start();
 }
+
+// Expire signed-in sessions after a period of inactivity.
+if ($isWebRequest) {
+    $now = time();
+    if (
+        !empty($_SESSION['user_id'])
+        && isset($_SESSION['last_activity'])
+        && $now - (int)$_SESSION['last_activity'] > $sessionIdleSeconds
+    ) {
+        // Keep the CSRF token so an in-flight form post reaches the login redirect
+        // instead of failing with a CSRF error.
+        $csrf = $_SESSION['csrf'] ?? null;
+        $_SESSION = [];
+        session_regenerate_id(true);
+        if ($csrf) $_SESSION['csrf'] = $csrf;
+        $_SESSION['flash']['error'] = 'Your session expired after inactivity. Please sign in again.';
+    }
+    $_SESSION['last_activity'] = $now;
+}
+
+// Baseline security headers for every application response.
+if ($isWebRequest && !headers_sent()) {
+    header_remove('X-Powered-By');
+    header('X-Frame-Options: DENY');
+    header('X-Content-Type-Options: nosniff');
+    header('Referrer-Policy: same-origin');
+    header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
+    // Views use inline <script>/<style> and inline event handlers, so 'unsafe-inline'
+    // is required for now; everything else is locked to this origin.
+    header(
+        "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline'; "
+        . "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; "
+        . "connect-src 'self'; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+    );
+    if ($isHttps) {
+        header('Strict-Transport-Security: max-age=31536000');
+    }
+}
+unset($isWebRequest, $isHttps, $sessionIdleSeconds, $now, $csrf);
 
 const APP_PATH = __DIR__;
 const ROOT_PATH = __DIR__ . '/..';
@@ -23,6 +82,35 @@ function app_config(?string $key = null): array
 {
     if ($key === null) return $GLOBALS['app_config'];
     return $GLOBALS['app_config'][$key] ?? [];
+}
+
+/**
+ * Resolve an encryption secret. The environment variable wins so production
+ * keys can live outside the project; the config file is a local fallback and
+ * is git-ignored.
+ */
+function app_secret(string $envName, string $fallbackFile): string
+{
+    $fromEnv = getenv($envName);
+    if ($fromEnv !== false && trim($fromEnv) !== '') return trim($fromEnv);
+
+    $file = ROOT_PATH . '/config/' . $fallbackFile;
+    return is_file($file) ? trim((string)require $file) : '';
+}
+
+/**
+ * Neutralise spreadsheet formula injection in exported CSV cells.
+ * Cells whose first meaningful character is = + - @ are prefixed with a quote,
+ * except genuine numbers such as -12.5.
+ */
+function csv_safe(array $row): array
+{
+    return array_map(static function (mixed $value): mixed {
+        if (!is_string($value) || $value === '') return $value;
+        $trimmed = ltrim($value, " \t\r\n");
+        if ($trimmed === '' || is_numeric($trimmed)) return $value;
+        return in_array($trimmed[0], ['=', '+', '-', '@'], true) ? "'" . $value : $value;
+    }, $row);
 }
 
 function e(mixed $value): string

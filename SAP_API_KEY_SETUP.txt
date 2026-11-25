@@ -1,0 +1,18 @@
+SAP S/4HANA API KEY SUPPORT — IMPLEMENTED
+
+Existing SAP Integration module, mapping, sync logs, staging, preview, and dashboard publishing are preserved.
+
+1. Back up database and application before deployment.
+2. Deploy updated PHP files. On first SAP integration visit, the schema adds API-key columns and expands auth_type.
+3. Log in as Super Admin > Administration > SAP S/4HANA Integration.
+4. Choose "SAP Sandbox API Key" under Authentication.
+5. Set the header name according to YOUR sandbox documentation (often APIKey or x-api-key).
+6. Enter a newly rotated API key into the dashboard settings; it is encrypted at rest using existing SapCredentialCipher.
+7. Supply real HTTPS SAP base URL and the three OData collection endpoints, from SAP team.
+8. Configure Plant / Storage Location -> Division mappings and material field mappings.
+9. Run Test Connection, Preview Sync, then controlled Sync Now.
+10. Leave "Publish to Dashboard" OFF until stock valuation field and mapping are verified.
+
+IMPORTANT: No API key is embedded in the delivered source. Rotate the key previously shared in chat.
+The application cannot successfully test SAP without real URLs and matching API authorization.
+SECURITY: Protect config/sap_secret.php and avoid distributing it publicly; review credentials and secrets before production.

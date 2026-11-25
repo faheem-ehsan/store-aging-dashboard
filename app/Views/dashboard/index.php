@@ -152,13 +152,13 @@ $dashboardDivisionTitle = !empty($pageDivision) && !empty($pageDivision['name'])
     ? (string)$pageDivision['name']
     : 'All Divisions';
 $dashboardWelcomeText = 'Finish Goods Stock Aging Dashboard | ' . $dashboardDivisionTitle;
-$dashboardLastUpdatedLabel = 'No update recorded';
-if (!empty($lastStockUpdatedAt)) {
-    try {
-        $dashboardLastUpdatedLabel = (new \DateTimeImmutable((string)$lastStockUpdatedAt))->format('d/M/Y');
-    } catch (\Throwable $e) {
-        $dashboardLastUpdatedLabel = (string)$lastStockUpdatedAt;
-    }
+// When SAP publishing is enabled, show the date of the last successful SAP
+// stock synchronization. Until SAP is configured, retain the existing
+// testing-phase "yesterday" behavior.
+if (!empty($sapLastStockUpdatedAt)) {
+    $dashboardLastUpdatedLabel = format_app_date($sapLastStockUpdatedAt);
+} else {
+    $dashboardLastUpdatedLabel = (new \DateTimeImmutable('yesterday'))->format('d/M/Y');
 }
 
 $lastUpdateDivisionCode = trim((string)($lastStockUpdateInfo['division_code'] ?? ''));
@@ -230,7 +230,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
         </span>
         <div class="division-selector-content">
             <small>Division</small>
-            <?php if ($user['role'] === 'super_admin' || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
+            <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
                 <form method="get" action="<?= e(url('/')) ?>" class="dashboard-division-form">
                     <select name="division_id" onchange="this.form.submit()" aria-label="Select division">
                         <option value="">All Divisions</option>
@@ -259,21 +259,6 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
                 <strong><?= e($dashboardLastUpdatedLabel) ?></strong>
             </div>
 
-            <div class="dashboard-update-division">
-                <?php if ($dashboardLastUpdateScopeLabel !== ''): ?>
-                    <span><?= e($dashboardLastUpdateScopeLabel) ?></span>
-                <?php endif; ?>
-                <div class="dashboard-update-division-value">
-                    <?php if ($lastUpdateDivisionCode !== ''): ?>
-                        <b class="dashboard-update-code"><?= e($lastUpdateDivisionCode) ?></b>
-                    <?php endif; ?>
-                    <?php if ($lastUpdateDivisionName !== ''): ?>
-                        <b class="dashboard-update-name"><?= e($lastUpdateDivisionName) ?></b>
-                    <?php else: ?>
-                        <b class="dashboard-update-name"><?= e($dashboardLastUpdateDivision) ?></b>
-                    <?php endif; ?>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -354,7 +339,7 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
                             <svg viewBox="0 0 24 24" fill="none"><path d="M4 7.5h16v9H4v-9Zm3 4.5h.01M17 12h.01M12 9.5c1.38 0 2.5 1.12 2.5 2.5s-1.12 2.5-2.5 2.5-2.5-1.12-2.5-2.5 1.12-2.5 2.5-2.5Z" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>
                         </span>
                         <span>
-                            <small>Total Stock Value</small>
+                            <small>Total Stock Retail Value</small>
                             <strong>Rs/ <?= $dashboardStockValue($gs['value']) ?></strong>
                         </span>
                     </div>
@@ -625,11 +610,22 @@ ksort($modalLocations);
             const stats = divisionStats[divisionDef.code] || {batches: 0, qty: 0, value: 0};
             const item = document.createElement('div');
             item.className = 'grade-division-summary-row';
-            item.innerHTML =
-                '<span class="grade-division-name"><b>' + divisionDef.code + '</b> — ' + divisionDef.name + '</span>' +
-                '<strong>' + Number(stats.batches || 0).toLocaleString() + '</strong>' +
-                '<strong>' + Math.round(Number(stats.qty || 0)).toLocaleString() + '</strong>' +
-                '<strong>Rs/ ' + dashboardStockValue(Number(stats.value || 0)) + '</strong>';
+            // Build with textContent only: division code/name are data, never HTML.
+            const nameEl = document.createElement('span');
+            nameEl.className = 'grade-division-name';
+            const codeEl = document.createElement('b');
+            codeEl.textContent = String(divisionDef.code || '');
+            nameEl.append(codeEl, ' — ' + String(divisionDef.name || ''));
+            item.appendChild(nameEl);
+            [
+                Number(stats.batches || 0).toLocaleString(),
+                Math.round(Number(stats.qty || 0)).toLocaleString(),
+                'Rs/ ' + dashboardStockValue(Number(stats.value || 0))
+            ].forEach(function (text) {
+                const cell = document.createElement('strong');
+                cell.textContent = text;
+                item.appendChild(cell);
+            });
             divisionBarsList.appendChild(item);
         });
     }
@@ -723,7 +719,12 @@ ksort($modalLocations);
         Object.keys(uomTotals).sort().forEach(function (uom) {
             const chip = document.createElement('div');
             chip.className = 'grade-modal-uom-chip grade-modal-uom-chip-full';
-            chip.innerHTML = '<span>' + uomTotals[uom].label + '</span><strong>' + dashboardNumber(uomTotals[uom].qty) + '</strong>';
+            // UoM labels come from imported stock data: insert as text, never HTML.
+            const labelEl = document.createElement('span');
+            labelEl.textContent = String(uomTotals[uom].label || '');
+            const uomQtyEl = document.createElement('strong');
+            uomQtyEl.textContent = dashboardNumber(uomTotals[uom].qty);
+            chip.append(labelEl, uomQtyEl);
             uomsEl.appendChild(chip);
         });
         resultText.textContent = 'Showing ' + count.toLocaleString() + ' batch' + (count === 1 ? '' : 'es');

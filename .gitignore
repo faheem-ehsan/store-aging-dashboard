@@ -1,0 +1,22 @@
+# Secrets: keep out of version control. Provide via environment variables
+# (MAIL_SECRET_KEY, SAP_SECRET_KEY) or local files that are never committed.
+.env
+config/mail_secret.php
+config/sap_secret.php
+
+# Database dumps with real data (schema.sql and migrations stay tracked).
+database/store_aging.sql
+database/updated/
+database/10-04-2026/
+*.sql.gz
+
+# Archives / backups
+*.zip
+*.rar
+*.7z
+*.bak
+
+# Runtime data
+state/
+public/uploads/users/*
+!public/uploads/users/.gitkeep

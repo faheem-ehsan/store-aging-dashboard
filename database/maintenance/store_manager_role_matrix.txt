@@ -1,0 +1,32 @@
+STORE MANAGER ROLE MATRIX
+=========================
+
+Store Manager is a strict global operational role.
+
+ALLOWED
+-------
+- Dashboard: All Divisions and individual Division selection
+- Finish Goods Aging: All Divisions, search/filter, add, edit, delete, multi-select delete, CSV import
+- Market Returns: All Divisions, add, edit, delete, XLSX/CSV import
+- Daily Stock Reports: All Divisions, generate/refresh, compare, export, verify
+
+NOT ALLOWED
+-----------
+- Administration page
+- Divisions configuration
+- Grading Criteria configuration
+- User Management
+- Activity Logs administration
+- Market Return Division Mapping administration
+- Grade Email Alert configuration
+- Division-level bulk delete tools located under Administration
+
+DATABASE
+--------
+Run once on an existing database:
+  database/migrations/014_add_store_manager_role.sql
+
+LOGIN
+-----
+Store Manager uses the dedicated login selection:
+  Store Manager — All Divisions

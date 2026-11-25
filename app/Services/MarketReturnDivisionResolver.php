@@ -2,6 +2,7 @@
 namespace App\Services;
 
 use App\Core\Database;
+use App\Core\Auth;
 use App\Models\MarketReturnDivisionMapping;
 
 class MarketReturnDivisionResolver
@@ -83,13 +84,13 @@ class MarketReturnDivisionResolver
         $unmatched = [];
         $stats = [];
 
-        $isSuper = ($user['role'] ?? '') === 'super_admin';
-        $lockedDivisionId = !$isSuper ? (int)($user['division_id'] ?? 0) : 0;
+        $isGlobalOperator = Auth::isGlobalOperator($user);
+        $lockedDivisionId = !$isGlobalOperator ? (int)($user['division_id'] ?? 0) : 0;
 
         foreach ($items as $index => $item) {
             $resolution = null;
 
-            if (!$isSuper) {
+            if (!$isGlobalOperator) {
                 $division = $this->divisions[$lockedDivisionId] ?? null;
                 if (!$division) {
                     $unmatched[] = $this->unmatchedRow($item, $index, 'Your login division is inactive or unavailable.');

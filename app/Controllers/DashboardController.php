@@ -5,6 +5,7 @@ use App\Core\Auth;
 use App\Core\View;
 use App\Models\Division;
 use App\Models\StockBatch;
+use App\Models\SapIntegration;
 use App\Services\GradeService;
 
 class DashboardController
@@ -13,14 +14,24 @@ class DashboardController
     {
         $user = Auth::requireLogin();
         $divisionId = isset($_GET['division_id']) && $_GET['division_id'] !== '' ? (int)$_GET['division_id'] : null;
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) $divisionId = (int)$user['division_id'];
 
         $stockBatchModel = new StockBatch();
         $rows = $stockBatchModel->allAccessible($user, ['division_id' => $divisionId]);
         $lastStockUpdateInfo = $stockBatchModel->latestUpdateInfo($user, $divisionId);
         $lastStockUpdatedAt = $lastStockUpdateInfo['updated_at'] ?? null;
+        $sapLastStockUpdatedAt = null;
+        try {
+            $sapIntegration = new SapIntegration();
+            if ($sapIntegration->isPublishingEnabled()) {
+                $sapLastStockUpdatedAt = $sapIntegration->latestSuccessfulStockSync($divisionId);
+            }
+        } catch (\Throwable $e) {
+            // Keep the dashboard available even if the optional SAP integration
+            // has not been installed/configured yet.
+            $sapLastStockUpdatedAt = null;
+        }
         $grader = new GradeService();
         $rows = array_map(fn($r) => $grader->enrich($r), $rows);
 
@@ -115,6 +126,7 @@ class DashboardController
             'gradeCriteria' => $gradeCriteria,
             'lastStockUpdatedAt' => $lastStockUpdatedAt,
             'lastStockUpdateInfo' => $lastStockUpdateInfo,
+            'sapLastStockUpdatedAt' => $sapLastStockUpdatedAt,
         ]);
     }
 }

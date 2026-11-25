@@ -55,11 +55,11 @@ class LogController
         do {
             $rows = $model->search($filters, 500, $offset);
             foreach ($rows as $row) {
-                fputcsv($out, [
+                fputcsv($out, csv_safe([
                     format_app_datetime($row['created_at']), $row['actor_name'], $row['actor_email'], $row['actor_role'],
                     $row['division_code'], $row['action'], $row['entity_type'], $row['entity_id'],
                     $row['description'], $row['ip_address'], $row['details_json'],
-                ]);
+                ]));
             }
             $offset += count($rows);
         } while (count($rows) === 500);

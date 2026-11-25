@@ -14,7 +14,7 @@ class MarketReturnController
 {
     private function canManage(array $user): bool
     {
-        return in_array($user['role'] ?? '', ['super_admin', 'division_admin'], true);
+        return Auth::canManageOperational($user);
     }
 
     private function marketReturnReturnParams(array $source): array
@@ -197,8 +197,7 @@ class MarketReturnController
             'value_status' => trim((string)($_GET['value_status'] ?? '')),
             'expiry_bucket' => trim((string)($_GET['expiry_bucket'] ?? '')),
         ];
-        $canReadAllDivisions = ($user['role'] ?? '') === 'super_admin'
-            || (($user['role'] ?? '') === 'user' && empty($user['division_id']));
+        $canReadAllDivisions = Auth::canReadAllDivisions($user);
         if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $divisions = (new Division())->all(true);
@@ -303,6 +302,9 @@ class MarketReturnController
             'expiryBuckets' => $expiryBuckets,
             'expiryMetrics' => $expiryMetrics,
             'canManage' => $this->canManage($user),
+            'canAdd' => Auth::canAddOperational($user),
+            'canEdit' => Auth::canEditOperational($user),
+            'canDelete' => Auth::canDeleteOperational($user),
             'selectedDivisionLabel' => trim($selectedDivisionLabel, ' —'),
             'databaseReady' => $databaseReady,
             'databaseError' => $databaseError,
@@ -313,17 +315,17 @@ class MarketReturnController
     public function create(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         View::render('market_return/form', [
             'title' => 'Add Market Return Item',
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'categories' => $this->marketReturnCategories(
                 $user,
-                $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) ?: null : (int)$user['division_id']
+                Auth::isGlobalOperator($user) ? (int)($_GET['division_id'] ?? 0) ?: null : (int)$user['division_id']
             ),
             'item' => null,
-            'selectedDivisionId' => $user['role'] === 'super_admin' ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
+            'selectedDivisionId' => Auth::isGlobalOperator($user) ? (int)($_GET['division_id'] ?? 0) : (int)$user['division_id'],
             'selectedCategory' => trim((string)($_GET['category'] ?? '')),
         ]);
     }
@@ -332,7 +334,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         $data = $this->payload($user);
         $error = $this->validate($data);
         if ($error) {
@@ -352,7 +354,7 @@ class MarketReturnController
     public function edit(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_GET['id'] ?? 0);
         $item = (new MarketReturnItem())->findAccessible($id, $user);
         if (!$item) {
@@ -378,7 +380,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
         $returnParams = $this->marketReturnReturnParams($_POST);
         $returnPath = $this->marketReturnReturnPath($returnParams);
@@ -409,7 +411,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canDeleteOperational($user)) $this->forbidden();
         $id = (int)($_POST['id'] ?? 0);
         $returnParams = $this->marketReturnReturnParams($_POST);
         $returnPath = $this->marketReturnReturnPath($returnParams);
@@ -493,13 +495,14 @@ class MarketReturnController
     public function importForm(): void
     {
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         View::render('market_return/import', [
             'title' => 'Market Return Store Import',
             'user' => $user,
             'divisions' => (new Division())->all(true),
             'categories' => MarketReturnImporter::CATEGORIES,
             'result' => null,
+            'canDelete' => Auth::canDeleteOperational($user),
         ]);
     }
 
@@ -507,7 +510,7 @@ class MarketReturnController
     {
         verify_csrf();
         $user = Auth::requireLogin();
-        if (!$this->canManage($user)) $this->forbidden();
+        if (!Auth::canAddOperational($user)) $this->forbidden();
         $divisions = (new Division())->all(true);
         $categories = $this->marketReturnCategories($user);
         $result = [
@@ -559,6 +562,9 @@ class MarketReturnController
             }
 
             $replaceRequested = isset($_POST['replace_existing']) && $_POST['replace_existing'] === '1';
+            if ($replaceRequested && !Auth::canDeleteOperational($user)) {
+                throw new \RuntimeException('Replace Existing requires Delete permission.');
+            }
             $replace = $replaceRequested;
             if ($replaceRequested && !empty($resolved['unmatched'])) {
                 $replace = false;
@@ -687,7 +693,7 @@ class MarketReturnController
 
     private function payload(array $user): array
     {
-        $divisionId = $user['role'] === 'super_admin' ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'];
+        $divisionId = Auth::isGlobalOperator($user) ? (int)($_POST['division_id'] ?? 0) : (int)$user['division_id'];
         $retail = trim((string)($_POST['retail_price'] ?? ''));
         $amount = trim((string)($_POST['total_amount'] ?? ''));
         return [

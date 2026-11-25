@@ -6,7 +6,7 @@
                 <p>This importer is completely separate from the Stock Aging CSV importer.</p>
             </div>
             <div class="market-return-template-actions">
-                <?php if ($user['role'] === 'super_admin'): ?><a class="btn ghost" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a><?php endif; ?>
+                <?php if (($user['role'] ?? '') === 'super_admin'): ?><a class="btn ghost" href="<?= e(url('/market-return/mapping')) ?>">Division Mapping</a><?php endif; ?>
                 <a class="btn ghost" href="<?= e(url('/market-return/import-template')) ?>">Download XLSX Workbook Template</a>
                 <a class="btn ghost" href="<?= e(url('/market-return/csv-template')) ?>">Download CSV Template</a>
             </div>
@@ -16,13 +16,13 @@
             <strong>Workbook mode</strong>
             <p>Upload the same multi-sheet format you supplied. Recognized sheets are Cabinets, Export Stock, Promotion Items, RawalKot stock, Tablet Strips, Fresh Saleable Stock final, Utilizable Stock and Expired.</p>
             <strong>Automatic division and category assignment</strong>
-            <?php if ($user['role'] === 'super_admin'): ?>
+            <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true)): ?>
                 <p>No Target Division selection is required. The importer assigns every row automatically. It first uses a Division column when present, then the independent Market Return Division Mapping, then prior Market Return assignments. The Stock Aging product/material master is not used by this module.</p>
             <?php else: ?>
                 <p>Your login is locked to <b><?= e(($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? '')) ?></b>. All imported rows are automatically assigned to this division.</p>
             <?php endif; ?>
             <strong>Safety</strong>
-            <p>If Super Admin uploads a row that cannot be matched to one unique division, that row is not guessed. It is shown in the import result as an unmatched item so it cannot be stored under the wrong division.</p>
+            <p>If a Super Admin or Store Manager uploads a row that cannot be matched to one unique division, that row is not guessed. It is shown in the import result as an unmatched item so it cannot be stored under the wrong division.</p>
             <p><b>Fixed CSV / Excel date format:</b> DD/MON/YYYY for Expiry and Report Date, for example 31/Aug/2027 and 24/Sep/2026. Real Excel date cells are accepted when displayed as <b>dd/mmm/yyyy</b>. SQL stores dates automatically as YYYY-MM-DD.</p>
             <p><b>CSV Category and Section are automatic.</b> S. No. is not required. Any new Category or Section value in the CSV is accepted automatically and stored as a new group. If Category is written once at the start of a block, following blank category cells can inherit it.</p>
         </div>
@@ -34,7 +34,7 @@
                     <span class="auto-division-icon">AUTO</span>
                     <span>
                         <b>Division Assignment</b>
-                        <small><?= $user['role'] === 'super_admin' ? 'Detected from file / Market Return mapping' : e(($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? '')) ?></small>
+                        <small><?= in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) ? 'Detected from file / Market Return mapping' : e(($user['division_code'] ?? '') . ' — ' . ($user['division_name'] ?? '')) ?></small>
                     </span>
                 </div>
                 <div class="auto-category-status">
@@ -52,10 +52,16 @@
                 <input type="file" name="market_return_file" accept=".xlsx,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/csv" required>
             </label>
 
+            <?php if (!empty($canDelete)): ?>
             <label class="market-return-replace-option">
                 <input type="checkbox" name="replace_existing" value="1" <?= !isset($_POST['replace_existing']) || $_POST['replace_existing'] === '1' ? 'checked' : '' ?>>
                 <span><b>Replace existing records for the identified Division + Category + Section groups</b><small>A new Category or Section is added as a new group. Existing data in other Sections is not removed.</small></span>
             </label>
+            <?php else: ?>
+            <div class="market-return-replace-option permission-readonly-note">
+                <span><b>Append-only import</b><small>Your Division Admin account does not have Delete permission, so existing Market Return records cannot be replaced.</small></span>
+            </div>
+            <?php endif; ?>
 
             <div class="form-actions">
                 <a class="btn ghost" href="<?= e(url('/market-return')) ?>">Back to Module Dashboard</a>

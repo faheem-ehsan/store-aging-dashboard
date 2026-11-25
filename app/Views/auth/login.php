@@ -7,6 +7,7 @@
         <label>Division
             <select name="division_id" required>
                 <option value="super">Super Admin</option>
+                <option value="manager">Store Manager — All Divisions</option>
                 <option value="all">All Divisions — Read-only User</option>
                 <?php foreach ($divisions as $d): ?>
                     <option value="<?= (int)$d['id'] ?>"><?= e($d['code']) ?> — <?= e($d['name']) ?></option>

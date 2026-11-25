@@ -7,10 +7,9 @@ class SecretCipher
 
     public function __construct()
     {
-        $secretFile = ROOT_PATH . '/config/mail_secret.php';
-        $secret = is_file($secretFile) ? (string)require $secretFile : '';
+        $secret = app_secret('MAIL_SECRET_KEY', 'mail_secret.php');
         if ($secret === '') {
-            throw new \RuntimeException('Mail encryption key is missing.');
+            throw new \RuntimeException('Mail encryption key is missing. Set MAIL_SECRET_KEY or config/mail_secret.php.');
         }
         $this->key = hash('sha256', $secret, true);
     }
