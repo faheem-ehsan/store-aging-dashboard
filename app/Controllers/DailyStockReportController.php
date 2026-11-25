@@ -13,6 +13,7 @@ class DailyStockReportController
     private function requireAccess(): array
     {
         $user = Auth::requireLogin();
+        if (!in_array($user['role'] ?? '', ['super_admin','store_manager','division_admin'], true)) {
             http_response_code(403);
             View::render('errors/403', ['title' => 'Forbidden']);
             exit;
@@ -258,6 +259,7 @@ class DailyStockReportController
         $divisionId = $this->allowedDivisionId($user, $_POST['division_id'] ?? 0);
 
         try {
+            if (Auth::isGlobalOperator($user) && !$divisionId) {
                 $result = $service->generateAllActive($reportDate, $user, 'manual', false);
                 $message = number_format((int)$result['generated']) . ' division snapshot(s) generated/refreshed.';
                 if ((int)$result['failed'] > 0) {
@@ -372,7 +374,7 @@ class DailyStockReportController
         ]);
 
         foreach ($rows as $row) {
-
+            fputcsv($out, csv_safe([
                 format_app_date($row['report_date']),
                 $row['division_code'],
                 $row['division_name'],
@@ -389,6 +391,7 @@ class DailyStockReportController
                 $row['generation_type'],
                 format_app_datetime($row['generated_at']),
                 !empty($row['verified_at']) ? format_app_datetime($row['verified_at']) : '',
+            ]));
         }
 
         fclose($out);

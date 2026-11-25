@@ -14,6 +14,8 @@ use App\Controllers\MarketReturnMappingController;
 use App\Controllers\AdminController;
 use App\Controllers\EmailNotificationController;
 use App\Controllers\DailyStockReportController;
+use App\Controllers\ProductMasterController;
+use App\Controllers\SapIntegrationController;
 
 $router = new Router();
 
