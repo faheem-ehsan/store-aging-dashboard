@@ -11,6 +11,51 @@ use App\Services\AuditLogger;
 
 class StockController
 {
+    /**
+     * Per-module settings. Raw Material Aging (RawMaterialController) reuses this
+     * controller and the stocks/* views with its own MODULE values.
+     */
+    public const MODULE = [
+        'key' => 'fg',
+        'base' => '/stocks',
+        'name' => 'Finish Goods',
+        'index_title' => 'Stock Aging Dashboard',
+        'code_label' => 'Product Code',
+        'name_label' => 'Product Name',
+        'value_label' => 'Retail Stock Value',
+        'value_summary_label' => 'Current Retail Stock Value',
+        'uses_product_master' => true,
+        'master_name' => 'Product Master',
+        'master_item' => 'product',
+        'audit_prefix' => 'BATCH',
+        'audit_entity' => 'stock_batch',
+        'audit_bulk_entity' => 'stock_division_bulk_delete',
+        'import_action' => 'CSV_IMPORT',
+        'save_hint' => ' Run database/migrations/002_add_dispatch_stock_fields.sql if this upgrade was just installed.',
+        'bulk_keeps' => 'Divisions, users, grading criteria and Market Return data were not deleted.',
+        'bulk_modal_keeps' => 'Divisions, users, grading criteria, materials and Market Return records remain unchanged.',
+        'template_file' => 'qarshi_dispatch_stock_import_template.csv',
+        'template_example' => ['100409', 'SPRINGLEY 500 ML (1*12)', '2085', 'CS', '505946.10', 'SP180926', '18/Sep/2026', '18/Sep/2027', 'FW02'],
+        'uom_placeholder' => 'e.g. CS, PCS, BT',
+        'location_placeholder' => 'e.g. FW02',
+        'search_placeholder' => 'Product code, product name or batch no...',
+    ];
+
+    protected function module(): array
+    {
+        return static::MODULE;
+    }
+
+    protected function masterModel(): ProductMaster
+    {
+        return new ProductMaster();
+    }
+
+    protected function batchModel(): StockBatch
+    {
+        return new StockBatch();
+    }
+
     private function canManage(array $user): bool
     {
         return Auth::canManageOperational($user);
@@ -57,7 +102,7 @@ class StockController
 
     private function stockReturnPath(array $params): string
     {
-        return '/stocks' . ($params ? '?' . http_build_query($params) : '');
+        return $this->module()['base'] . ($params ? '?' . http_build_query($params) : '');
     }
 
     private function stockReturnInputParams(array $params): array
@@ -94,7 +139,7 @@ class StockController
         if (!$canReadAllDivisions) $filters['division_id'] = (int)$user['division_id'];
 
         $grader = new GradeService();
-        $stockBatchModel = new StockBatch();
+        $stockBatchModel = $this->batchModel();
         $rows = array_map(fn($r) => $grader->enrich($r), $stockBatchModel->allAccessible($user, $filters));
         if ($filters['grade'] !== '') {
             $rows = array_values(array_filter($rows, fn($r) => $r['grade']['grade_code'] === $filters['grade']));
@@ -139,7 +184,8 @@ class StockController
             : [];
 
         View::render('stocks/index', [
-            'title' => 'Stock Aging Dashboard',
+            'module' => $this->module(),
+            'title' => $this->module()['index_title'],
             'user' => $user,
             'rows' => $rows,
             'filters' => $filters,
@@ -174,11 +220,12 @@ class StockController
             : ($user['division_code'] ?? '');
         $title = $divisionCode !== '' ? $divisionCode . ' Add Batch' : 'Division Add Batch';
 
-        $products = $selectedDivisionId > 0
-            ? (new ProductMaster())->activeByDivision($selectedDivisionId)
+        $products = $selectedDivisionId > 0 && $this->module()['uses_product_master']
+            ? $this->masterModel()->activeByDivision($selectedDivisionId)
             : [];
 
         View::render('stocks/form', [
+            'module' => $this->module(),
             'title' => $title,
             'user' => $user,
             'divisions' => $divisions,
@@ -204,7 +251,7 @@ class StockController
                 if (!Auth::isGlobalOperator($user) && $divisionId !== (int)$user['division_id']) {
                     $this->forbidden();
                 }
-                $products = (new ProductMaster())->activeByDivision($divisionId);
+                $products = $this->masterModel()->activeByDivision($divisionId);
             }
         }
 
@@ -230,14 +277,16 @@ class StockController
         $user = Auth::requireLogin();
         if (!Auth::canAddOperational($user)) $this->forbidden();
         $data = $this->payload($user);
-        $createPath = '/stocks/create' . (
+        $createPath = $this->module()['base'] . '/create' . (
             Auth::isGlobalOperator($user) && (int)$data['division_id'] > 0
                 ? '?division_id=' . (int)$data['division_id']
                 : ''
         );
 
         try {
-            $data = $this->applyProductMasterForCreate($data, $user);
+            if ($this->module()['uses_product_master']) {
+                $data = $this->applyProductMasterForCreate($data, $user);
+            }
         } catch (\Throwable $e) {
             flash('error', $e->getMessage());
             redirect($createPath);
@@ -249,13 +298,13 @@ class StockController
             redirect($createPath);
         }
         try {
-            $model = new StockBatch();
+            $model = $this->batchModel();
             $id = $model->save($data, $user);
             $saved = $model->findAccessible($id, $user);
             AuditLogger::log(
-                'BATCH_CREATE',
+                $this->module()['audit_prefix'] . '_CREATE',
                 'Created batch ' . $data['batch_no'] . ' for material ' . $data['material_code'] . '.',
-                'stock_batch',
+                $this->module()['audit_entity'],
                 $id,
                 [
                     'material_no' => $data['material_code'],
@@ -273,9 +322,9 @@ class StockController
             );
             flash('success', 'Stock batch added.');
         } catch (\Throwable $e) {
-            flash('error', 'Unable to save batch. Run database/migrations/002_add_dispatch_stock_fields.sql if this upgrade was just installed.');
+            flash('error', 'Unable to save batch.' . $this->module()['save_hint']);
         }
-        redirect('/stocks');
+        redirect($this->module()['base']);
     }
 
     public function edit(): void
@@ -283,12 +332,13 @@ class StockController
         $user = Auth::requireLogin();
         if (!Auth::canEditOperational($user)) $this->forbidden();
         $id = (int)($_GET['id'] ?? 0);
-        $batch = (new StockBatch())->findAccessible($id, $user);
+        $batch = ($this->batchModel())->findAccessible($id, $user);
         if (!$batch) { http_response_code(404); View::render('errors/404', ['title'=>'Not Found']); return; }
 
         $returnParams = $this->stockReturnParams($_GET);
 
         View::render('stocks/form', [
+            'module' => $this->module(),
             'title' => 'Edit Batch',
             'user' => $user,
             'divisions' => (new Division())->all(true),
@@ -314,17 +364,17 @@ class StockController
         $error = $this->validate($data);
         if ($error) {
             flash('error', $error);
-            redirect('/stocks/edit?' . $editReturnQuery);
+            redirect($this->module()['base'] . '/edit?' . $editReturnQuery);
         }
         try {
-            $model = new StockBatch();
+            $model = $this->batchModel();
             $before = $model->findAccessible($id, $user);
             $model->save($data, $user, $id);
             $after = $model->findAccessible($id, $user);
             AuditLogger::log(
-                'BATCH_UPDATE',
+                $this->module()['audit_prefix'] . '_UPDATE',
                 'Updated batch ' . $data['batch_no'] . ' for material ' . $data['material_code'] . '.',
-                'stock_batch',
+                $this->module()['audit_entity'],
                 $id,
                 [
                     'before' => $before ? $this->batchLogSnapshot($before) : null,
@@ -343,7 +393,7 @@ class StockController
             );
             flash('success', 'Stock batch updated.');
         } catch (\Throwable $e) {
-            flash('error', 'Unable to update batch. Run database/migrations/002_add_dispatch_stock_fields.sql if needed.');
+            flash('error', 'Unable to update batch.' . $this->module()['save_hint']);
         }
         redirect($returnPath);
     }
@@ -357,14 +407,14 @@ class StockController
         $returnParams = $this->stockReturnParams($_POST);
         $returnPath = $this->stockReturnPath($returnParams);
 
-        $model = new StockBatch();
+        $model = $this->batchModel();
         $before = $model->findAccessible($id, $user);
         $model->delete($id, $user);
         if ($before) {
             AuditLogger::log(
-                'BATCH_DELETE',
+                $this->module()['audit_prefix'] . '_DELETE',
                 'Deleted batch ' . $before['batch_no'] . ' for material ' . $before['material_code'] . '.',
-                'stock_batch',
+                $this->module()['audit_entity'],
                 $id,
                 $this->batchLogSnapshot($before),
                 $user,
@@ -394,12 +444,12 @@ class StockController
         )));
 
         if (!$ids) {
-            flash('error', 'Select at least one Finish Goods record to delete.');
+            flash('error', 'Select at least one ' . $this->module()['name'] . ' record to delete.');
             redirect($returnPath);
         }
 
         try {
-            $model = new StockBatch();
+            $model = $this->batchModel();
 
             if (($user['role'] ?? '') === 'division_admin') {
                 $allowedIds = [];
@@ -442,11 +492,11 @@ class StockController
 
             foreach ($divisionGroups as $divisionId => $group) {
                 AuditLogger::log(
-                    'BATCH_MULTI_DELETE',
+                    $this->module()['audit_prefix'] . '_MULTI_DELETE',
                     'Deleted ' . number_format((int)$group['count']) .
-                        ' selected Finish Goods batch record(s) for division ' .
+                        ' selected ' . $this->module()['name'] . ' batch record(s) for division ' .
                         ($group['division_code'] ?: (string)$divisionId) . '.',
-                    'stock_batch_multi_delete',
+                    $this->module()['audit_entity'] . '_multi_delete',
                     (string)$divisionId,
                     [
                         'deleted_batches' => (int)$group['count'],
@@ -467,10 +517,10 @@ class StockController
             if ($deleted > 0) {
                 flash(
                     'success',
-                    number_format($deleted) . ' selected Finish Goods record(s) deleted successfully.'
+                    number_format($deleted) . ' selected ' . $this->module()['name'] . ' record(s) deleted successfully.'
                 );
             } else {
-                flash('error', 'The selected Finish Goods records were not found.');
+                flash('error', 'The selected ' . $this->module()['name'] . ' records were not found.');
             }
         } catch (\Throwable $e) {
             flash('error', 'Selected records could not be deleted. No partial deletion was saved.');
@@ -494,16 +544,16 @@ class StockController
 
         if (!$divisionIds) {
             flash('error', 'Select at least one Division for bulk deletion.');
-            redirect('/stocks');
+            redirect($this->module()['base']);
         }
 
         if (strtoupper(trim((string)($_POST['confirm_text'] ?? ''))) !== 'DELETE') {
             flash('error', 'Bulk delete was not completed. Type DELETE to confirm.');
-            redirect('/stocks');
+            redirect($this->module()['base']);
         }
 
         try {
-            $model = new StockBatch();
+            $model = $this->batchModel();
             $result = $model->bulkDeleteByDivisions($divisionIds);
 
             foreach ($result['divisions'] as $division) {
@@ -511,10 +561,10 @@ class StockController
                 if ($batchCount <= 0) continue;
 
                 AuditLogger::log(
-                    'BATCH_BULK_DELETE',
-                    'Bulk deleted ' . number_format($batchCount) . ' Finish Goods batch(es) for division ' .
+                    $this->module()['audit_prefix'] . '_BULK_DELETE',
+                    'Bulk deleted ' . number_format($batchCount) . ' ' . $this->module()['name'] . ' batch(es) for division ' .
                         ($division['division_code'] ?? '') . '.',
-                    'stock_division_bulk_delete',
+                    $this->module()['audit_bulk_entity'],
                     (string)($division['division_id'] ?? ''),
                     [
                         'deleted_batches' => $batchCount,
@@ -532,17 +582,17 @@ class StockController
             if ($deleted > 0) {
                 flash(
                     'success',
-                    number_format($deleted) . ' Finish Goods batch record(s) deleted from the selected Division(s). ' .
-                    'Divisions, users, grading criteria and Market Return data were not deleted.'
+                    number_format($deleted) . ' ' . $this->module()['name'] . ' batch record(s) deleted from the selected Division(s). ' .
+                    $this->module()['bulk_keeps']
                 );
             } else {
-                flash('success', 'No Finish Goods batches were found in the selected Division(s).');
+                flash('success', 'No ' . $this->module()['name'] . ' batches were found in the selected Division(s).');
             }
         } catch (\Throwable $e) {
             flash('error', 'Bulk delete could not be completed. No partial deletion was saved.');
         }
 
-        redirect('/stocks');
+        redirect($this->module()['base']);
     }
 
     public function importForm(): void
@@ -550,6 +600,8 @@ class StockController
         $user = Auth::requireLogin();
         if (!Auth::canAddOperational($user)) $this->forbidden();
         View::render('stocks/import', [
+            'module' => $this->module(),
+            'canEdit' => Auth::canEditOperational($user),
             'title' => 'CSV Import',
             'user' => $user,
             'divisions' => (new Division())->all(true),
@@ -662,7 +714,7 @@ class StockController
             return;
         }
 
-        $stockModel = new StockBatch();
+        $stockModel = $this->batchModel();
         $rowNumber = 1;
         while (($values = fgetcsv($handle, 0, $delimiter)) !== false) {
             $rowNumber++;
@@ -757,20 +809,22 @@ class StockController
         $user = Auth::requireLogin();
         if (!$this->canManage($user)) $this->forbidden();
         $division = Auth::isGlobalOperator($user) ? 'SNW' : ($user['division_code'] ?? 'SNW');
+        $module = $this->module();
+        [$code, $name, $qty, $uom, $value, $batch, $mfg, $exp, $location] = $module['template_example'];
 
         header('Content-Type: text/csv; charset=UTF-8');
-        header('Content-Disposition: attachment; filename="qarshi_dispatch_stock_import_template.csv"');
+        header('Content-Disposition: attachment; filename="' . $module['template_file'] . '"');
         echo "\xEF\xBB\xBF";
         $out = fopen('php://output', 'wb');
         fputcsv($out, [
-            'Division','Product Code','Product Name','Current Stock','UoM','Retail Stock Value','Batch No',
+            'Division',$module['code_label'],$module['name_label'],'Current Stock','UoM',$module['value_label'],'Batch No',
             'Manufacturing Date','Expiry Date','Aging (Days)','Aging Remaining (Days)','Stock Location'
         ]);
         // Example row follows the uploaded stock-aging report layout. Aging columns are
         // intentionally blank because the system calculates them when the file is imported.
         // Leading TAB keeps DD/MON/YYYY visible exactly as written when the CSV is opened in Excel.
         // normalizeCsvDate() trims it before converting to SQL YYYY-MM-DD.
-        fputcsv($out, [$division,'100409','SPRINGLEY 500 ML (1*12)','2085','CS','505946.10','SP180926',"\t18/Sep/2026","\t18/Sep/2027",'','','FW02']);
+        fputcsv($out, [$division,$code,$name,$qty,$uom,$value,$batch,"\t".$mfg,"\t".$exp,'','',$location]);
         fclose($out);
         exit;
     }
@@ -783,7 +837,7 @@ class StockController
         $targetDivision = $targetDivisionId > 0 ? (new Division())->find($targetDivisionId) : null;
         $fileName = basename((string)($_FILES['csv_file']['name'] ?? ''));
         AuditLogger::log(
-            'CSV_IMPORT',
+            $this->module()['import_action'],
             sprintf(
                 'CSV import completed: %d inserted, %d updated, %d skipped existing, %d failed.',
                 (int)($result['inserted'] ?? 0),
@@ -809,6 +863,8 @@ class StockController
         );
 
         View::render('stocks/import', [
+            'module' => $this->module(),
+            'canEdit' => Auth::canEditOperational($user),
             'title' => 'CSV Import',
             'user' => $user,
             'divisions' => (new Division())->all(true),
@@ -829,12 +885,12 @@ class StockController
 
         $productCode = trim((string)($data['material_code'] ?? ''));
         if ($productCode === '') {
-            throw new \RuntimeException('Select a Product from the approved Product Master.');
+            throw new \RuntimeException('Select a ' . $this->module()['master_item'] . ' from the approved ' . $this->module()['master_name'] . '.');
         }
 
-        $product = (new ProductMaster())->findActiveByDivisionCode($divisionId, $productCode);
+        $product = $this->masterModel()->findActiveByDivisionCode($divisionId, $productCode);
         if (!$product) {
-            throw new \RuntimeException('The selected Product is not active in the Product Master for this Division. Ask Super Admin to configure it first.');
+            throw new \RuntimeException('The selected ' . $this->module()['master_item'] . ' is not active in the ' . $this->module()['master_name'] . ' for this Division. Ask Super Admin to configure it first.');
         }
 
         // Canonical values always come from the Super Admin Product Master.
@@ -899,7 +955,7 @@ class StockController
         $map = [
             'division' => 'division', 'diviosn' => 'division',
             'material_no' => 'material_no', 'material_number' => 'material_no', 'material' => 'material_no', 'material_code' => 'material_no', 'product_code' => 'material_no', 'product_no' => 'material_no',
-            'material_des' => 'material_description', 'material_description' => 'material_description', 'description' => 'material_description', 'product_name' => 'material_description', 'product_description' => 'material_description',
+            'material_des' => 'material_description', 'material_description' => 'material_description', 'description' => 'material_description', 'product_name' => 'material_description', 'material_name' => 'material_description', 'product_description' => 'material_description',
             'current_qty' => 'current_qty', 'current_quantity' => 'current_qty', 'current_stock' => 'current_qty', 'qty' => 'current_qty', 'stock_qty' => 'current_qty',
             'stock_value' => 'stock_value', 'retail_stock_value' => 'stock_value', 'retail_value' => 'stock_value', 'value' => 'stock_value',
             'batch_no' => 'batch_no', 'batch_number' => 'batch_no', 'batch' => 'batch_no',

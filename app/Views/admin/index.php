@@ -39,6 +39,17 @@
                 <span class="admin-hub-arrow">→</span>
             </a>
 
+            <a class="admin-hub-card" href="<?= e(url('/admin/raw-materials')) ?>">
+                <span class="admin-hub-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M9 3h6M10 3v5.5L5.2 17.2A2.5 2.5 0 0 0 7.4 21h9.2a2.5 2.5 0 0 0 2.2-3.8L14 8.5V3M7.5 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="admin-hub-card-copy">
+                    <strong>Raw Material Master</strong>
+                    <small>Maintain Material Code, Material Name and UoM for every Division.</small>
+                </span>
+                <span class="admin-hub-arrow">→</span>
+            </a>
+
             <a class="admin-hub-card" href="<?= e(url('/admin/sap-integration')) ?>">
                 <span class="admin-hub-icon" aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none"><path d="M4 6h16v5H4V6Zm0 7h7v5H4v-5Zm9 0h7v5h-7v-5ZM7 8.5h.01M16 15.5h.01M17 8.5h.01" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -135,6 +146,17 @@
                 <span class="admin-hub-card-copy">
                     <strong>Finish Goods Bulk Delete</strong>
                     <small>Delete Finish Goods batch records by selected division.</small>
+                </span>
+                <span class="admin-hub-arrow">→</span>
+            </a>
+
+            <a class="admin-hub-card admin-hub-card-danger" href="<?= e(url('/raw-materials?bulk_delete=1')) ?>">
+                <span class="admin-hub-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M5 7h14M9 7V4h6v3m-8 0 1 13h8l1-13M10 11v5m4-5v5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="admin-hub-card-copy">
+                    <strong>Raw Material Bulk Delete</strong>
+                    <small>Delete Raw Material batch records by selected division.</small>
                 </span>
                 <span class="admin-hub-arrow">→</span>
             </a>

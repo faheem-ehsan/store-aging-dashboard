@@ -6,12 +6,18 @@ use App\Core\Auth;
 
 class StockBatch
 {
+    /** Batch and material tables; subclasses (e.g. Raw Material) point these at their own tables. */
+    protected string $batchTable = 'stock_batches';
+    protected string $materialTable = 'materials';
+    /** Only Finish Goods has the legacy stock_movements child table. */
+    protected bool $usesStockMovements = true;
+
     private function baseSelect(): string
     {
         return 'SELECT sb.*, m.material_code, m.description material_description,
                        d.code division_code, d.name division_name
-                FROM stock_batches sb
-                JOIN materials m ON m.id=sb.material_id
+                FROM ' . $this->batchTable . ' sb
+                JOIN ' . $this->materialTable . ' m ON m.id=sb.material_id
                 JOIN divisions d ON d.id=sb.division_id';
     }
 
@@ -48,7 +54,7 @@ class StockBatch
                        sb.division_id,
                        d.code division_code,
                        d.name division_name
-                FROM stock_batches sb
+                FROM ' . $this->batchTable . ' sb
                 JOIN divisions d ON d.id=sb.division_id
                 WHERE sb.updated_at IS NOT NULL';
         $params = [];
@@ -74,7 +80,7 @@ class StockBatch
 
     public function latestUpdatedAt(array $user, ?int $divisionId = null): ?string
     {
-        $sql = 'SELECT MAX(sb.updated_at) FROM stock_batches sb WHERE 1=1';
+        $sql = 'SELECT MAX(sb.updated_at) FROM ' . $this->batchTable . ' sb WHERE 1=1';
         $params = [];
 
         $canReadAllDivisions = Auth::canReadAllDivisions($user);
@@ -127,14 +133,14 @@ class StockBatch
         $divisionId = Auth::isGlobalOperator($user) ? (int)$data['division_id'] : (int)$user['division_id'];
         $pdo->beginTransaction();
         try {
-            $stmt = $pdo->prepare('SELECT id FROM materials WHERE division_id=? AND material_code=? LIMIT 1');
+            $stmt = $pdo->prepare('SELECT id FROM ' . $this->materialTable . ' WHERE division_id=? AND material_code=? LIMIT 1');
             $stmt->execute([$divisionId, trim($data['material_code'])]);
             $materialId = $stmt->fetchColumn();
             if ($materialId) {
-                $u = $pdo->prepare('UPDATE materials SET description=?, is_active=1 WHERE id=?');
+                $u = $pdo->prepare('UPDATE ' . $this->materialTable . ' SET description=?, is_active=1 WHERE id=?');
                 $u->execute([trim($data['material_description']), $materialId]);
             } else {
-                $i = $pdo->prepare('INSERT INTO materials (division_id,material_code,description,is_active) VALUES (?,?,?,1)');
+                $i = $pdo->prepare('INSERT INTO ' . $this->materialTable . ' (division_id,material_code,description,is_active) VALUES (?,?,?,1)');
                 $i->execute([$divisionId, trim($data['material_code']), trim($data['material_description'])]);
                 $materialId = (int)$pdo->lastInsertId();
             }
@@ -148,7 +154,7 @@ class StockBatch
                 $existing = $this->findAccessible($id, $user);
                 if (!$existing) throw new \RuntimeException('Batch not found or forbidden.');
                 $stmt = $pdo->prepare(
-                    'UPDATE stock_batches SET division_id=?,material_id=?,batch_no=?,manufacture_date=?,expiry_date=?,last_receipt_date=?,current_qty=?,stock_value=?,uom=?,receiving_store=?,updated_at=NOW() WHERE id=?'
+                    'UPDATE ' . $this->batchTable . ' SET division_id=?,material_id=?,batch_no=?,manufacture_date=?,expiry_date=?,last_receipt_date=?,current_qty=?,stock_value=?,uom=?,receiving_store=?,updated_at=NOW() WHERE id=?'
                 );
                 $stmt->execute([
                     $divisionId,$materialId,trim($data['batch_no']),$data['manufacture_date'],$data['expiry_date'],
@@ -156,7 +162,7 @@ class StockBatch
                 ]);
             } else {
                 $stmt = $pdo->prepare(
-                    'INSERT INTO stock_batches (division_id,material_id,batch_no,manufacture_date,expiry_date,last_receipt_date,current_qty,stock_value,uom,receiving_store)
+                    'INSERT INTO ' . $this->batchTable . ' (division_id,material_id,batch_no,manufacture_date,expiry_date,last_receipt_date,current_qty,stock_value,uom,receiving_store)
                      VALUES (?,?,?,?,?,?,?,?,?,?)'
                 );
                 $stmt->execute([
@@ -263,8 +269,8 @@ class StockBatch
             // Older databases may have a restrictive FK from stock_movements.
             // Remove only movement rows belonging to the selected batch IDs.
             try {
-                $tableCheck = $pdo->query("SHOW TABLES LIKE 'stock_movements'");
-                if ((bool)$tableCheck->fetchColumn()) {
+                $tableCheck = $this->usesStockMovements ? $pdo->query("SHOW TABLES LIKE 'stock_movements'") : null;
+                if ($tableCheck && (bool)$tableCheck->fetchColumn()) {
                     $movementDelete = $pdo->prepare(
                         "DELETE FROM stock_movements WHERE batch_id IN ($placeholders)"
                     );
@@ -277,7 +283,7 @@ class StockBatch
             }
 
             $batchDelete = $pdo->prepare(
-                "DELETE FROM stock_batches WHERE id IN ($placeholders)"
+                "DELETE FROM {$this->batchTable} WHERE id IN ($placeholders)"
             );
             $batchDelete->execute($existingIds);
             $deletedBatches = $batchDelete->rowCount();
@@ -305,7 +311,7 @@ class StockBatch
                        COALESCE(SUM(sb.current_qty),0) total_qty,
                        COALESCE(SUM(sb.stock_value),0) stock_value
                 FROM divisions d
-                LEFT JOIN stock_batches sb ON sb.division_id=d.id
+                LEFT JOIN ' . $this->batchTable . ' sb ON sb.division_id=d.id
                 GROUP BY d.id,d.code,d.name,d.is_active
                 ORDER BY d.code';
         return Database::connection()->query($sql)->fetchAll();
@@ -338,7 +344,7 @@ class StockBatch
                     COALESCE(SUM(sb.current_qty),0) total_qty,
                     COALESCE(SUM(sb.stock_value),0) stock_value
              FROM divisions d
-             LEFT JOIN stock_batches sb ON sb.division_id=d.id
+             LEFT JOIN {$this->batchTable} sb ON sb.division_id=d.id
              WHERE d.id IN ($placeholders)
              GROUP BY d.id,d.code,d.name
              ORDER BY d.code"
@@ -354,7 +360,7 @@ class StockBatch
             // Delete child rows explicitly so bulk deletion works safely regardless
             // of whether ON DELETE CASCADE is present.
             $movementTableExists = false;
-            try {
+            if ($this->usesStockMovements) try {
                 $tableCheck = $pdo->query("SHOW TABLES LIKE 'stock_movements'");
                 $movementTableExists = (bool)$tableCheck->fetchColumn();
             } catch (\Throwable $e) {
@@ -365,7 +371,7 @@ class StockBatch
                 $movementDelete = $pdo->prepare(
                     "DELETE sm
                      FROM stock_movements sm
-                     INNER JOIN stock_batches sb ON sb.id=sm.batch_id
+                     INNER JOIN {$this->batchTable} sb ON sb.id=sm.batch_id
                      WHERE sb.division_id IN ($placeholders)"
                 );
                 $movementDelete->execute($divisionIds);
@@ -373,7 +379,7 @@ class StockBatch
             }
 
             $batchDelete = $pdo->prepare(
-                "DELETE FROM stock_batches WHERE division_id IN ($placeholders)"
+                "DELETE FROM {$this->batchTable} WHERE division_id IN ($placeholders)"
             );
             $batchDelete->execute($divisionIds);
             $deletedBatches = $batchDelete->rowCount();
@@ -395,7 +401,7 @@ class StockBatch
     {
         $batch = $this->findAccessible($id, $user);
         if (!$batch) return;
-        $stmt = Database::connection()->prepare('DELETE FROM stock_batches WHERE id=?');
+        $stmt = Database::connection()->prepare('DELETE FROM ' . $this->batchTable . ' WHERE id=?');
         $stmt->execute([$id]);
     }
 }

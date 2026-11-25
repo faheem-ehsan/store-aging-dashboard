@@ -5,6 +5,9 @@ use App\Core\Database;
 
 class ProductMaster
 {
+    /** RawMaterialMaster points this at raw_material_master. */
+    protected string $table = 'product_master';
+
     public function ensureTable(): void
     {
         Database::connection()->exec("CREATE TABLE IF NOT EXISTS product_master (
@@ -28,7 +31,7 @@ class ProductMaster
         $this->ensureTable();
 
         $sql = "SELECT pm.*, d.code division_code, d.name division_name
-                FROM product_master pm
+                FROM {$this->table} pm
                 JOIN divisions d ON d.id=pm.division_id
                 WHERE 1=1";
         $params = [];
@@ -56,7 +59,7 @@ class ProductMaster
         $this->ensureTable();
         $stmt = Database::connection()->prepare(
             "SELECT pm.*, d.code division_code, d.name division_name
-             FROM product_master pm
+             FROM {$this->table} pm
              JOIN divisions d ON d.id=pm.division_id
              WHERE pm.division_id=? AND pm.is_active=1 AND d.is_active=1
              ORDER BY pm.product_code, pm.product_name"
@@ -70,7 +73,7 @@ class ProductMaster
         $this->ensureTable();
         $stmt = Database::connection()->prepare(
             "SELECT pm.*, d.code division_code, d.name division_name
-             FROM product_master pm
+             FROM {$this->table} pm
              JOIN divisions d ON d.id=pm.division_id
              WHERE pm.id=? LIMIT 1"
         );
@@ -83,7 +86,7 @@ class ProductMaster
         $this->ensureTable();
         $stmt = Database::connection()->prepare(
             "SELECT pm.*, d.code division_code, d.name division_name
-             FROM product_master pm
+             FROM {$this->table} pm
              JOIN divisions d ON d.id=pm.division_id
              WHERE pm.division_id=? AND pm.product_code=? AND pm.is_active=1 AND d.is_active=1
              LIMIT 1"
@@ -96,7 +99,7 @@ class ProductMaster
     {
         $this->ensureTable();
         $stmt = Database::connection()->prepare(
-            'INSERT INTO product_master (division_id,product_code,product_name,uom,is_active) VALUES (?,?,?,?,1)'
+            'INSERT INTO ' . $this->table . ' (division_id,product_code,product_name,uom,is_active) VALUES (?,?,?,?,1)'
         );
         $stmt->execute([
             $divisionId,
@@ -111,7 +114,7 @@ class ProductMaster
     {
         $this->ensureTable();
         $stmt = Database::connection()->prepare(
-            'UPDATE product_master SET division_id=?,product_code=?,product_name=?,uom=? WHERE id=?'
+            'UPDATE ' . $this->table . ' SET division_id=?,product_code=?,product_name=?,uom=? WHERE id=?'
         );
         $stmt->execute([
             $divisionId,
@@ -126,7 +129,7 @@ class ProductMaster
     {
         $this->ensureTable();
         $stmt = Database::connection()->prepare(
-            'UPDATE product_master SET is_active=IF(is_active=1,0,1) WHERE id=?'
+            'UPDATE ' . $this->table . ' SET is_active=IF(is_active=1,0,1) WHERE id=?'
         );
         $stmt->execute([$id]);
     }
@@ -134,7 +137,7 @@ class ProductMaster
     public function delete(int $id): void
     {
         $this->ensureTable();
-        $stmt = Database::connection()->prepare('DELETE FROM product_master WHERE id=?');
+        $stmt = Database::connection()->prepare('DELETE FROM ' . $this->table . ' WHERE id=?');
         $stmt->execute([$id]);
     }
 }

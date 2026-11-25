@@ -1,4 +1,6 @@
 <?php
+$module = $module ?? \App\Controllers\StockController::MODULE;
+$moduleBase = $module['base'];
 $stockQtyNumber = static function ($value): string {
     return number_format((int)round((float)$value));
 };
@@ -151,18 +153,18 @@ $baseTableParams = [
 ];
 $baseTableParams = array_filter($baseTableParams, static fn($value): bool => $value !== '' && $value !== null);
 
-$paginationUrl = static function (int $page) use ($baseTableParams): string {
+$paginationUrl = static function (int $page) use ($baseTableParams, $moduleBase): string {
     $params = $baseTableParams;
     $params['page'] = $page;
-    return url('/stocks') . '?' . http_build_query($params);
+    return url($moduleBase) . '?' . http_build_query($params);
 };
 
-$sortUrl = static function (string $column) use ($baseTableParams, $sortKey, $sortDir): string {
+$sortUrl = static function (string $column) use ($baseTableParams, $sortKey, $sortDir, $moduleBase): string {
     $params = $baseTableParams;
     $params['sort'] = $column;
     $params['dir'] = ($sortKey === $column && $sortDir === 'asc') ? 'desc' : 'asc';
     unset($params['page']);
-    return url('/stocks') . '?' . http_build_query($params);
+    return url($moduleBase) . '?' . http_build_query($params);
 };
 
 $sortIndicator = static function (string $column) use ($sortKey, $sortDir): string {
@@ -188,30 +190,30 @@ $stockReturnFields = array_filter(
     $stockReturnFields,
     static fn($value): bool => $value !== '' && $value !== null
 );
-$stockEditUrl = static function (int $id) use ($stockReturnFields): string {
-    return url('/stocks/edit?' . http_build_query(array_merge(['id' => $id], $stockReturnFields)));
+$stockEditUrl = static function (int $id) use ($stockReturnFields, $moduleBase): string {
+    return url($moduleBase . '/edit?' . http_build_query(array_merge(['id' => $id], $stockReturnFields)));
 };
 ?>
 <section class="stock-control-panel" aria-label="Stock filters and actions">
     <div class="stock-control-head">
         <div class="stock-control-heading">
-            <strong>Search Finish Goods</strong>
+            <strong>Search <?= e($module['name']) ?></strong>
         </div>
         <?php if ($canAdd): ?>
             <div class="stock-actions stock-control-actions">
-                <a class="btn ghost" href="<?= e(url('/stocks/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import CSV</a>
-                <a class="btn primary" href="<?= e(url('/stocks/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Batch</a>
+                <a class="btn ghost" href="<?= e(url($moduleBase . '/import' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">Import CSV</a>
+                <a class="btn primary" href="<?= e(url($moduleBase . '/create' . (!empty($filters['division_id']) ? '?division_id=' . (int)$filters['division_id'] : ''))) ?>">+ Add Batch</a>
             </div>
         <?php endif; ?>
     </div>
 
-    <form method="get" action="<?= e(url('/stocks')) ?>" class="stock-filter-grid stock-filter-grid-refined" id="stockAutoFilterForm">
+    <form method="get" action="<?= e(url($moduleBase)) ?>" class="stock-filter-grid stock-filter-grid-refined" id="stockAutoFilterForm">
         <?php if ($sortKey !== ''): ?><input type="hidden" name="sort" value="<?= e($sortKey) ?>"><?php endif; ?>
         <?php if ($sortKey !== ''): ?><input type="hidden" name="dir" value="<?= e($sortDir) ?>"><?php endif; ?>
         <input type="hidden" name="per_page" value="<?= (int)$rowsPerPage ?>">
         <div class="stock-filter-field stock-filter-search-wrap">
             <label for="stockSearch">Search</label>
-            <input id="stockSearch" class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="Product code, product name or batch no...">
+            <input id="stockSearch" class="stock-filter-search" type="search" name="q" value="<?= e($filters['q']) ?>" placeholder="<?= e($module['search_placeholder']) ?>">
         </div>
 
         <?php if (in_array(($user['role'] ?? ''), ['super_admin','store_manager'], true) || (($user['role'] ?? '') === 'user' && empty($user['division_id']))): ?>
@@ -237,7 +239,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
         </div>
 
         <div class="stock-filter-actions stock-filter-actions-refined">
-            <a class="btn ghost stock-filter-reset-btn" href="<?= e(url('/stocks')) ?>">Reset</a>
+            <a class="btn ghost stock-filter-reset-btn" href="<?= e(url($moduleBase)) ?>">Reset</a>
         </div>
     </form>
 
@@ -271,7 +273,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
             </svg>
         </div>
         <div class="stock-overview-copy">
-            <span>Current Retail Stock Value</span>
+            <span><?= e($module['value_summary_label']) ?></span>
             <strong><?= $stockValueNumber($summary['stock_value'] ?? 0) ?></strong>
         </div>
     </article>
@@ -285,7 +287,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
         <span>record(s) selected</span>
     </div>
 
-    <form method="post" action="<?= e(url('/stocks/delete-selected')) ?>" id="stockSelectedDeleteForm">
+    <form method="post" action="<?= e(url($moduleBase . '/delete-selected')) ?>" id="stockSelectedDeleteForm">
         <?= csrf_field() ?>
 
         <!-- Preserve the current filtered/sorted/paginated view after deletion. -->
@@ -319,11 +321,11 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
     </th>
     <?php endif; ?>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('division')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('division')) ?>"><span>Division</span><b><?= e($sortIndicator('division')) ?></b></a></th>
-    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_code')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_code')) ?>"><span>Product Code</span><b><?= e($sortIndicator('product_code')) ?></b></a></th>
-    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_name')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_name')) ?>"><span>Product Name</span><b><?= e($sortIndicator('product_name')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_code')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_code')) ?>"><span><?= e($module['code_label']) ?></span><b><?= e($sortIndicator('product_code')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('product_name')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('product_name')) ?>"><span><?= e($module['name_label']) ?></span><b><?= e($sortIndicator('product_name')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('current_stock')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('current_stock')) ?>"><span>Current Stock</span><b><?= e($sortIndicator('current_stock')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('uom')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('uom')) ?>"><span>UoM</span><b><?= e($sortIndicator('uom')) ?></b></a></th>
-    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('stock_value')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('stock_value')) ?>"><span>Retail Stock Value</span><b><?= e($sortIndicator('stock_value')) ?></b></a></th>
+    <th class="stock-sortable-th" aria-sort="<?= e($sortAria('stock_value')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('stock_value')) ?>"><span><?= e($module['value_label']) ?></span><b><?= e($sortIndicator('stock_value')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('batch_no')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('batch_no')) ?>"><span>Batch No</span><b><?= e($sortIndicator('batch_no')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('manufacturing_date')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('manufacturing_date')) ?>"><span>Manufacturing Date</span><b><?= e($sortIndicator('manufacturing_date')) ?></b></a></th>
     <th class="stock-sortable-th" aria-sort="<?= e($sortAria('expiry_date')) ?>"><a class="stock-sort-link" href="<?= e($sortUrl('expiry_date')) ?>"><span>Expiry Date</span><b><?= e($sortIndicator('expiry_date')) ?></b></a></th>
@@ -369,7 +371,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
             <a href="<?= e($stockEditUrl((int)$r['id'])) ?>">Edit</a>
         <?php endif; ?>
         <?php if ($canDelete): ?>
-            <form method="post" action="<?= e(url('/stocks/delete')) ?>" onsubmit="return confirm('Delete this batch?')">
+            <form method="post" action="<?= e(url($moduleBase . '/delete')) ?>" onsubmit="return confirm('Delete this batch?')">
                 <?= csrf_field() ?>
                 <input type="hidden" name="id" value="<?= (int)$r['id'] ?>">
                 <?php foreach ($stockReturnFields as $returnName => $returnValue): ?>
@@ -386,14 +388,14 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
 </div>
 
 <?php if ($totalTableRows > 0): ?>
-<div class="market-return-pagination stock-table-pagination" aria-label="Finish Goods Aging pagination">
+<div class="market-return-pagination stock-table-pagination" aria-label="<?= e($module['name']) ?> Aging pagination">
     <div class="stock-pagination-summary">
         <div class="market-return-pagination-info">
             Showing <strong><?= number_format($showingFrom) ?>–<?= number_format($showingTo) ?></strong>
             of <strong><?= number_format($totalTableRows) ?></strong> batches
         </div>
 
-        <form method="get" action="<?= e(url('/stocks')) ?>" class="stock-page-size-form" aria-label="Rows per page">
+        <form method="get" action="<?= e(url($moduleBase)) ?>" class="stock-page-size-form" aria-label="Rows per page">
             <?php if (($filters['q'] ?? '') !== ''): ?><input type="hidden" name="q" value="<?= e($filters['q']) ?>"><?php endif; ?>
             <?php if (($filters['division_id'] ?? '') !== ''): ?><input type="hidden" name="division_id" value="<?= e((string)$filters['division_id']) ?>"><?php endif; ?>
             <?php if (($filters['grade'] ?? '') !== ''): ?><input type="hidden" name="grade" value="<?= e($filters['grade']) ?>"><?php endif; ?>
@@ -531,7 +533,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
 
         const confirmed = window.confirm(
             'Permanently delete ' + selected.length +
-            ' selected Finish Goods record' + (selected.length === 1 ? '' : 's') + '?'
+            ' selected ' + <?= json_encode($module['name']) ?> + ' record' + (selected.length === 1 ? '' : 's') + '?'
         );
 
         if (!confirmed) {
@@ -560,24 +562,24 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
         <div class="stock-bulk-head">
             <div>
                 <span>SUPER ADMIN</span>
-                <h2 id="stockBulkDeleteTitle">Bulk Delete Finish Goods</h2>
+                <h2 id="stockBulkDeleteTitle">Bulk Delete <?= e($module['name']) ?></h2>
                 <p>Delete stock batch records by Division.</p>
             </div>
             <button type="button" class="stock-bulk-close" id="closeStockBulkDelete" aria-label="Close">×</button>
         </div>
 
-        <form method="post" action="<?= e(url('/stocks/bulk-delete')) ?>" id="stockBulkDeleteForm">
+        <form method="post" action="<?= e(url($moduleBase . '/bulk-delete')) ?>" id="stockBulkDeleteForm">
             <?= csrf_field() ?>
 
             <div class="stock-bulk-warning">
                 <strong>Permanent action</strong>
-                <span>This deletes Finish Goods batches for the selected Division(s). Divisions, users, grading criteria, materials and Market Return records remain unchanged.</span>
+                <span>This deletes <?= e($module['name']) ?> batches for the selected Division(s). <?= e($module['bulk_modal_keeps']) ?></span>
             </div>
 
             <div class="stock-bulk-toolbar">
                 <div>
                     <strong>Select Division(s)</strong>
-                    <span>Only divisions with Finish Goods batches can be selected.</span>
+                    <span>Only divisions with <?= e($module['name']) ?> batches can be selected.</span>
                 </div>
                 <button type="button" class="stock-bulk-select-all" id="stockBulkSelectAll">Select All With Stock</button>
             </div>
@@ -728,7 +730,7 @@ $stockEditUrl = static function (int $id) use ($stockReturnFields): string {
 
         const count = selectedBoxes().length;
         if (!window.confirm(
-            'Permanently delete all Finish Goods batch records from ' +
+            'Permanently delete all ' + <?= json_encode($module['name']) ?> + ' batch records from ' +
             count + ' selected Division' + (count === 1 ? '' : 's') + '?'
         )) {
             event.preventDefault();
