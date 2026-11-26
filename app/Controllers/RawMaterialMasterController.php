@@ -13,6 +13,9 @@ class RawMaterialMasterController extends ProductMasterController
 {
     public const MODULE = [
         'base' => '/admin/raw-materials',
+        'order' => 10,
+        'icon' => RawMaterialController::MODULE['icon'],
+        'card_text' => 'Maintain Material Code, Material Name and UoM for every Division.',
         'title' => 'Raw Material Master',
         'item' => 'Material',
         'item_lower' => 'material',

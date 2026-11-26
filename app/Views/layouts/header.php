@@ -28,7 +28,6 @@ $requestPath = $normalizePath($requestPath);
 $dashboardPath = $normalizePath(url('/'));
 $isDashboardActive = $requestPath === $dashboardPath;
 $isStocksActive = str_starts_with($requestPath, $normalizePath(url('/stocks')));
-$isRawMaterialsActive = str_starts_with($requestPath, $normalizePath(url('/raw-materials')));
 $isDailyReportsActive = str_starts_with($requestPath, $normalizePath(url('/daily-stock-reports')));
 $isAdminHome = $requestPath === $normalizePath(url('/admin'));
 $isAdminChild = ($me['role'] ?? '') === 'super_admin' && (
@@ -77,10 +76,13 @@ $isLogsActive = str_starts_with($requestPath, $normalizePath(url('/logs')));
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M5 7.5 12 4l7 3.5-7 3.5-7-3.5Zm0 0V16.5L12 20l7-3.5V7.5M5 12l7 3.5 7-3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
                 <span class="nav-label">Finish Goods Aging</span>
             </a>
-            <a class="nav-link<?= $isRawMaterialsActive ? ' active' : '' ?>" title="Raw Material Aging" href="<?= e(url('/raw-materials')) ?>"<?= $isRawMaterialsActive ? ' aria-current="page"' : '' ?>>
-                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M9 3h6M10 3v5.5L5.2 17.2A2.5 2.5 0 0 0 7.4 21h9.2a2.5 2.5 0 0 0 2.2-3.8L14 8.5V3M7.5 14h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
-                <span class="nav-label">Raw Material Aging</span>
+            <?php foreach (\App\Services\AgingModuleRegistry::modules() as $navModuleController): ?>
+            <?php $navModule = $navModuleController::MODULE; $navModuleActive = str_starts_with($requestPath, $normalizePath(url($navModule['base']))); ?>
+            <a class="nav-link<?= $navModuleActive ? ' active' : '' ?>" title="<?= e($navModule['index_title']) ?>" href="<?= e(url($navModule['base'])) ?>"<?= $navModuleActive ? ' aria-current="page"' : '' ?>>
+                <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><?= $navModule['icon'] ?? '' ?></svg></span>
+                <span class="nav-label"><?= e($navModule['index_title']) ?></span>
             </a>
+            <?php endforeach; ?>
             <?php if (in_array(($me['role'] ?? ''), ['super_admin','store_manager','division_admin'], true)): ?>
             <a class="nav-link<?= $isDailyReportsActive ? ' active' : '' ?>" title="Daily Stock Reports" href="<?= e(url('/daily-stock-reports')) ?>"<?= $isDailyReportsActive ? ' aria-current="page"' : '' ?>>
                 <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><path d="M7 4h10a2 2 0 0 1 2 2v14H5V6a2 2 0 0 1 2-2Zm2-2h6v4H9V2Zm-1 8h8M8 14h8M8 18h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>

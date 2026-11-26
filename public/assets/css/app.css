@@ -7176,3 +7176,47 @@ body.stock-bulk-modal-open{overflow:hidden}
   html.sidebar-collapsed .logout{width:100%;display:flex;justify-content:center}
   html.sidebar-collapsed .logout .link-button{width:48px;min-height:44px;padding:0!important;display:flex!important;align-items:center;justify-content:center;gap:0!important}
 }
+
+/* ---- Dashboard: Raw Material & Export Goods section (aging-module-*) ---- */
+.aging-modules-shell{margin-top:22px}
+.aging-modules-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:14px}
+.aging-modules-picker{position:relative;flex:0 0 auto}
+.aging-modules-picker>summary{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:13px;font-weight:700;color:#344054;cursor:pointer;list-style:none;user-select:none}
+.aging-modules-picker>summary::-webkit-details-marker{display:none}
+.aging-modules-picker>summary::after{content:"▾";font-size:11px;color:#667085}
+.aging-modules-picker>summary span{font-weight:500;color:#667085}
+.aging-modules-picker[open]>summary{border-color:#98a2b3}
+.aging-modules-picker-menu{position:absolute;right:0;top:calc(100% + 6px);z-index:30;display:flex;flex-direction:column;gap:8px;min-width:240px;padding:14px;border:1px solid var(--line);border-radius:12px;background:#fff;box-shadow:0 12px 32px rgba(16,24,40,.16)}
+.aging-modules-picker-menu strong{font-size:12px;color:#667085;text-transform:uppercase;letter-spacing:.04em}
+.aging-modules-picker-menu label{display:flex;align-items:center;gap:8px;font-size:14px;color:#101828;cursor:pointer}
+.aging-modules-picker-menu .btn{margin-top:4px}
+.aging-module-card{display:flex;flex-direction:column;gap:14px;padding:18px;border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow);min-width:0}
+.aging-module-head{display:flex;align-items:center;gap:12px}
+.aging-module-title{flex:1;min-width:0}
+.aging-module-title h3{margin:0;font-size:16px;color:#101828}
+.aging-module-title small{display:block;margin-top:2px;font-size:12px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aging-module-link{flex:0 0 auto;font-size:13px;font-weight:700;color:var(--brand);text-decoration:none;white-space:nowrap}
+.aging-module-link:hover{text-decoration:underline}
+.aging-module-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.aging-module-kpis>div{padding:12px;border:1px solid var(--line);border-radius:12px;background:#f9fafb;min-width:0}
+.aging-module-kpis small{display:block;margin-bottom:4px;font-size:12px;color:#667085}
+.aging-module-kpis strong{display:block;font-size:20px;line-height:1.15;color:#101828;overflow-wrap:anywhere}
+.aging-module-kpis strong span{font-size:12px;font-weight:600;color:#667085}
+.aging-module-kpi-attention{border-color:#fecdca!important;background:#fef3f2!important}
+.aging-module-kpi-attention strong{color:#b42318}
+.aging-module-bar{display:flex;height:12px;border-radius:999px;overflow:hidden;background:#eaecf0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.06)}
+.aging-module-bar span{display:block;height:100%}
+.aging-module-empty{padding:10px 12px;border:1px dashed var(--line);border-radius:12px;font-size:13px;color:#667085;text-align:center}
+.aging-module-grades{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.aging-module-grade{display:flex;flex-direction:column;gap:4px;padding:10px;border:1px solid var(--line);border-radius:12px;color:inherit;text-decoration:none;min-width:0;transition:border-color .15s,box-shadow .15s}
+.aging-module-grade:hover,.aging-module-grade:focus-visible{border-color:#98a2b3;box-shadow:0 2px 8px rgba(16,24,40,.08)}
+.aging-module-grade-name{display:flex;align-items:center;gap:6px;font-size:12px;color:#344054}
+.aging-module-grade-name .grade-bar{width:18px;height:8px}
+.aging-module-grade strong{font-size:18px;line-height:1.1;color:#101828}
+.aging-module-grade small{font-size:11px;color:#667085;overflow-wrap:anywhere}
+@media(max-width:700px){
+  .aging-module-kpis{grid-template-columns:1fr 1fr}
+  .aging-module-kpi-attention{grid-column:1 / -1}
+  .aging-module-grades{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .aging-module-head{flex-wrap:wrap}
+}

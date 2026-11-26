@@ -408,6 +408,103 @@ $donutGradient = !empty($gradientParts) ? 'conic-gradient(' . implode(', ', $gra
 </div>
 </section>
 
+<?php if (!empty($availableModules)): ?>
+<?php
+// Extra aging modules (Raw Material, Export Goods, any added later), each user
+// choosing which to show. Self-contained section with its own aging-module-*
+// classes, so the Finish Goods layout above is unchanged.
+$moduleGradeOrder = [
+    'A+' => ['label' => 'A+', 'bar' => 'blue', 'color' => '#0b2f6b'],
+    'A' => ['label' => 'A', 'bar' => 'green', 'color' => '#92d050'],
+    'B' => ['label' => 'B', 'bar' => 'yellow', 'color' => '#fff200'],
+    'C' => ['label' => 'C', 'bar' => 'red', 'color' => '#ff1717'],
+    'EX' => ['label' => 'Expired', 'bar' => 'black', 'color' => '#000000'],
+];
+$moduleUrl = static function (string $base, array $extra = []) use ($selectedDivision): string {
+    $params = array_filter(['division_id' => $selectedDivision ?: null] + $extra, static fn($v) => $v !== null && $v !== '');
+    return url($base . ($params ? '?' . http_build_query($params) : ''));
+};
+?>
+<section class="aging-modules-shell" aria-label="Raw Material and Export Goods aging">
+    <div class="dashboard-grade-section-head">
+        <div>
+            <h2>Aging Modules</h2>
+        </div>
+        <details class="aging-modules-picker">
+            <summary>Choose modules <span>(<?= count($shownModuleKeys) ?> of <?= count($availableModules) ?> shown)</span></summary>
+            <form method="post" action="<?= e(url('/dashboard/modules')) ?>" class="aging-modules-picker-menu">
+                <?= csrf_field() ?>
+                <input type="hidden" name="return_division_id" value="<?= (int)($selectedDivision ?? 0) ?>">
+                <strong>Show on my dashboard</strong>
+                <?php foreach ($availableModules as $moduleKey => $moduleTitle): ?>
+                    <label>
+                        <input type="checkbox" name="modules[]" value="<?= e($moduleKey) ?>" <?= in_array($moduleKey, $shownModuleKeys, true) ? 'checked' : '' ?>>
+                        <span><?= e($moduleTitle) ?></span>
+                    </label>
+                <?php endforeach; ?>
+                <button type="submit" class="btn primary">Apply</button>
+            </form>
+        </details>
+    </div>
+
+    <?php if (empty($moduleSummaries)): ?>
+    <div class="aging-module-empty">No aging modules selected. Use “Choose modules” to show them here.</div>
+    <?php else: ?>
+    <div class="aging-modules-grid">
+        <?php foreach ($moduleSummaries as $ms): ?>
+            <article class="aging-module-card">
+                <header class="aging-module-head">
+                    <span class="summary-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none"><?= $ms['icon'] ?></svg></span>
+                    <div class="aging-module-title">
+                        <h3><?= e($ms['name']) ?></h3>
+                        <small><?= e($selectedDivisionLabel) ?></small>
+                    </div>
+                    <a class="aging-module-link" href="<?= e($moduleUrl($ms['base'])) ?>">View details →</a>
+                </header>
+
+                <div class="aging-module-kpis">
+                    <div>
+                        <small>Total Batches</small>
+                        <strong><?= $dashboardPlainNumber($ms['batches']) ?></strong>
+                    </div>
+                    <div>
+                        <small>Stock Value</small>
+                        <strong>Rs/ <?= $dashboardStockValue($ms['value']) ?></strong>
+                    </div>
+                    <div class="aging-module-kpi-attention">
+                        <small>Needs Attention (C + Expired)</small>
+                        <strong><?= $dashboardPlainNumber($ms['attention_batches']) ?> <span>batches</span></strong>
+                    </div>
+                </div>
+
+                <?php if ($ms['batches'] > 0): ?>
+                    <div class="aging-module-bar" role="img" aria-label="<?= e($ms['name']) ?> batches by grade: <?= e(implode(', ', array_map(static fn($k, $g) => $moduleGradeOrder[$k]['label'] . ' ' . $g['batches'], array_keys($ms['grades']), $ms['grades']))) ?>">
+                        <?php foreach ($ms['grades'] as $code => $g): ?>
+                            <?php if ($g['batches'] > 0): ?>
+                                <span style="width:<?= e(rtrim(rtrim(number_format($g['batches'] / $ms['batches'] * 100, 3, '.', ''), '0'), '.')) ?>%;background:<?= e($moduleGradeOrder[$code]['color']) ?>" title="<?= e($moduleGradeOrder[$code]['label'] . ': ' . $g['batches'] . ' batch(es)') ?>"></span>
+                            <?php endif; ?>
+                        <?php endforeach; ?>
+                    </div>
+                <?php else: ?>
+                    <div class="aging-module-empty">No <?= e(strtolower($ms['name'])) ?> batches<?= $selectedDivision ? ' for this division' : '' ?> yet.</div>
+                <?php endif; ?>
+
+                <div class="aging-module-grades">
+                    <?php foreach ($ms['grades'] as $code => $g): ?>
+                        <a class="aging-module-grade" href="<?= e($moduleUrl($ms['base'], ['grade' => $code])) ?>" title="Open <?= e($moduleGradeOrder[$code]['label']) ?> batches">
+                            <span class="aging-module-grade-name"><span class="grade-bar <?= e($moduleGradeOrder[$code]['bar']) ?>"></span><b><?= e($moduleGradeOrder[$code]['label']) ?></b></span>
+                            <strong><?= $dashboardPlainNumber($g['batches']) ?></strong>
+                            <small>Rs/ <?= $dashboardStockValue($g['value']) ?></small>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </article>
+        <?php endforeach; ?>
+    </div>
+    <?php endif; ?>
+</section>
+<?php endif; ?>
+
 <?php
 $modalDivisions = [];
 $modalLocations = [];
